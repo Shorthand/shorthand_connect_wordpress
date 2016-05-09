@@ -12,22 +12,26 @@ Version: 0.1
 Author URI: http://shorthand.com
 */
 
-// This just echoes the chosen line, we'll position it later
-function hello_shorthand() {
-	echo "<p id='dolly'>Hello Shorthand</p>";
+add_action( 'init', 'create_post_type' );
+function create_post_type() {
+  register_post_type( 'shorthand_story',
+    array(
+      'labels' => array(
+        'name' => __( 'Shorthand' ),
+        'singular_name' => __( 'Shorthand Story' )
+      ),
+      'public' => true,
+      'has_archive' => true,
+    )
+  );
 }
 
-// Now we set that function up to execute when the admin_notices action is called
-add_action( 'admin_notices', 'hello_shorthand' );
-
-
-
-
+/* Options */
 function shorthand_menu() {
-	add_menu_page( 'Shorthand', 'Shorthand', 'manage_options', 'shorthand-menu', 'shorthand_menu_index' );
+	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shorthand_options' );
 }
 
-function shorthand_menu_index() {
+function shorthand_options() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
@@ -65,7 +69,7 @@ function shorthand_menu_index() {
 		}
 	}
 ?>
-	<h3>Token</h3>
+	<h3>Shorthand API Details</h3>
 	<form name="form1" method="post">
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<p>
