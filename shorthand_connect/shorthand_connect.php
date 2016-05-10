@@ -3,6 +3,7 @@
 require_once('config.php');
 require_once('includes/api.php');
 require_once('includes/shorthand_options.php');
+require_once('templates/abstract.php');
 /**
  * @package Shorthand Connect
  * @version 0.1
@@ -164,8 +165,8 @@ function save_shorthand_story( $post_id, $post, $update ) {
 
     if (isset($_REQUEST['story_id'])) {
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $_REQUEST['story_id'] ) );
-    	sh_copy_story($_REQUEST['story_id']);
-    	$story_path = sh_get_story_path($_REQUEST['story_id']);
+    	sh_copy_story($post_id, $_REQUEST['story_id']);
+    	$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);
 
     	if(isset($story_path)) {
     		// The story has been uploaded
@@ -186,17 +187,37 @@ function save_shorthand_story( $post_id, $post, $update ) {
     		remove_action( 'save_post', 'save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
-    			'post_content' => $abstract
+    			'post_content' => abstract_template($post_id, $abstract)
     		);
     		wp_update_post( $post );
     		add_action( 'save_post', 'save_shorthand_story', 10, 3);
-
     	}
     }
 }
 
 
 add_action( 'save_post', 'save_shorthand_story', 10, 3);
+
+
+function delete_shorthand_story( $post_id ) {
+	WP_Filesystem();
+	$destination = wp_upload_dir();
+	$destination_path = $destination['path'].'/shorthand/'.$post_id;
+	delTree($destination_path);
+}
+
+
+function delTree($dir) { 
+   $files = array_diff(scandir($dir), array('.','..')); 
+    foreach ($files as $file) { 
+      (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file"); 
+    } 
+    return rmdir($dir); 
+} 
+
+
+add_action( 'delete_post', 'delete_shorthand_story', 10, 3);
+
 
 
 function fix_content_paths($assets_path, $content) {
@@ -209,34 +230,21 @@ function fix_content_paths($assets_path, $content) {
 
 // TEMPLATE VIEW
 
-function load_shorthand_template($template) {
+function load_single_shorthand_template($template) {
     global $post;
 
-    // Is this a "my-custom-post-type" post?
     if ($post->post_type == "shorthand_story"){
-
-        //Your plugin path 
         $plugin_path = plugin_dir_path( __FILE__ );
-
-        // The name of custom post type single template
-        $template_name = 'single-shorthand_story.php';
-
-        // A specific single template for my custom post type exists in theme folder? Or it also doesn't exist in my plugin?
+        $template_name = 'templates/single-shorthand_story.php';
         if($template === get_stylesheet_directory() . '/' . $template_name
             || !file_exists($plugin_path . $template_name)) {
-
-            //Then return "single.php" or "single-my-custom-post-type.php" from theme directory.
             return $template;
         }
-
-        // If not, return my plugin custom post type template.
         return $plugin_path . $template_name;
     }
-
-    //This is not my custom post type, do nothing with $template
     return $template;
 }
 
-add_filter('single_template', 'load_shorthand_template');
+add_filter('single_template', 'load_single_shorthand_template');
 
 ?>
