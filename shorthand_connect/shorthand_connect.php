@@ -1,6 +1,8 @@
 <?php
 
+require_once('config.php');
 require_once('api.php');
+require_once('shorthand_options.php');
 /**
  * @package Shorthand Connect
  * @version 0.1
@@ -13,8 +15,6 @@ Author: Shorthand
 Version: 0.1
 Author URI: http://shorthand.com
 */
-
-$serverURL = 'http://localhost:8000';
 
 add_action( 'init', 'create_post_type' );
 function create_post_type() {
@@ -36,7 +36,7 @@ function create_post_type() {
       'menu_position' => 4,
       'supports' => array('title'),
       'register_meta_box_cb' => 'add_shorthand_metaboxes',
-      'menu_icon' => '/wordpress/wp-content/plugins/shorthand_connect/icon.png'
+      'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/icon.png'
     )
   );
 }
@@ -52,7 +52,7 @@ function wpt_shorthand_story() {
 
 	global $serverURL;
 
-	$stories = get_stories();
+	$stories = sh_get_stories();
 	global $post;
 
 ?>
@@ -153,7 +153,7 @@ function save_shorthand_story( $post_id, $post, $update ) {
 
     if (isset($_REQUEST['story_id'])) {
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $_REQUEST['story_id'] ) );
-    	$story_data = get_story($_REQUEST['story_id']);
+    	$story_data = sh_get_story($_REQUEST['story_id']);
     	if(isset($story_data['path'])) {
     		update_post_meta($post_id, 'story_path', $story_data['path']);
     	}
@@ -167,60 +167,6 @@ function save_shorthand_story( $post_id, $post, $update ) {
 
 
 add_action( 'save_post', 'save_shorthand_story', 10, 3 );
-
-
-
-/* Options */
-function shorthand_menu() {
-	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shorthand_options' );
-}
-
-function shorthand_options() {
-	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
-	}
-	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' ) {
-		update_option('sh_token_key', $_POST['sh_token_key']);
-	}
-	$token = get_option('sh_token_key');
-	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' ) {
-		update_option('sh_user_id', $_POST['sh_user_id']);
-	}
-	$token = get_option('sh_token_key');
-	$user_id = get_option('sh_user_id');
-
-	$stories = get_stories();
-?>
-	<h3>Shorthand API Details</h3>
-	<form name="form1" method="post">
-		<input type="hidden" name="sh_submit_hidden" value="Y" />
-		<p>
-			<?php _e("Shorthand User ID:", 'sh-user-value' ); ?> 
-			<input type="text" name="sh_user_id" value="<?php echo $user_id; ?>" size="20">
-		</p>
-		<p>
-			<?php _e("Shorthand API Token:", 'sh-token-value' ); ?> 
-			<input type="text" name="sh_token_key" value="<?php echo $token; ?>" size="20">
-		</p>
-
-		<p class="submit">
-			<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
-		</p>
-		<hr />
-	</form>
-	<h3>Shorthand Stories</h3>
-	<ul>
-	<?php foreach($stories as $story) { ?>
-		<li><?php echo $story->title; ?></li>
-	<?php } ?>
-	</ul>
-<?php
-}
-
-add_action( 'admin_menu', 'shorthand_menu' );
-
-
-
 
 
 

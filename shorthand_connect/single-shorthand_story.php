@@ -6,14 +6,14 @@
 
 			$meta = get_post_meta($post->ID);
 			
-			$upload_path = '/wordpress'.substr($meta['story_path'][0], strpos($meta['story_path'][0], '/wp-content/uploads'));
+			$assets_path = get_site_url().substr($meta['story_path'][0], strpos($meta['story_path'][0], '/wp-content/uploads'));
 			$body = file_get_contents($meta['story_path'][0].'/component_article.html');
 			$head = file_get_contents($meta['story_path'][0].'/component_head.html');
 
-			$body = str_replace('./static/', $upload_path.'/static/', $body);
-			$head = str_replace('./static/', $upload_path.'/static/', $head);
-			$body = str_replace('./media/', $upload_path.'/media/', $body);
-			$head = str_replace('./media/', $upload_path.'/media/', $head);
+			$body = str_replace('./static/', $assets_path.'/static/', $body);
+			$head = str_replace('./static/', $assets_path.'/static/', $head);
+			$body = str_replace('./media/', $assets_path.'/media/', $body);
+			$head = str_replace('./media/', $assets_path.'/media/', $head);
 
 			echo $head;
 
@@ -26,12 +26,20 @@
 			<style>
 				.site {
 					margin: 0;
+					max-width: none;
 				}
 				.site-content {
 					padding: 0;
 				}
 				.site-inner {
 					max-width: none;
+				}
+				.site-header {
+					max-width: none;
+					z-index: 100;
+				}
+				.site:before {
+					width: 0;
 				}
 			</style>
 <?php
