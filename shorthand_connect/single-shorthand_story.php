@@ -5,24 +5,16 @@
 		while ( have_posts() ) : the_post();
 
 			$meta = get_post_meta($post->ID);
-			
-			$assets_path = get_site_url().substr($meta['story_path'][0], strpos($meta['story_path'][0], '/wp-content/uploads'));
-			$body = file_get_contents($meta['story_path'][0].'/component_article.html');
-			$head = file_get_contents($meta['story_path'][0].'/component_head.html');
 
-			$body = str_replace('./static/', $assets_path.'/static/', $body);
-			$head = str_replace('./static/', $assets_path.'/static/', $head);
-			$body = str_replace('./media/', $assets_path.'/media/', $body);
-			$head = str_replace('./media/', $assets_path.'/media/', $head);
+		?>
+		
+			<?php echo trim($meta['story_head'][0]); ?>
+			<?php echo trim($meta['story_body'][0]); ?>
 
-			echo $head;
-
-			echo $body;
-
-?>
 			<div id="extraHTML">
 				<?php echo trim($meta['extra_html'][0]); ?>
 			</div>
+			
 			<style>
 				.site {
 					margin: 0;
@@ -42,8 +34,7 @@
 					width: 0;
 				}
 			</style>
-<?php
-
+		<?php
 			// End of the loop.
 		endwhile;
 		?>

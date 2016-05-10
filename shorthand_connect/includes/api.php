@@ -58,7 +58,14 @@ function sh_get_stories() {
 	return $stories;
 }
 
-function sh_get_story($story_id) {
+function sh_get_story_path($story_id) {
+	WP_Filesystem();
+	$destination = wp_upload_dir();
+	$destination_path = $destination['path'].'/shorthand/'.$story_id;
+	return $destination_path;
+}
+
+function sh_copy_story($story_id) {
 
 	WP_Filesystem();
 	$destination = wp_upload_dir();

@@ -1,8 +1,8 @@
 <?php
 
 require_once('config.php');
-require_once('api.php');
-require_once('shorthand_options.php');
+require_once('includes/api.php');
+require_once('includes/shorthand_options.php');
 /**
  * @package Shorthand Connect
  * @version 0.1
@@ -31,12 +31,13 @@ function create_post_type() {
         'not_found' => __( 'No stories found' ),
         'not_found_in_trash' => __( 'No stories found in trash' )
       ),
+      'publicly_queryable' => true,
       'public' => true,
       'has_archive' => true,
       'menu_position' => 4,
       'supports' => array('title'),
       'register_meta_box_cb' => 'add_shorthand_metaboxes',
-      'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/icon.png'
+      'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/includes/icon.png'
     )
   );
 }
@@ -93,12 +94,16 @@ function wpt_shorthand_story() {
   			width:100%;
   			height:300px;
 		}
+		ul.stories {
+			max-height:400px;
+			overflow-y:scroll;
+		}
 	</style>
 <?php
 
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 
-	echo '<ul>';
+	echo '<ul class="stories">';
 	foreach($stories as $story) {
 		$selected = '';
 		$story_selected = '';
@@ -151,22 +156,54 @@ function save_shorthand_story( $post_id, $post, $update ) {
         return;
     }
 
-    if (isset($_REQUEST['story_id'])) {
-    	update_post_meta( $post_id, 'story_id', sanitize_text_field( $_REQUEST['story_id'] ) );
-    	$story_data = sh_get_story($_REQUEST['story_id']);
-    	if(isset($story_data['path'])) {
-    		update_post_meta($post_id, 'story_path', $story_data['path']);
-    	}
-    }
-
     if (isset($_REQUEST['extra_html'])) {
     	update_post_meta( $post_id, 'extra_html', sanitize_text_field( $_REQUEST['extra_html'] ) );
+    }
+
+
+
+    if (isset($_REQUEST['story_id'])) {
+    	update_post_meta( $post_id, 'story_id', sanitize_text_field( $_REQUEST['story_id'] ) );
+    	sh_copy_story($_REQUEST['story_id']);
+    	$story_path = sh_get_story_path($_REQUEST['story_id']);
+
+    	if(isset($story_path)) {
+    		// The story has been uploaded
+    		update_post_meta($post_id, 'story_path', $story_path);
+
+    		// Get path to the assets
+    		$assets_path = get_site_url().substr($story_path, strpos($story_path, '/wp-content/uploads'));
+
+    		// Save the head and body
+    		$body = fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+    		update_post_meta($post_id, 'story_body', $body);
+			
+			$head = fix_content_paths($assets_path, file_get_contents($story_path.'/component_head.html'));
+			update_post_meta($post_id, 'story_head', $head);
+
+    		// Save the abstract
+    		$abstract = fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+    		remove_action( 'save_post', 'save_shorthand_story', 10, 3);
+    		$post = array(
+    			'ID' => $post_id,
+    			'post_content' => $abstract
+    		);
+    		wp_update_post( $post );
+    		add_action( 'save_post', 'save_shorthand_story', 10, 3);
+
+    	}
     }
 }
 
 
+add_action( 'save_post', 'save_shorthand_story', 10, 3);
 
-add_action( 'save_post', 'save_shorthand_story', 10, 3 );
+
+function fix_content_paths($assets_path, $content) {
+	$content = str_replace('./static/', $assets_path.'/static/', $content);
+	$content = str_replace('./media/', $assets_path.'/media/', $content);
+	return $content;
+}
 
 
 
@@ -199,14 +236,7 @@ function load_shorthand_template($template) {
     //This is not my custom post type, do nothing with $template
     return $template;
 }
+
 add_filter('single_template', 'load_shorthand_template');
-
-
-
-
-
-
-
-
 
 ?>

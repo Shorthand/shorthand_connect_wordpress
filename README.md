@@ -5,6 +5,5 @@ TODO LIST
  - Rearchitect
  - On delete post
  - Index of admin list
- - Searchability
  - Index of shorthand stories
- - 
+ - Head should be in the head
