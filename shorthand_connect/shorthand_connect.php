@@ -261,4 +261,12 @@ function my_get_posts( $query ) {
 add_filter( 'pre_get_posts', 'my_get_posts' );
 
 
+// function add_shorthand_story_columns($columns) {
+//     unset($columns['author']);
+//     return array_merge($columns, 
+//               array('story_id' => __('Shorthand Story ID')));
+// }
+// add_filter('manage_shorthand_story_posts_columns' , 'add_shorthand_story_columns');
+
+
 ?>
