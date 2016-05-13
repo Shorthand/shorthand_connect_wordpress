@@ -1,6 +1,9 @@
 <?php
 
-require_once('config.php');
+$included = @include_once('config.php');
+if (!$included) {
+	require_once('config.default.php');
+}
 require_once('includes/api.php');
 require_once('includes/shorthand_options.php');
 require_once('templates/abstract.php');
