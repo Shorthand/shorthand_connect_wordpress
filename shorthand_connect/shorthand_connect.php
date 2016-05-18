@@ -107,17 +107,21 @@ function wpt_shorthand_story() {
 
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 
-	echo '<ul class="stories">';
-	foreach($stories as $story) {
-		$selected = '';
-		$story_selected = '';
-		if ($selected_story == $story->id) {
-			$selected = 'checked';
-			$story_selected = 'selected';
+	if(!$stories) {
+		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress settings</a>.';
+	} else {
+		echo '<ul class="stories">';
+		foreach($stories as $story) {
+			$selected = '';
+			$story_selected = '';
+			if ($selected_story == $story->id) {
+				$selected = 'checked';
+				$story_selected = 'selected';
+			}
+			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$serverURL.$story->image.'" /><span>'.$story->title.'</span></a></label></li>';
 		}
-		echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$serverURL.$story->image.'" /><span>'.$story->title.'</span></a></label></li>';
+		echo '</ul><div class="clear"></div>';
 	}
-	echo '</ul><div class="clear"></div>';
 	
 	// Noncename needed to verify where the data originated
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 

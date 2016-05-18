@@ -34,7 +34,7 @@ function sh_get_stories() {
 
 	$valid_token = false;
 
-	$stories = array();
+	$stories = false;
 
 	//Attempt to connect to the server
 	if($token && $user_id) {
