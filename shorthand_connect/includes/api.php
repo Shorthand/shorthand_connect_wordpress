@@ -87,7 +87,9 @@ function sh_copy_story($post_id, $story_id) {
 	if($token && $user_id) {
 		$url = $serverURL.'/api/story/'.$story_id.'/';
 		$vars = 'user='.$user_id.'&token='.$token;
-		$ch = curl_init( $url );
+		$ch = curl_init($url);
+		$zipfile = tempnam($tmpdir, 'sh_zip');
+		$ziphandle = fopen($zipfile, "w");
 		curl_setopt( $ch, CURLOPT_POST, 1);
 		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -95,17 +97,14 @@ function sh_copy_story($post_id, $story_id) {
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_FILE, $ziphandle);
 		$response = curl_exec( $ch );
-		$zipfile = tempnam($tmpdir, 'sh_zip');
-		$handle = fopen($zipfile, "w");
-		fwrite($handle, $response);
-		fclose($handle);
-
-		$unzipfile = unzip_file( $zipfile, $destination_path);
-   
-   		if ( $unzipfile ) {
-   			$story['path'] = $destination_path;
-   		}
+		if($response == 1) {
+			$unzipfile = unzip_file( $zipfile, $destination_path);
+	   		if ( $unzipfile ) {
+   				$story['path'] = $destination_path;
+   			}
+		}
 	}
 	return $story;
 }
