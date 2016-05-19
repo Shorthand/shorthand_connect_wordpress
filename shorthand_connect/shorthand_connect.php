@@ -41,10 +41,24 @@ function create_post_type() {
       'menu_position' => 4,
       'supports' => array('title'),
       'register_meta_box_cb' => 'add_shorthand_metaboxes',
-      'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/includes/icon.png'
+      'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/includes/icon.png',
+      'taxonomies' => array('category', 'post_tag'),
     )
   );
+  register_taxonomy_for_object_type( 'category', 'shorthand_story' );
+  register_taxonomy_for_object_type( 'post_tag', 'shorthand_story' );
 }
+
+function post_type_tags_fix($request) {
+    if ( isset($request['tag']) && !isset($request['post_type']) ) {
+    	$request['post_type'] = 'any';
+    }
+    if ( isset($request['category_name']) && !isset($request['post_type']) ) {
+    	$request['post_type'] = 'any';
+    }
+    return $request;
+} 
+add_filter('request', 'post_type_tags_fix');
 
 function add_shorthand_metaboxes() {
     add_meta_box('wpt_shorthand_story', 'Select Shorthand Story', 'wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
