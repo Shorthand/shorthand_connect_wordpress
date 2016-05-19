@@ -67,6 +67,9 @@ function sh_get_story_path($post_id, $story_id) {
 
 function sh_copy_story($post_id, $story_id) {
 
+	// Set the maximum memory limit for the entire operation (this is already called later by unzip_file, but lets do it earlier)
+	@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
+
 	WP_Filesystem();
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();
