@@ -1,6 +1,16 @@
 <?php
 
+function set_error_display() {
+	/* Shows errors such as modules not being installed */
+	ini_set('display_errors', 1);
+	ini_set('display_startup_errors', 1);
+	error_reporting(E_ALL);
+}
+
 function sh_get_profile() {
+
+	set_error_display();
+
 	global $serverURL;
 	$token = get_option('sh_token_key');
 	$user_id = get_option('sh_user_id');
