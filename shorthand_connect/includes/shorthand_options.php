@@ -5,7 +5,32 @@ function shorthand_menu() {
 	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shorthand_options' );
 }
 
+$default_sh_site_css = '
+/* START CSS FOR DEFAULT WP THEMES */
+.site {
+	margin: 0;
+	max-width: none;
+}
+.site-content {
+	padding: 0;
+}
+.site-inner {
+	max-width: none;
+}
+.site-header {
+	max-width: none;
+	z-index: 100;
+}
+.site:before {
+	width: 0;
+}
+/* END CSS FOR DEFAULT WP THEMES */
+';
+
 function shorthand_options() {
+
+	global $default_sh_site_css;
+
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
@@ -16,8 +41,18 @@ function shorthand_options() {
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' ) {
 		update_option('sh_user_id', $_POST['sh_user_id']);
 	}
-	$token = get_option('sh_token_key');
 	$user_id = get_option('sh_user_id');
+
+	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' ) {
+		update_option('sh_css', $_POST['sh_css']);
+	}
+	$sh_css = get_option('sh_css');
+	$no_css = false;
+	if ($sh_css == '') {
+		$no_css = true;
+		update_option('sh_css', $default_site_css);
+		$sh_css = $default_sh_site_css;
+	}
 
 	$profile = sh_get_profile();
 ?>
@@ -38,7 +73,7 @@ function shorthand_options() {
 		</p>
 		<hr />
 	</form>
-		<h3>Shorthand Connect Status</h3>
+	<h3>Shorthand Connect Status</h3>
 	<?php if ($profile) { ?>
 		<p class="status">Successfully connected</p>
 		<img class="grav" src="<?php echo $profile->gravatar; ?>" />
@@ -46,25 +81,41 @@ function shorthand_options() {
 	<?php } else { ?>
 		<p class="status warn">Not Connected</p>
 	<?php } ?>
-		<style>
-			img.grav {
-				float: left;
-				width:80px;
-				margin-right:10px;
-			}
-			p.status {
-				background:#dfd;
-				color:green;
-				font-weight:bold;
-				width:250px;
-				clear:left;
-				padding:5px;
-			}
-			p.status.warn {
-				background:#ffd;
-				color:orange;
-			}
-		</style>
+	<div style='clear:both'></div>
+	<h3>Shorthand Story Page CSS (theme wide CSS)</h3>
+		<p>Use this CSS to customise Shorthand Story pages to better suit your theme</p>
+		<?php if ($no_css) { ?>
+			<p class="status warn">No custom CSS found, using default theme CSS</p>
+		<?php }?>
+		<form name="form2" method="post">
+			<input type="hidden" name="sh_submit_hidden_two" value="Y" />
+			<textarea rows="10" cols="80" name="sh_css"><?php echo $sh_css; ?></textarea>
+			<p class="submit">
+				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+			</p>
+		</form>
+
+	<style>
+		img.grav {
+			float: left;
+			width:80px;
+			margin-right:10px;
+		}
+		p.status {
+			background:#dfd;
+			color:green;
+			font-weight:bold;
+			width:350px;
+			clear:left;
+			padding:5px;
+		}
+		p.status.warn {
+			background:#ffd;
+			color:orange;
+		}
+	</style>
+
+
 <?php
 }
 
