@@ -165,7 +165,7 @@ function save_shorthand_story( $post_id, $post, $update ) {
     }
 
     if (isset($_REQUEST['extra_html'])) {
-    	update_post_meta( $post_id, 'extra_html', sanitize_text_field( $_REQUEST['extra_html'] ) );
+    	update_post_meta( $post_id, 'extra_html', $_REQUEST['extra_html'] );
     }
 
 
