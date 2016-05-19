@@ -17,6 +17,13 @@ Unstable, early Beta.
 
 The Shorthand menu should now be available on the left, and you can add a Shorthand Story in the same way you would add a normal post/page.
 
+###Troubleshooting###
+
+ - Firstly make sure that your www directory is owned by the correct user
+ - In your wp-config.php file, add ```define('FS_CHMOD_DIR', 0777 );```
+ - Ensure CURL and PHP-CURL are installed (ala: ```sudo apt-get install php5-curl```)
+
+
 ###Future directions###
 
  - Better integration with 3rd party themes
