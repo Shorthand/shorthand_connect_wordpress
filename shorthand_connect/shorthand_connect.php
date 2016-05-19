@@ -205,28 +205,6 @@ function save_shorthand_story( $post_id, $post, $update ) {
 
 add_action( 'save_post', 'save_shorthand_story', 10, 3);
 
-
-function delete_shorthand_story( $post_id ) {
-	WP_Filesystem();
-	$destination = wp_upload_dir();
-	$destination_path = $destination['path'].'/shorthand/'.$post_id;
-	delTree($destination_path);
-}
-
-
-function delTree($dir) { 
-   $files = array_diff(scandir($dir), array('.','..')); 
-    foreach ($files as $file) { 
-      (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file"); 
-    } 
-    return rmdir($dir); 
-} 
-
-
-add_action( 'delete_post', 'delete_shorthand_story', 10, 3);
-
-
-
 function fix_content_paths($assets_path, $content) {
 	$content = str_replace('./static/', $assets_path.'/static/', $content);
 	$content = str_replace('./media/', $assets_path.'/media/', $content);
