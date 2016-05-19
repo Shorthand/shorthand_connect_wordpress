@@ -69,6 +69,7 @@ function sh_copy_story($post_id, $story_id) {
 
 	WP_Filesystem();
 	$destination = wp_upload_dir();
+	$tmpdir = get_temp_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
 
 	global $serverURL;
@@ -92,7 +93,7 @@ function sh_copy_story($post_id, $story_id) {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		$response = curl_exec( $ch );
-		$zipfile = tempnam('/tmp', 'sh_zip');
+		$zipfile = tempnam($tmpdir, 'sh_zip');
 		$handle = fopen($zipfile, "w");
 		fwrite($handle, $response);
 		fclose($handle);
