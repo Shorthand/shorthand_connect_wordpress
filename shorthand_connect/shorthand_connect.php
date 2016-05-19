@@ -268,12 +268,22 @@ function my_get_posts( $query ) {
 add_filter( 'pre_get_posts', 'my_get_posts' );
 
 
-// function add_shorthand_story_columns($columns) {
-//     unset($columns['author']);
-//     return array_merge($columns, 
-//               array('story_id' => __('Shorthand Story ID')));
-// }
-// add_filter('manage_shorthand_story_posts_columns' , 'add_shorthand_story_columns');
+function add_shorthand_story_columns($columns) {
+    //unset($columns['author']);
+    $cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array_slice($columns, 2, count($columns)-2, true);
+    return $cols;
+}
+add_filter('manage_shorthand_story_posts_columns' , 'add_shorthand_story_columns');
+
+function shorthand_show_columns($name) {
+    global $post;
+    switch ($name) {
+        case 'story_id':
+            $views = get_post_meta($post->ID, 'story_id', true);
+            echo $views;
+    }
+}
+add_action('manage_posts_custom_column',  'shorthand_show_columns');
 
 
 ?>
