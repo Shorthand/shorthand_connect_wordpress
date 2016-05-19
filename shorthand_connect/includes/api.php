@@ -62,6 +62,9 @@ function sh_get_story_path($post_id, $story_id) {
 	WP_Filesystem();
 	$destination = wp_upload_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
+	if(!file_exists($destination_path)) {
+		$destination_path = null;
+	}
 	return $destination_path;
 }
 

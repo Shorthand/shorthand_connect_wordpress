@@ -175,6 +175,12 @@ function save_shorthand_story( $post_id, $post, $update ) {
     	sh_copy_story($post_id, $_REQUEST['story_id']);
     	$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);
 
+    	//Sometimes the story needs to be gotten twice
+    	if(!isset($story_path)) {
+    		sh_copy_story($post_id, $_REQUEST['story_id']);
+    		$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);    		
+    	}
+
     	if(isset($story_path)) {
     		// The story has been uploaded
     		update_post_meta($post_id, 'story_path', $story_path);
@@ -198,6 +204,9 @@ function save_shorthand_story( $post_id, $post, $update ) {
     		);
     		wp_update_post( $post );
     		add_action( 'save_post', 'save_shorthand_story', 10, 3);
+    	} else {
+    		echo 'Something went wrong, please try again';
+    		die();
     	}
     }
 }
