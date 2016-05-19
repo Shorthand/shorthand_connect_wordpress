@@ -62,6 +62,7 @@ add_filter('request', 'post_type_tags_fix');
 
 function add_shorthand_metaboxes() {
     add_meta_box('wpt_shorthand_story', 'Select Shorthand Story', 'wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+    add_meta_box('wpt_shorthand_abstract', 'Add story abstract', 'wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
     add_meta_box('wpt_shorthand_extra_html', 'Add additional HTML', 'wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
 }
 
@@ -112,6 +113,11 @@ function wpt_shorthand_story() {
   			width:100%;
   			height:300px;
 		}
+		#abstract {
+			border:1px solid #999999;
+  			width:100%;
+  			height:200px;
+		}
 		ul.stories {
 			max-height:400px;
 			overflow-y:scroll;
@@ -154,6 +160,17 @@ function wpt_shorthand_story() {
 
 }
 
+function wpt_shorthand_abstract() {
+
+	global $post;
+
+	$abstract = get_post_meta($post->ID, 'abstract', true);
+
+	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 
+	wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
+	echo '<textarea id="abstract" name="abstract">'.$abstract.'</textarea>';
+}
+
 function wpt_shorthand_extra_html() {
 
 	global $post;
@@ -178,11 +195,13 @@ function save_shorthand_story( $post_id, $post, $update ) {
         return;
     }
 
+    if (isset($_REQUEST['abstract'])) {
+    	update_post_meta( $post_id, 'abstract', $_REQUEST['abstract'] );
+    }
+
     if (isset($_REQUEST['extra_html'])) {
     	update_post_meta( $post_id, 'extra_html', $_REQUEST['extra_html'] );
     }
-
-
 
     if (isset($_REQUEST['story_id'])) {
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $_REQUEST['story_id'] ) );
@@ -214,7 +233,7 @@ function save_shorthand_story( $post_id, $post, $update ) {
     		remove_action( 'save_post', 'save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
-    			'post_content' => abstract_template($post_id, $abstract)
+    			'post_content' => abstract_template($post_id, $_REQUEST['abstract'], $abstract)
     		);
     		wp_update_post( $post );
     		add_action( 'save_post', 'save_shorthand_story', 10, 3);
