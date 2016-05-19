@@ -104,6 +104,9 @@ function wpt_shorthand_story() {
 			display: block;
 			font-weight: bold;
 		}
+		li.story label span.desc {
+			display: none;
+		}
 		div.clear {
 			clear:left;
 		}
@@ -138,7 +141,7 @@ function wpt_shorthand_story() {
 				$selected = 'checked';
 				$story_selected = 'selected';
 			}
-			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$serverURL.$story->image.'" /><span>'.$story->title.'</span></a></label></li>';
+			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$serverURL.$story->image.'" /><span class="title">'.$story->title.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
 		}
 		echo '</ul><div class="clear"></div>';
 	}
@@ -153,7 +156,10 @@ function wpt_shorthand_story() {
 		jQuery('li.story').removeClass('selected');
 		jQuery(this).parent().parent().addClass('selected');
 		jQuery('label#title-prompt-text').text('');
-		jQuery('input#title').val(jQuery(this).parent().find('span').text());
+		jQuery('input#title').val(jQuery(this).parent().find('span.title').text());
+		if (jQuery('textarea#abstract').val() === '') {
+			jQuery('textarea#abstract').val(jQuery(this).parent().find('span.desc').text());
+		}
 	});
 	</script>
 <?php
