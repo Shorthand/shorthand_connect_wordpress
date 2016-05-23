@@ -229,10 +229,10 @@ function save_shorthand_story( $post_id, $post, $update ) {
 
     		// Save the head and body
     		$body = fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
-    		update_post_meta($post_id, 'story_body', $body);
+    		update_post_meta($post_id, 'story_body', wp_slash($body));
 			
 			$head = fix_content_paths($assets_path, file_get_contents($story_path.'/component_head.html'));
-			update_post_meta($post_id, 'story_head', $head);
+			update_post_meta($post_id, 'story_head', wp_slash($head));
 
     		// Save the abstract
     		$abstract = fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
