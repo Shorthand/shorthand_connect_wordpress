@@ -1,5 +1,5 @@
 <?php
 
-$serverURL = 'http://localhost:8000';
+$serverURL = 'https://app.shorthand.com';
 
 ?>
