@@ -12,8 +12,9 @@ Unstable, early Beta.
 
 1. Download the shorthand_connect directory and place it in your ```{WORDPRESS_INSTALL}/wp_content/plugins/``` directory.
 2. Go to ```Wordpress Admin > Plugins``` and select ```Activate``` on Shorthand Connect
-3. Go to ```Settings > Shorthand```, and enter your ```Shorthand User ID``` and ```Shorthand API Token``` (please contact us to get your User ID and Token)
-4. (optional) add custom CSS here to make Shorthand stories compatible with your theme (an example is provided for the default Wordpress themes).
+3. Collect your User ID and Token by doing ```curl -d "username=USERNAME&password=PASSWORD" https://app.shorthand.com/token/new.json``` (substituting USERNAME and PASSWORD)
+4. Go to ```Settings > Shorthand```, and enter your ```Shorthand User ID``` and ```Shorthand API Token```
+5. (optional) add custom CSS here to make Shorthand stories compatible with your theme (an example is provided for the default Wordpress themes).
 
 The Shorthand menu should now be available on the left in wp-admin, and you can add a Shorthand Story in the same way you would add a normal post/page.
 
