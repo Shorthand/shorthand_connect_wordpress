@@ -118,7 +118,17 @@ function sh_copy_story($post_id, $story_id) {
 			$unzipfile = unzip_file( $zipfile, $destination_path);
 	   		if ( $unzipfile ) {
    				$story['path'] = $destination_path;
+   			} else {
+   				$story['error'] = array(
+					'pretty' => 'Could not unzip file'
+				);
    			}
+		} else {
+			$story['error'] = array(
+				'pretty' => 'Could not upload file',
+				'error' => curl_error($ch),
+				'response' => $response
+			);
 		}
 	}
 	return $story;

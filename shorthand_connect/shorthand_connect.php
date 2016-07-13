@@ -211,12 +211,12 @@ function save_shorthand_story( $post_id, $post, $update ) {
 
     if (isset($_REQUEST['story_id'])) {
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $_REQUEST['story_id'] ) );
-    	sh_copy_story($post_id, $_REQUEST['story_id']);
+    	$err = sh_copy_story($post_id, $_REQUEST['story_id']);
     	$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);
 
     	//Sometimes the story needs to be gotten twice
     	if(!isset($story_path)) {
-    		sh_copy_story($post_id, $_REQUEST['story_id']);
+    		$err = sh_copy_story($post_id, $_REQUEST['story_id']);
     		$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);    		
     	}
 
@@ -245,6 +245,7 @@ function save_shorthand_story( $post_id, $post, $update ) {
     		add_action( 'save_post', 'save_shorthand_story', 10, 3);
     	} else {
     		echo 'Something went wrong, please try again';
+    		print_r($err);
     		die();
     	}
     }
