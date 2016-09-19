@@ -46,6 +46,16 @@ function shorthand_options() {
 	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' ) {
 		update_option('sh_css', $_POST['sh_css']);
 	}
+	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' ) {
+		update_option('sh_permalink', $_POST['sh_permalink']);
+	}
+	$permalink_structure = get_option('sh_permalink');
+
+	if ($permalink_structure == '') {
+		update_option('sh_permalink', 'shorthand_story');
+		$permalink_structure = get_option('sh_permalink');
+	}
+
 	$sh_css = get_option('sh_css');
 	$no_css = false;
 	if ($sh_css == '') {
@@ -82,6 +92,20 @@ function shorthand_options() {
 		<p class="status warn">Not Connected</p>
 	<?php } ?>
 	<div style='clear:both'></div>
+	<h3>Shorthand Permalink Structure</h3>
+		<p>Use this to set the permalink structure of Shorthand story URLs</p>
+		<form name="form2" method="post">
+			<input type="hidden" name="sh_submit_hidden_three" value="Y" />
+			<p>
+				<?php _e("Permalink structure:", 'sh-permalink-value' ); ?><br /> <?php echo get_site_url(); ?>/<input type="text" name="sh_permalink" value="<?php echo $permalink_structure; ?>" size="20">/{STORY_NAME}
+			</p>
+			<p class="submit">
+				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+			</p>
+		</form>
+
+
+
 	<h3>Shorthand Story Page CSS (theme wide CSS)</h3>
 		<p>Use this CSS to customise Shorthand Story pages to better suit your theme</p>
 		<?php if ($no_css) { ?>

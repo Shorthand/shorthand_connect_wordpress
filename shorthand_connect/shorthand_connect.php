@@ -22,6 +22,10 @@ Author URI: http://shorthand.com
 
 add_action( 'init', 'create_post_type' );
 function create_post_type() {
+  $permalink = get_option('sh_permalink');
+  if ($permalink == '') {
+  	$permalink = 'shorthand_story';
+  }
   register_post_type( 'shorthand_story',
     array(
       'labels' => array(
@@ -42,6 +46,7 @@ function create_post_type() {
       'supports' => array('title'),
       'register_meta_box_cb' => 'add_shorthand_metaboxes',
       'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/includes/icon.png',
+      'rewrite' => array('slug' => $permalink, 'with_front' => true),
       'taxonomies' => array('category', 'post_tag'),
     )
   );
