@@ -12,7 +12,7 @@ $default_sh_site_css = '
 	max-width: none;
 }
 .site-content {
-	padding: 0;
+	padding: 0 !important;
 }
 .site-inner {
 	max-width: none;
