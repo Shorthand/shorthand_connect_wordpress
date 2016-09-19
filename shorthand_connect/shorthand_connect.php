@@ -317,5 +317,11 @@ function shorthand_show_columns($name) {
 }
 add_action('manage_posts_custom_column',  'shorthand_show_columns');
 
+function myplugin_activate() {
+	create_post_type();
+	flush_rewrite_rules();
+}
+register_activation_hook( __FILE__, 'myplugin_activate' );
+
 
 ?>

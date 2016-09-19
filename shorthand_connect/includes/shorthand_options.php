@@ -48,6 +48,8 @@ function shorthand_options() {
 	}
 	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' ) {
 		update_option('sh_permalink', $_POST['sh_permalink']);
+		create_post_type();
+		flush_rewrite_rules();
 	}
 	$permalink_structure = get_option('sh_permalink');
 
