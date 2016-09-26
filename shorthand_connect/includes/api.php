@@ -1,15 +1,6 @@
 <?php
 
-function set_error_display() {
-	/* Shows errors such as modules not being installed */
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
-}
-
 function sh_get_profile() {
-
-	set_error_display();
 
 	global $serverURL;
 	$token = get_option('sh_token_key');
@@ -79,8 +70,6 @@ function sh_get_story_path($post_id, $story_id) {
 }
 
 function sh_copy_story($post_id, $story_id) {
-
-	set_error_display();
 
 	// Set the maximum memory limit for the entire operation (this is already called later by unzip_file, but lets do it earlier)
 	@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
