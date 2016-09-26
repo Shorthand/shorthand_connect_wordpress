@@ -46,11 +46,12 @@ function shand_create_post_type() {
       'menu_position' => 4,
       'supports' => array('title'),
       'register_meta_box_cb' => 'shand_add_shorthand_metaboxes',
-      'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/includes/icon.png',
+      'menu_icon' => plugins_url( '/includes/icon.png', __FILE__ ),
       'rewrite' => array('slug' => $permalink, 'with_front' => true),
       'taxonomies' => array('category', 'post_tag'),
     )
   );
+
   register_taxonomy_for_object_type( 'category', 'shorthand_story' );
   register_taxonomy_for_object_type( 'post_tag', 'shorthand_story' );
 }
