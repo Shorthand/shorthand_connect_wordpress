@@ -1,12 +1,4 @@
 <?php
-
-$included = @include_once('config.php');
-if (!$included) {
-	require_once('config.default.php');
-}
-require_once('includes/api.php');
-require_once('includes/shorthand_options.php');
-require_once('templates/abstract.php');
 /**
  * @package Shorthand Connect
  * @version 0.1
@@ -20,8 +12,17 @@ Version: 0.1
 Author URI: http://shorthand.com
 */
 
-add_action( 'init', 'create_post_type' );
-function create_post_type() {
+$included = @include_once('config.php');
+if (!$included) {
+	require_once('config.default.php');
+}
+require_once('includes/api.php');
+require_once('includes/shorthand_options.php');
+require_once('templates/abstract.php');
+
+
+/* Create the Shorthand post type */
+function shand_create_post_type() {
   $permalink = get_option('sh_permalink');
   if ($permalink == '') {
   	$permalink = 'shorthand_story';
@@ -44,7 +45,7 @@ function create_post_type() {
       'has_archive' => true,
       'menu_position' => 4,
       'supports' => array('title'),
-      'register_meta_box_cb' => 'add_shorthand_metaboxes',
+      'register_meta_box_cb' => 'shand_add_shorthand_metaboxes',
       'menu_icon' => get_site_url().'/wp-content/plugins/shorthand_connect/includes/icon.png',
       'rewrite' => array('slug' => $permalink, 'with_front' => true),
       'taxonomies' => array('category', 'post_tag'),
@@ -53,33 +54,13 @@ function create_post_type() {
   register_taxonomy_for_object_type( 'category', 'shorthand_story' );
   register_taxonomy_for_object_type( 'post_tag', 'shorthand_story' );
 }
+add_action( 'init', 'shand_create_post_type' );
 
-function post_type_tags_fix($request) {
-    if ( isset($request['tag']) && !isset($request['post_type']) ) {
-    	$request['post_type'] = 'any';
-    }
-    if ( isset($request['category_name']) && !isset($request['post_type']) ) {
-    	$request['post_type'] = 'any';
-    }
-    return $request;
-} 
-add_filter('request', 'post_type_tags_fix');
 
-function add_shorthand_metaboxes() {
-    add_meta_box('wpt_shorthand_story', 'Select Shorthand Story', 'wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
-    add_meta_box('wpt_shorthand_abstract', 'Add story abstract', 'wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
-    add_meta_box('wpt_shorthand_extra_html', 'Add additional HTML', 'wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
-}
-
-add_action( 'add_meta_boxes', 'add_shorthand_metaboxes' );
-
-function wpt_shorthand_story() {
-
+function shand_wpt_shorthand_story() {
 	global $serverURL;
-
 	$stories = sh_get_stories();
 	global $post;
-
 ?>
 	<style>
 		li.story {
@@ -150,9 +131,9 @@ function wpt_shorthand_story() {
 		}
 		echo '</ul><div class="clear"></div>';
 	}
-	
+
 	// Noncename needed to verify where the data originated
-	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 
+	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
 	wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
 
 ?>
@@ -168,40 +149,35 @@ function wpt_shorthand_story() {
 	});
 	</script>
 <?php
-
 }
 
-function wpt_shorthand_abstract() {
-
+function shand_wpt_shorthand_abstract() {
 	global $post;
-
 	$abstract = get_post_meta($post->ID, 'abstract', true);
-
-	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 
+	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
 	wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
 	echo '<textarea id="abstract" name="abstract">'.$abstract.'</textarea>';
 }
 
-function wpt_shorthand_extra_html() {
-
+function shand_wpt_shorthand_extra_html() {
 	global $post;
-
 	$extra_html = get_post_meta($post->ID, 'extra_html', true);
-
-	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 
+	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
 	wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
 	echo '<textarea id="codearea" name="extra_html">'.$extra_html.'</textarea>';
 }
 
+function shand_add_shorthand_metaboxes() {
+    add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+    add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
+    add_meta_box('shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
+}
+add_action( 'add_meta_boxes', 'shand_add_shorthand_metaboxes' );
 
 
-
-
-
-function save_shorthand_story( $post_id, $post, $update ) {
-
+/* Save the shorthand story */
+function shand_save_shorthand_story( $post_id, $post, $update ) {
 	$slug = 'shorthand_story';
-
 	if ( $slug != $post->post_type ) {
         return;
     }
@@ -222,7 +198,7 @@ function save_shorthand_story( $post_id, $post, $update ) {
     	//Sometimes the story needs to be gotten twice
     	if(!isset($story_path)) {
     		$err = sh_copy_story($post_id, $_REQUEST['story_id']);
-    		$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);    		
+    		$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);
     	}
 
     	if(isset($story_path)) {
@@ -233,21 +209,20 @@ function save_shorthand_story( $post_id, $post, $update ) {
     		$assets_path = get_site_url().substr($story_path, strpos($story_path, '/wp-content/uploads'));
 
     		// Save the head and body
-    		$body = fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+    		$body = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
     		update_post_meta($post_id, 'story_body', wp_slash($body));
-			
-			$head = fix_content_paths($assets_path, file_get_contents($story_path.'/component_head.html'));
-			update_post_meta($post_id, 'story_head', wp_slash($head));
+				$head = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_head.html'));
+				update_post_meta($post_id, 'story_head', wp_slash($head));
 
     		// Save the abstract
-    		$abstract = fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
-    		remove_action( 'save_post', 'save_shorthand_story', 10, 3);
+    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+    		remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
     			'post_content' => abstract_template($post_id, $_REQUEST['abstract'], $abstract)
     		);
     		wp_update_post( $post );
-    		add_action( 'save_post', 'save_shorthand_story', 10, 3);
+    		add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
     	} else {
     		echo 'Something went wrong, please try again';
     		print_r($err);
@@ -255,23 +230,12 @@ function save_shorthand_story( $post_id, $post, $update ) {
     	}
     }
 }
+add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
 
 
-add_action( 'save_post', 'save_shorthand_story', 10, 3);
-
-function fix_content_paths($assets_path, $content) {
-	$content = str_replace('./static/', $assets_path.'/static/', $content);
-	$content = str_replace('./media/', $assets_path.'/media/', $content);
-	return $content;
-}
-
-
-
-// TEMPLATE VIEW
-
-function load_single_shorthand_template($template) {
+/* Load Shorthand Template Hook */
+function shand_load_single_shorthand_template($template) {
     global $post;
-
     if ($post->post_type == "shorthand_story"){
         $plugin_path = plugin_dir_path( __FILE__ );
         $template_name = 'templates/single-shorthand_story.php';
@@ -283,31 +247,29 @@ function load_single_shorthand_template($template) {
     }
     return $template;
 }
-
-add_filter('single_template', 'load_single_shorthand_template');
-
+add_filter('single_template', 'shand_load_single_shorthand_template');
 
 
-
-function my_get_posts( $query ) {
-
+/* Get Posts Hook */
+function shand_shorthand_get_posts( $query ) {
 	if ( is_home() && $query->is_main_query() )
 		$query->set( 'post_type', array( 'post', 'shorthand_story' ) );
 
 	return $query;
 }
+add_filter( 'pre_get_posts', 'shand_shorthand_get_posts' );
 
-add_filter( 'pre_get_posts', 'my_get_posts' );
 
-
-function add_shorthand_story_columns($columns) {
-    //unset($columns['author']);
+/* Table Hook */
+function shand_add_shorthand_story_columns($columns) {
     $cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array_slice($columns, 2, count($columns)-2, true);
     return $cols;
 }
-add_filter('manage_shorthand_story_posts_columns' , 'add_shorthand_story_columns');
+add_filter('manage_shorthand_story_posts_columns' , 'shand_add_shorthand_story_columns');
 
-function shorthand_show_columns($name) {
+
+/* Table Hook */
+function shand_shorthand_show_columns($name) {
     global $post;
     switch ($name) {
         case 'story_id':
@@ -315,13 +277,37 @@ function shorthand_show_columns($name) {
             echo $views;
     }
 }
-add_action('manage_posts_custom_column',  'shorthand_show_columns');
+add_action('manage_posts_custom_column',  'shand_shorthand_show_columns');
 
-function myplugin_activate() {
-	create_post_type();
+
+/* Filter to fix post type tags */
+function shand_post_type_tags_fix($request) {
+    if ( isset($request['tag']) && !isset($request['post_type']) ) {
+    	$request['post_type'] = 'any';
+    }
+    if ( isset($request['category_name']) && !isset($request['post_type']) ) {
+    	$request['post_type'] = 'any';
+    }
+    return $request;
+}
+add_filter('request', 'shand_post_type_tags_fix');
+
+
+/* Activation Hook */
+function shand_shorthand_activate() {
+	shand_create_post_type();
 	flush_rewrite_rules();
 }
-register_activation_hook( __FILE__, 'myplugin_activate' );
+register_activation_hook( __FILE__, 'shand_shorthand_activate' );
 
+
+/* UTILITY FUNCTIONS */
+
+/* Fix content paths */
+function shand_fix_content_paths($assets_path, $content) {
+	$content = str_replace('./static/', $assets_path.'/static/', $content);
+	$content = str_replace('./media/', $assets_path.'/media/', $content);
+	return $content;
+}
 
 ?>

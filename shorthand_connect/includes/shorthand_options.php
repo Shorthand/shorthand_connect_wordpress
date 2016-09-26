@@ -1,8 +1,8 @@
 <?php
 
 /* Options */
-function shorthand_menu() {
-	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shorthand_options' );
+function shand_shorthand_menu() {
+	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shand_shorthand_options' );
 }
 
 $default_sh_site_css = '
@@ -27,7 +27,7 @@ $default_sh_site_css = '
 /* END CSS FOR DEFAULT WP THEMES */
 ';
 
-function shorthand_options() {
+function shand_shorthand_options() {
 
 	global $default_sh_site_css;
 
@@ -72,11 +72,11 @@ function shorthand_options() {
 	<form name="form1" method="post">
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<p>
-			<?php _e("Shorthand User ID:", 'sh-user-value' ); ?> 
+			<?php _e("Shorthand User ID:", 'sh-user-value' ); ?>
 			<input type="text" name="sh_user_id" value="<?php echo $user_id; ?>" size="20">
 		</p>
 		<p>
-			<?php _e("Shorthand API Token:", 'sh-token-value' ); ?> 
+			<?php _e("Shorthand API Token:", 'sh-token-value' ); ?>
 			<input type="text" name="sh_token_key" value="<?php echo $token; ?>" size="20">
 		</p>
 
@@ -145,6 +145,6 @@ function shorthand_options() {
 <?php
 }
 
-add_action( 'admin_menu', 'shorthand_menu' );
+add_action( 'admin_menu', 'shand_shorthand_menu' );
 
 ?>
