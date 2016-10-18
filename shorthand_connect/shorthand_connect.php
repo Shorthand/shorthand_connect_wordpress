@@ -220,7 +220,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     		remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
-    			'post_content' => abstract_template($post_id, $_REQUEST['abstract'], $abstract)
+    			'post_content' => shand_abstract_template($post_id, $_REQUEST['abstract'], $abstract)
     		);
     		wp_update_post( $post );
     		add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
