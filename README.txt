@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4
 Tested up to: 4.6.1
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,9 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
 1. Coming soon
 
 == Changelog ==
+
+= 1.0.1 =
+* Sanitize form inputs.
 
 = 1.0 =
 * First release.
