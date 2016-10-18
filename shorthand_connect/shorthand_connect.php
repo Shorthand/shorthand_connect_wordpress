@@ -184,22 +184,23 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     }
 
     if (isset($_REQUEST['abstract'])) {
-    	update_post_meta( $post_id, 'abstract', $_REQUEST['abstract'] );
+    	update_post_meta( $post_id, 'abstract', wp_kses_post($_REQUEST['abstract']) );
     }
 
     if (isset($_REQUEST['extra_html'])) {
-    	update_post_meta( $post_id, 'extra_html', $_REQUEST['extra_html'] );
+    	update_post_meta( $post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']) );
     }
 
     if (isset($_REQUEST['story_id'])) {
-    	update_post_meta( $post_id, 'story_id', sanitize_text_field( $_REQUEST['story_id'] ) );
-    	$err = sh_copy_story($post_id, $_REQUEST['story_id']);
-    	$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);
+			$safe_story_id = intval($_REQUEST['story_id']);
+    	update_post_meta( $post_id, 'story_id', sanitize_text_field( $safe_story_id ) );
+    	$err = sh_copy_story($post_id, $safe_story_id);
+    	$story_path = sh_get_story_path($post_id, $safe_story_id);
 
     	//Sometimes the story needs to be gotten twice
     	if(!isset($story_path)) {
-    		$err = sh_copy_story($post_id, $_REQUEST['story_id']);
-    		$story_path = sh_get_story_path($post_id, $_REQUEST['story_id']);
+    		$err = sh_copy_story($post_id, $safe_story_id);
+    		$story_path = sh_get_story_path($post_id, $safe_story_id);
     	}
 
     	if(isset($story_path)) {
@@ -220,7 +221,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     		remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
-    			'post_content' => shand_abstract_template($post_id, $_REQUEST['abstract'], $abstract)
+    			'post_content' => shand_abstract_template($post_id, wp_kses_post($_REQUEST['abstract']), $abstract)
     		);
     		wp_update_post( $post );
     		add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);

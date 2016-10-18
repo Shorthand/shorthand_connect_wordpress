@@ -35,27 +35,28 @@ function shand_shorthand_options() {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' ) {
-		update_option('sh_token_key', $_POST['sh_token_key']);
+		update_option('sh_token_key', sanitize_text_field($_POST['sh_token_key']));
 	}
 	$token = get_option('sh_token_key');
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' ) {
-		update_option('sh_user_id', $_POST['sh_user_id']);
+		$safe_user_id = intval( $_POST['sh_user_id'] );
+		update_option('sh_user_id', $safe_user_id);
 	}
-	$user_id = get_option('sh_user_id');
+	$user_id = esc_html(get_option('sh_user_id'));
 
 	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' ) {
-		update_option('sh_css', $_POST['sh_css']);
+		update_option('sh_css', wp_kses_post($_POST['sh_css']));
 	}
 	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' ) {
-		update_option('sh_permalink', $_POST['sh_permalink']);
-		create_post_type();
+		update_option('sh_permalink', sanitize_text_field($_POST['sh_permalink']));
+		shand_create_post_type();
 		flush_rewrite_rules();
 	}
-	$permalink_structure = get_option('sh_permalink');
+	$permalink_structure = esc_html(get_option('sh_permalink'));
 
 	if ($permalink_structure == '') {
 		update_option('sh_permalink', 'shorthand_story');
-		$permalink_structure = get_option('sh_permalink');
+		$permalink_structure = esc_html(get_option('sh_permalink'));
 	}
 
 	$sh_css = get_option('sh_css');
@@ -73,11 +74,11 @@ function shand_shorthand_options() {
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<p>
 			<?php _e("Shorthand User ID:", 'sh-user-value' ); ?>
-			<input type="text" name="sh_user_id" value="<?php echo $user_id; ?>" size="20">
+			<input type="text" name="sh_user_id" value="<?php echo esc_attr($user_id); ?>" size="20">
 		</p>
 		<p>
 			<?php _e("Shorthand API Token:", 'sh-token-value' ); ?>
-			<input type="text" name="sh_token_key" value="<?php echo $token; ?>" size="20">
+			<input type="text" name="sh_token_key" value="<?php echo esc_attr($token); ?>" size="20">
 		</p>
 
 		<p class="submit">
@@ -99,7 +100,7 @@ function shand_shorthand_options() {
 		<form name="form2" method="post">
 			<input type="hidden" name="sh_submit_hidden_three" value="Y" />
 			<p>
-				<?php _e("Permalink structure:", 'sh-permalink-value' ); ?><br /> <?php echo get_site_url(); ?>/<input type="text" name="sh_permalink" value="<?php echo $permalink_structure; ?>" size="20">/{STORY_NAME}
+				<?php _e("Permalink structure:", 'sh-permalink-value' ); ?><br /> <?php echo get_site_url(); ?>/<input type="text" name="sh_permalink" value="<?php echo esc_attr($permalink_structure); ?>" size="20">/{STORY_NAME}
 			</p>
 			<p class="submit">
 				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
@@ -115,7 +116,7 @@ function shand_shorthand_options() {
 		<?php }?>
 		<form name="form2" method="post">
 			<input type="hidden" name="sh_submit_hidden_two" value="Y" />
-			<textarea rows="10" cols="80" name="sh_css"><?php echo $sh_css; ?></textarea>
+			<textarea rows="10" cols="80" name="sh_css"><?php echo esc_textarea($sh_css); ?></textarea>
 			<p class="submit">
 				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
 			</p>
