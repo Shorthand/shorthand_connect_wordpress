@@ -34,20 +34,18 @@ function shand_shorthand_options() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
-	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' ) {
+	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_token_key', sanitize_text_field($_POST['sh_token_key']));
-	}
-	$token = get_option('sh_token_key');
-	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' ) {
 		$safe_user_id = intval( $_POST['sh_user_id'] );
 		update_option('sh_user_id', $safe_user_id);
 	}
+	$token = esc_html(get_option('sh_token_key'));
 	$user_id = esc_html(get_option('sh_user_id'));
 
-	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' ) {
+	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_css', wp_kses_post($_POST['sh_css']));
 	}
-	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' ) {
+	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_permalink', sanitize_text_field($_POST['sh_permalink']));
 		shand_create_post_type();
 		flush_rewrite_rules();
@@ -68,9 +66,11 @@ function shand_shorthand_options() {
 	}
 
 	$profile = sh_get_profile();
+	$n_once = wp_nonce_field( 'sh-update-configuration' );
 ?>
 	<h3>Shorthand API Configuration</h3>
 	<form name="form1" method="post">
+		<?php echo $n_once ?>
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<p>
 			<?php _e("Shorthand User ID:", 'sh-user-value' ); ?>
@@ -98,6 +98,7 @@ function shand_shorthand_options() {
 	<h3>Shorthand Permalink Structure</h3>
 		<p>Use this to set the permalink structure of Shorthand story URLs</p>
 		<form name="form2" method="post">
+			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_three" value="Y" />
 			<p>
 				<?php _e("Permalink structure:", 'sh-permalink-value' ); ?><br /> <?php echo get_site_url(); ?>/<input type="text" name="sh_permalink" value="<?php echo esc_attr($permalink_structure); ?>" size="20">/{STORY_NAME}
@@ -115,6 +116,7 @@ function shand_shorthand_options() {
 			<p class="status warn">No custom CSS found, using default theme CSS</p>
 		<?php }?>
 		<form name="form2" method="post">
+			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_two" value="Y" />
 			<textarea rows="10" cols="80" name="sh_css"><?php echo esc_textarea($sh_css); ?></textarea>
 			<p class="submit">
