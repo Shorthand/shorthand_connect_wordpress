@@ -157,7 +157,7 @@ function shand_wpt_shorthand_abstract() {
 	$abstract = get_post_meta($post->ID, 'abstract', true);
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
 	wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
-	echo '<textarea id="abstract" name="abstract">'.$abstract.'</textarea>';
+	echo '<textarea id="abstract" name="abstract">'.esc_textarea($abstract).'</textarea>';
 }
 
 function shand_wpt_shorthand_extra_html() {
@@ -165,7 +165,7 @@ function shand_wpt_shorthand_extra_html() {
 	$extra_html = get_post_meta($post->ID, 'extra_html', true);
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
 	wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
-	echo '<textarea id="codearea" name="extra_html">'.$extra_html.'</textarea>';
+	echo '<textarea id="codearea" name="extra_html">'.esc_textarea($extra_html).'</textarea>';
 }
 
 function shand_add_shorthand_metaboxes() {
