@@ -208,7 +208,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     		update_post_meta($post_id, 'story_path', $story_path);
 
     		// Get path to the assets
-    		$assets_path = get_site_url().substr($story_path, strpos($story_path, '/wp-content/uploads'));
+				$assets_path = sh_get_story_url($post_id, $safe_story_id);
 
     		// Save the head and body
     		$body = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
