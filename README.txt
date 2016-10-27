@@ -36,6 +36,9 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
 == Upgrade notice ==
  - N/A
 
+== Frequently Asked Questions ==
+ - If you have any questions, please contact help@shorthand.com 
+
 == Future Directions ==
 
  - Better integration with 3rd party themes
