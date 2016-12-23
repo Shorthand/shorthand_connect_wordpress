@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4
 Tested up to: 4.6.1
-Stable tag: 1.0.5
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,17 +22,11 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
 3. Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in Wordpress).
 4. Optionally change the CSS settings in the options to best present stories within your theme.
 
-== Updating ==
-https://wordpress.org/plugins/about/svn/
-
 == Screenshots ==
 
 1. Coming soon
 
 == Changelog ==
-
-= 1.0.5 =
-* Add stable tag.
 
 = 1.0.4 =
 * Add support for post feature image (thumbnail).

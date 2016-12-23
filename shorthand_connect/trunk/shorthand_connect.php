@@ -1,14 +1,14 @@
 <?php
 /**
  * @package Shorthand Connect
- * @version 1.0.1
+ * @version 1.0.4
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.0.1
+Version: 1.0.4
 Author URI: http://shorthand.com
 */
 
@@ -44,7 +44,7 @@ function shand_create_post_type() {
       'public' => true,
       'has_archive' => true,
       'menu_position' => 4,
-      'supports' => array('title'),
+      'supports' => array('title', 'thumbnail'),
       'register_meta_box_cb' => 'shand_add_shorthand_metaboxes',
       'menu_icon' => plugins_url( '/includes/icon.png', __FILE__ ),
       'rewrite' => array('slug' => $permalink, 'with_front' => true),
