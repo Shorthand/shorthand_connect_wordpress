@@ -44,7 +44,7 @@ function shand_create_post_type() {
       'public' => true,
       'has_archive' => true,
       'menu_position' => 4,
-      'supports' => array('title'),
+      'supports' => array('title', 'thumbnail'),
       'register_meta_box_cb' => 'shand_add_shorthand_metaboxes',
       'menu_icon' => plugins_url( '/includes/icon.png', __FILE__ ),
       'rewrite' => array('slug' => $permalink, 'with_front' => true),
