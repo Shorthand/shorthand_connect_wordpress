@@ -59,9 +59,10 @@ add_action( 'init', 'shand_create_post_type' );
 
 
 function shand_wpt_shorthand_story() {
+	
 	global $serverURL;
-	$stories = sh_get_stories();
 	global $post;
+
 ?>
 	<style>
 		li.story {
@@ -116,6 +117,12 @@ function shand_wpt_shorthand_story() {
 <?php
 
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
+	if ($selected_story) {
+		echo '<p>Clicking update will download the latest version of the story from Shorthand.</p>';
+		echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
+		return;
+	}
+	$stories = sh_get_stories();
 
 	if(!$stories) {
 		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress settings</a>.';
@@ -169,7 +176,13 @@ function shand_wpt_shorthand_extra_html() {
 }
 
 function shand_add_shorthand_metaboxes() {
-    add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+	global $post;
+	$selected_story = get_post_meta($post->ID, 'story_id', true);
+	if ($selected_story) {
+		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+    } else {
+    	add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+    }
     add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
     add_meta_box('shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
 }
