@@ -239,6 +239,10 @@ add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
 function shand_load_single_shorthand_template($template) {
     global $post;
     if ($post->post_type == "shorthand_story"){
+    	$path = locate_template(array('single-shorthand_story.php', 'templates/single-shorthand_story.php', 'template-parts/single-shorthand_story.php'));
+    	if($path) {
+    		return $path;
+    	}
         $plugin_path = plugin_dir_path( __FILE__ );
         $template_name = 'templates/single-shorthand_story.php';
         if($template === get_stylesheet_directory() . '/' . $template_name
