@@ -21,6 +21,7 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in Wordpress).
 4. Optionally change the CSS settings in the options to best present stories within your theme.
+5. Optionally your theme can override the display of Shorthand stories via `single-shorthand_story.php` in your theme directory.
 
 == Updating ==
 https://wordpress.org/plugins/about/svn/
@@ -30,6 +31,11 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.0.6 =
+* Don't show all stories on update story
+* Allow single-shorthand_story.php to be overwritten
+* Put meta-data in the correct location (inside the head)
 
 = 1.0.5 =
 * Add stable tag.
@@ -57,9 +63,7 @@ https://wordpress.org/plugins/about/svn/
 
 == Future Directions ==
 
- - Better integration with 3rd party themes
  - A nicer feed view of the story
- - Javascript/CSS should be placed in the head rather than the body
 
 == Troubleshooting ==
 

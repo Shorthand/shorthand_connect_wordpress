@@ -118,7 +118,7 @@ function shand_wpt_shorthand_story() {
 
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
-		echo '<p>Clicking update will download the latest version of the story from Shorthand.</p>';
+		echo '<p>Clicking UPDATE will update Wordpress with the latest version of the story from Shorthand.</p>';
 		echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
 		return;
 	}
