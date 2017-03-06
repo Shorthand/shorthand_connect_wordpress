@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4
 Tested up to: 4.6.1
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.0.7 =
+* Bump version number
 
 = 1.0.6 =
 * Don't show all stories on update story
