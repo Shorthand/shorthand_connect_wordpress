@@ -31,6 +31,8 @@ function shand_shorthand_options() {
 
 	global $default_sh_site_css;
 	global $serverURL;
+	global $allowversionswitch;
+	global $showServerURL;
 
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
@@ -39,9 +41,11 @@ function shand_shorthand_options() {
 		update_option('sh_token_key', sanitize_text_field($_POST['sh_token_key']));
 		$safe_user_id = intval( $_POST['sh_user_id'] );
 		update_option('sh_user_id', $safe_user_id);
+		update_option('sh_api_version', sanitize_text_field($_POST['sh_api_version']));
 	}
 	$token = esc_html(get_option('sh_token_key'));
 	$user_id = esc_html(get_option('sh_user_id'));
+	$sh_api_version = esc_html(get_option('sh_api_version'));
 
 	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_css', wp_kses_post($_POST['sh_css']));
@@ -74,12 +78,16 @@ function shand_shorthand_options() {
 		<?php echo $n_once ?>
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<table class="form-table"><tbody>
+		<?php if($allowversionswitch) { ?>
 		<tr>
-			<th scope="row"><label for="sh_adpi_version"><?php _e("API Version", 'sh-api-version' ); ?></label></th>
-			<td><select name="sh_adpi_version" id="sh_adpi_version">
-				<option value="v1">Version 1</option>
+			<th scope="row"><label for="sh_api_version"><?php _e("API Version", 'sh-api-version' ); ?></label></th>
+			<td>
+			<select name="sh_api_version" id="sh_api_version">
+				<option <?php if (esc_attr($sh_api_version) == 'v1') { echo 'selected' ;} ?> value="v1">Version 1</option>
+				<option <?php if (esc_attr($sh_api_version) == 'v2') { echo 'selected' ;} ?> value="v2">Version 2</option>
 			</select></td>
 		</tr>
+		<?php } ?>
 		<tr>
 			<th scope="row"><label for="sh_user_id"><?php _e("Shorthand User ID", 'sh-user-value' ); ?></label></th>
 			<td><input type="text" id="sh_user_id" name="sh_user_id" value="<?php echo esc_attr($user_id); ?>" size="9"></td>
@@ -88,10 +96,12 @@ function shand_shorthand_options() {
 			<th scope="row"><label for="sh_token_key"><?php _e("Shorthand API Token", 'sh-token-value' ); ?></label></th>
 			<td><input type="text" id="sh_token_key" name="sh_token_key" value="<?php echo esc_attr($token); ?>" size="28"></td>
 		</tr>
+		<?php if($showServerURL) { ?>
 		<tr>
 			<th scope="row"><?php _e("Service URL" ); ?></th>
 			<td><input type="text" disabled value="<?php echo esc_attr($serverURL); ?>" size="28"></td>
 		</tr>
+		<?php } ?>
 		</tbody></table>
 		<p class="submit">
 			<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
