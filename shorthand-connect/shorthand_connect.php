@@ -252,6 +252,15 @@ function shand_load_single_shorthand_template($template) {
 add_filter('single_template', 'shand_load_single_shorthand_template');
 
 
+function hook_css() {
+	if ( is_single() && 'shorthand_story' == get_post_type() ) {
+		$meta = get_post_meta(get_post()->ID);
+		echo trim($meta['story_head'][0]);
+	}
+}
+add_action('wp_head', 'hook_css');
+
+
 /* Get Posts Hook */
 function shand_shorthand_get_posts( $query ) {
 	if ( is_home() && $query->is_main_query() )

@@ -5,7 +5,6 @@
 		$meta = get_post_meta($post->ID);
 	?>
 
-	<?php echo trim($meta['story_head'][0]); ?>
 	<?php echo trim($meta['story_body'][0]); ?>
 
 	<div id="extraHTML">
