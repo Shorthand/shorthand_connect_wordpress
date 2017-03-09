@@ -39,7 +39,10 @@ function sh_get_stories() {
 		$data = json_decode($response);
 		if(isset($data)) {
 			$valid_token = true;
-			$stories = array();
+			//Something went wrong
+			if ($data->status) {
+				return null;
+			}
 			foreach($data as $storydata) {
 				$story = array(
 					'image' => $storydata->cover,
