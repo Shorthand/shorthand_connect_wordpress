@@ -29,7 +29,7 @@ function sh_get_stories() {
 		$url = $serverv2URL.'/v1/stories';
 		$ch = curl_init( $url );
 		curl_setopt( $ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: mwDrj2Pazm0u3I8RyoXf9Pj9ODqknAVJ'));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt( $ch, CURLOPT_HEADER, 0);
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
@@ -92,33 +92,45 @@ function sh_copy_story($post_id, $story_id) {
 
 	//Attempt to connect to the server
 	if($token) {
-		$url = $serverv2URL.'/v1/stories/'.$story_id.'/';
+		$url = $serverv2URL.'/v1/stories/'.$story_id;
 		$ch = curl_init($url);
-		$zipfile = tempnam($tmpdir, 'sh_zip');
-		$ziphandle = fopen($zipfile, "w");
-		curl_setopt( $ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: mwDrj2Pazm0u3I8RyoXf9Pj9ODqknAVJ'));
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POST, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		curl_setopt($ch, CURLOPT_FILE, $ziphandle);
 		$response = curl_exec( $ch );
-		echo 'zing';
-		die();
-		if($response == 1) {
-			$unzipfile = unzip_file( $zipfile, $destination_path);
-	   		if ( $unzipfile ) {
-   				$story['path'] = $destination_path;
-   			} else {
-   				$story['error'] = array(
-					'pretty' => 'Could not unzip file'
+		$data = json_decode($response);
+		if($data && $data->url) {
+			$ch = curl_init($data->url);
+			$zipfile = tempnam($tmpdir, 'sh_zip');
+			$ziphandle = fopen($zipfile, "w");
+			curl_setopt($ch, CURLOPT_POST, 0);
+			curl_setopt($ch, CURLOPT_HEADER, 0);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+			curl_setopt($ch, CURLOPT_FILE, $ziphandle);
+			$response = curl_exec( $ch );
+			if($response == 1) {
+				$unzipfile = unzip_file( $zipfile, $destination_path);
+					if ( $unzipfile ) {
+						$story['path'] = $destination_path;
+					} else {
+						$story['error'] = array(
+						'pretty' => 'Could not unzip file'
+					);
+					}
+			} else {
+				$story['error'] = array(
+					'pretty' => 'Could not get zip file',
+					'error' => curl_error($ch),
+					'response' => $response
 				);
-   			}
+			}
 		} else {
 			$story['error'] = array(
-				'pretty' => 'Could not upload file',
+				'pretty' => 'Could not get story link',
 				'error' => curl_error($ch),
 				'response' => $response
 			);

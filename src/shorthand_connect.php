@@ -221,7 +221,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     }
 
     if (isset($_REQUEST['story_id'])) {
-			$safe_story_id = intval($_REQUEST['story_id']);
+			$safe_story_id = $_REQUEST['story_id'];
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $safe_story_id ) );
     	$err = sh_copy_story($post_id, $safe_story_id);
     	$story_path = sh_get_story_path($post_id, $safe_story_id);
