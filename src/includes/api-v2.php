@@ -1,51 +1,35 @@
 <?php
 
-// VERSION 1 API
+// VERSION 2 API
 
 function sh_get_profile() {
 
-	global $serverURL;
-	$token = get_option('sh_token_key');
-	$user_id = get_option('sh_user_id');
+	global $serverv2URL;
+	$token = get_option('sh_v2_token');
 
 	$valid_token = false;
 
-	$data = array();
-
-	//Attempt to connect to the server
-	if($token && $user_id) {
-		$url = $serverURL.'/api/profile/';
-		$vars = 'user='.$user_id.'&token='.$token;
-		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		$response = curl_exec( $ch );
-		$data = json_decode($response);
-	}
+	$data = array(
+		'username' => 'Version 2 API',
+		'gravatar' => ''
+	);
 	return $data;
 }
 
 function sh_get_stories() {
-	global $serverURL;
-	$token = get_option('sh_token_key');
-	$user_id = get_option('sh_user_id');
+	global $serverv2URL;
+	$token = get_option('sh_v2_token');
 
-	$valid_token = false;
+	$valid_token = true;
 
-	$stories = false;
+	$stories = array();
 
 	//Attempt to connect to the server
-	if($token && $user_id) {
-		$url = $serverURL.'/api/index/';
-		$vars = 'user='.$user_id.'&token='.$token;
+	if($token) {
+		$url = $serverv2URL.'/v1/stories';
 		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
+		curl_setopt( $ch, CURLOPT_POST, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: mwDrj2Pazm0u3I8RyoXf9Pj9ODqknAVJ'));
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt( $ch, CURLOPT_HEADER, 0);
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
@@ -53,9 +37,20 @@ function sh_get_stories() {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		$response = curl_exec( $ch );
 		$data = json_decode($response);
-		if(isset($data->stories)) {
+		if(isset($data)) {
 			$valid_token = true;
-			$stories = $data->stories;
+			$stories = array();
+			foreach($data as $storydata) {
+				$story = array(
+					'image' => $storydata->cover,
+					'id' => $storydata->id,
+					'metadata' => (object)array(
+						'description' => 'FAKE DESCRIPTION'
+					),
+					'title' => $storydata->title,
+				);
+				$stories[] = (object)$story;
+			}
 		}
 	}
 	return $stories;
@@ -88,23 +83,21 @@ function sh_copy_story($post_id, $story_id) {
 	$tmpdir = get_temp_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
 
-	global $serverURL;
-	$token = get_option('sh_token_key');
-	$user_id = get_option('sh_user_id');
+	global $serverv2URL;
+	$token = get_option('sh_v2_token');
 
 	$valid_token = false;
 
 	$story = array();
 
 	//Attempt to connect to the server
-	if($token && $user_id) {
-		$url = $serverURL.'/api/story/'.$story_id.'/';
-		$vars = 'user='.$user_id.'&token='.$token;
+	if($token) {
+		$url = $serverv2URL.'/v1/stories/'.$story_id.'/';
 		$ch = curl_init($url);
 		$zipfile = tempnam($tmpdir, 'sh_zip');
 		$ziphandle = fopen($zipfile, "w");
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
+		curl_setopt( $ch, CURLOPT_POST, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: mwDrj2Pazm0u3I8RyoXf9Pj9ODqknAVJ'));
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt( $ch, CURLOPT_HEADER, 0);
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
@@ -112,6 +105,8 @@ function sh_copy_story($post_id, $story_id) {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_FILE, $ziphandle);
 		$response = curl_exec( $ch );
+		echo 'zing';
+		die();
 		if($response == 1) {
 			$unzipfile = unzip_file( $zipfile, $destination_path);
 	   		if ( $unzipfile ) {

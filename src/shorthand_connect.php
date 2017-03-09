@@ -16,7 +16,12 @@ $included = @include_once('config.php');
 if (!$included) {
 	require_once('config.default.php');
 }
-require_once('includes/api.php');
+$version = get_option('sh_api_version');
+if ($version == 'v2') {
+	require_once('includes/api-v2.php');
+} else {
+	require_once('includes/api.php');
+}
 require_once('includes/shorthand_options.php');
 require_once('templates/abstract.php');
 
@@ -59,9 +64,20 @@ add_action( 'init', 'shand_create_post_type' );
 
 
 function shand_wpt_shorthand_story() {
-	
-	global $serverURL;
+
 	global $post;
+
+	global $serverURL;
+	global $serverv2URL;
+
+	$baseurl = '';
+
+	$version = get_option('sh_api_version');
+	//Version 2 already has a proper URL
+	if ($version != 'v2') {
+		$baseurl = $serverURL;
+	}
+
 
 ?>
 	<style>
@@ -135,7 +151,7 @@ function shand_wpt_shorthand_story() {
 				$selected = 'checked';
 				$story_selected = 'selected';
 			}
-			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$serverURL.$story->image.'" /><span class="title">'.$story->title.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
+			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$baseurl.$story->image.'" /><span class="title">'.$story->title.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
 		}
 		echo '</ul><div class="clear"></div>';
 	}
