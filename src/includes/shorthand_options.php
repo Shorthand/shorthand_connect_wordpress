@@ -39,11 +39,13 @@ function shand_shorthand_options() {
 	}
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_token_key', sanitize_text_field($_POST['sh_token_key']));
+		update_option('sh_v2_token', sanitize_text_field($_POST['sh_v2_token']));
 		$safe_user_id = intval( $_POST['sh_user_id'] );
 		update_option('sh_user_id', $safe_user_id);
 		update_option('sh_api_version', sanitize_text_field($_POST['sh_api_version']));
 	}
 	$token = esc_html(get_option('sh_token_key'));
+	$v2_token = esc_html(get_option('sh_v2_token'));
 	$user_id = esc_html(get_option('sh_user_id'));
 	$sh_api_version = esc_html(get_option('sh_api_version'));
 
@@ -72,6 +74,7 @@ function shand_shorthand_options() {
 
 	$profile = sh_get_profile();
 	$n_once = wp_nonce_field( 'sh-update-configuration' );
+
 ?>
 	<h3>Shorthand API Configuration</h3>
 	<form name="form1" method="post">
@@ -88,13 +91,17 @@ function shand_shorthand_options() {
 			</select></td>
 		</tr>
 		<?php } ?>
-		<tr>
+		<tr class="v1row">
 			<th scope="row"><label for="sh_user_id"><?php _e("Shorthand User ID", 'sh-user-value' ); ?></label></th>
 			<td><input type="text" id="sh_user_id" name="sh_user_id" value="<?php echo esc_attr($user_id); ?>" size="9"></td>
 		</tr>
-		<tr>
+		<tr class="v1row">
 			<th scope="row"><label for="sh_token_key"><?php _e("Shorthand API Token", 'sh-token-value' ); ?></label></th>
 			<td><input type="text" id="sh_token_key" name="sh_token_key" value="<?php echo esc_attr($token); ?>" size="28"></td>
+		</tr>
+		<tr class="v2row">
+			<th scope="row"><label for="sh_v2_token"><?php _e("Shorthand Team Token", 'sh-v2-token' ); ?></label></th>
+			<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr($v2_token); ?>" size="28"></td>
 		</tr>
 		<?php if($showServerURL) { ?>
 		<tr>
@@ -164,7 +171,36 @@ function shand_shorthand_options() {
 			background:#ffd;
 			color:orange;
 		}
+		.row-hidden {
+			display:none;
+		}
 	</style>
+	<script>
+		document.getElementById("sh_api_version").addEventListener("change", updateShOptions);
+		function updateShOptions() {
+			var x = document.getElementById("sh_api_version");
+			switch (x.value) {
+				case 'v1':
+					for(var i=0; i < document.getElementsByClassName("v1row").length; i++) {
+						document.getElementsByClassName("v1row")[i].setAttribute("class", "v1row");
+					}
+					for(var i=0; i < document.getElementsByClassName("v2row").length; i++) {
+						document.getElementsByClassName("v2row")[i].setAttribute("class", "v2row row-hidden");
+					}
+					break;
+				case 'v2':
+					for(var i=0; i < document.getElementsByClassName("v1row").length; i++) {
+						document.getElementsByClassName("v1row")[i].setAttribute("class", "v1row row-hidden");
+					}
+					for(var i=0; i < document.getElementsByClassName("v2row").length; i++) {
+						document.getElementsByClassName("v2row")[i].setAttribute("class", "v2row");
+					}
+			}
+		}
+		(function() {
+			updateShOptions();
+		})();
+	</script>
 
 
 <?php
