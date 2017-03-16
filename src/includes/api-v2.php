@@ -7,13 +7,28 @@ function sh_get_profile() {
 	global $serverv2URL;
 	$token = get_option('sh_v2_token');
 
-	$valid_token = false;
+	$tokeninfo = array();
 
-	$data = array(
-		'username' => 'Version 2 API',
-		'gravatar' => ''
-	);
-	return $data;
+	if($token) {
+		$url = $serverv2URL.'/v1/token-info';
+		$ch = curl_init( $url );
+		curl_setopt( $ch, CURLOPT_POST, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
+		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt( $ch, CURLOPT_HEADER, 0);
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		$response = curl_exec( $ch );
+		$data = json_decode($response);
+		if(isset($data)) {
+			$tokeninfo['username'] = $data->name . ' ('.$data->token_type.' Token)';
+			$tokeninfo['gravatar'] = $data->logo;
+		}
+		$tokeninfo = (object)$tokeninfo;
+	}
+
+	return $tokeninfo;
 }
 
 function sh_get_stories() {
