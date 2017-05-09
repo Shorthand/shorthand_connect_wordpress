@@ -37,7 +37,7 @@ function sh_get_stories() {
 
 	$valid_token = true;
 
-	$stories = array();
+	$stories = null;
 
 	//Attempt to connect to the server
 	if($token) {
@@ -53,6 +53,7 @@ function sh_get_stories() {
 		$response = curl_exec( $ch );
 		$data = json_decode($response);
 		if(isset($data)) {
+			$stories = array();
 			$valid_token = true;
 			//Something went wrong
 			if ($data->status) {

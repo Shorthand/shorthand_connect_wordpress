@@ -140,8 +140,10 @@ function shand_wpt_shorthand_story() {
 	}
 	$stories = sh_get_stories();
 
-	if(!$stories) {
+	if(!is_array($stories)) {
 		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress settings</a>.';
+	} else if(sizeOf($stories) == 0) {
+		echo 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.';
 	} else {
 		echo '<ul class="stories">';
 		foreach($stories as $story) {
