@@ -10,13 +10,13 @@ function sh_get_profile() {
 	$tokeninfo = array();
 
 	if($token) {
-		$url = $serverv2URL.'/v1/token-info';
+		$url = $serverv2URL.'/v2/token-info';
 		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 0);
+		curl_setopt($ch, CURLOPT_POST, 0);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		$response = curl_exec( $ch );
@@ -41,7 +41,7 @@ function sh_get_stories() {
 
 	//Attempt to connect to the server
 	if($token) {
-		$url = $serverv2URL.'/v1/stories';
+		$url = $serverv2URL.'/v2/stories';
 		$ch = curl_init( $url );
 		curl_setopt( $ch, CURLOPT_POST, 0);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
@@ -110,7 +110,7 @@ function sh_copy_story($post_id, $story_id) {
 
 	//Attempt to connect to the server
 	if($token) {
-		$url = $serverv2URL.'/v1/stories/'.$story_id;
+		$url = $serverv2URL.'/v2/stories/'.$story_id;
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_POST, 0);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
