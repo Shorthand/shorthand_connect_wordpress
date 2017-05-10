@@ -129,6 +129,10 @@ function shand_wpt_shorthand_story() {
 			max-height:400px;
 			overflow-y:scroll;
 		}
+		ul.stories img {
+			object-fit: cover;
+			height:110px;
+		}
 	</style>
 <?php
 

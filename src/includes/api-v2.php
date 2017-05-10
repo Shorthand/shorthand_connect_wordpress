@@ -64,7 +64,7 @@ function sh_get_stories() {
 					'image' => $storydata->cover,
 					'id' => $storydata->id,
 					'metadata' => (object)array(
-						'description' => 'FAKE DESCRIPTION'
+						'description' => $storydata->description
 					),
 					'title' => $storydata->title,
 				);
