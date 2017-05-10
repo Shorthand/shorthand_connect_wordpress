@@ -21,11 +21,11 @@ function sh_get_profile() {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		$response = curl_exec( $ch );
 		$data = json_decode($response);
-		if(isset($data)) {
+		if(isset($data) && isset($data->name)) {
 			$tokeninfo['username'] = $data->name . ' ('.$data->token_type.' Token)';
 			$tokeninfo['gravatar'] = $data->logo;
+			$tokeninfo = (object)$tokeninfo;
 		}
-		$tokeninfo = (object)$tokeninfo;
 	}
 
 	return $tokeninfo;
