@@ -13,7 +13,7 @@ function sh_get_profile() {
 		$url = $serverv2URL.'/v2/token-info';
 		$ch = curl_init( $url );
 		curl_setopt($ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Token '.$token));
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -44,7 +44,7 @@ function sh_get_stories() {
 		$url = $serverv2URL.'/v2/stories';
 		$ch = curl_init( $url );
 		curl_setopt( $ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Token '.$token));
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt( $ch, CURLOPT_HEADER, 0);
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
@@ -114,7 +114,7 @@ function sh_copy_story($post_id, $story_id) {
 		$url = $serverv2URL.'/v2/stories/'.$story_id;
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-API-Token: '.$token));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Token '.$token));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
