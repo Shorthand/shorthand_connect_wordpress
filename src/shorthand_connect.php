@@ -246,19 +246,19 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 
     		// Save the head and body
 				$version = get_option('sh_api_version');
-				$head_data = $story_path.'/component_head.html';
-				$article_data = $story_path.'/component_article.html';
+				$head_file = $story_path.'/component_head.html';
+				$article_file = $story_path.'/component_article.html';
 				if ($version == 'v2') {
-					$head_data = $story_path.'/head.html';
-					$article_data = $story_path.'/article.html';
+					$head_file = $story_path.'/head.html';
+					$article_file = $story_path.'/article.html';
 				}
-    		$body = shand_fix_content_paths($assets_path, file_get_contents($article_data));
+    		$body = shand_fix_content_paths($assets_path, file_get_contents($article_file), $version);
     		update_post_meta($post_id, 'story_body', wp_slash($body));
-				$head = shand_fix_content_paths($assets_path, file_get_contents($head_data));
+				$head = shand_fix_content_paths($assets_path, file_get_contents($head_file), $version);
 				update_post_meta($post_id, 'story_head', wp_slash($head));
 
     		// Save the abstract
-    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($article_data));
+    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($article_file), $version);
     		remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
@@ -360,9 +360,16 @@ register_activation_hook( __FILE__, 'shand_shorthand_activate' );
 /* UTILITY FUNCTIONS */
 
 /* Fix content paths */
-function shand_fix_content_paths($assets_path, $content) {
-	$content = str_replace('./static/', $assets_path.'/static/', $content);
-	$content = str_replace('./media/', $assets_path.'/media/', $content);
+function shand_fix_content_paths($assets_path, $content, $version) {
+	if ($version == 'v2') {
+		$content = str_replace('./shared/', $assets_path.'/shared/', $content);
+		$content = str_replace('./static/', $assets_path.'/static/', $content);
+		$content = str_replace('./media/', $assets_path.'/media/', $content);
+		$content = str_replace('./theme/', $assets_path.'/theme/', $content);
+	} else {
+		$content = str_replace('./static/', $assets_path.'/static/', $content);
+		$content = str_replace('./media/', $assets_path.'/media/', $content);
+	}
 	return $content;
 }
 
