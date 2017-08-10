@@ -98,6 +98,7 @@ function sh_copy_story($post_id, $story_id) {
 	@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
 	WP_Filesystem();
+
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id;
@@ -114,6 +115,7 @@ function sh_copy_story($post_id, $story_id) {
 		$url = $serverv2URL.'/v2/stories/'.$story_id;
 		$ch = curl_init($url);
 		$zipfile = tempnam($tmpdir, 'sh_zip');
+		$unzipdir = tempnam($tmpdir, 'sh_unzip').'_dir';
 		$ziphandle = fopen($zipfile, "w");
 		curl_setopt($ch, CURLOPT_POST, 0);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -124,11 +126,11 @@ function sh_copy_story($post_id, $story_id) {
 		curl_setopt($ch, CURLOPT_FILE, $ziphandle);
 		$response = curl_exec( $ch );
 		if($response == 1) {
-			$unzipfile = unzip_file( $zipfile, $destination_path);
+
+			$unzipfile = unzip_file( $zipfile, $unzipdir);
 				if ( $unzipfile ) {
-					// Need to replace the generated directory with story_id
-					$zipdirname = array_slice(scandir($destination_path), 2)[0];
-					rename($destination_path.'/'.$zipdirname, $destination_path.'/'.$story_id);
+					$unzipname = array_values(array_diff(preg_grep('/^([^.])/', scandir($unzipdir)), [$story_id]))[0];
+					copy_dir($unzipdir.'/'.$unzipname, $destination_path.'/'.$story_id);
 				} else {
 					$story['error'] = array(
 					'pretty' => 'Could not unzip file'
