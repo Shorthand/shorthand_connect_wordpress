@@ -100,7 +100,7 @@ function sh_copy_story($post_id, $story_id) {
 	WP_Filesystem();
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();
-	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
+	$destination_path = $destination['path'].'/shorthand/'.$post_id;
 
 	global $serverv2URL;
 	$token = get_option('sh_v2_token');
@@ -113,43 +113,30 @@ function sh_copy_story($post_id, $story_id) {
 	if($token) {
 		$url = $serverv2URL.'/v2/stories/'.$story_id;
 		$ch = curl_init($url);
+		$zipfile = tempnam($tmpdir, 'sh_zip');
+		$ziphandle = fopen($zipfile, "w");
 		curl_setopt($ch, CURLOPT_POST, 0);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Token '.$token));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_FILE, $ziphandle);
 		$response = curl_exec( $ch );
-		$data = json_decode($response);
-		if($data && $data->url) {
-			$ch = curl_init($data->url);
-			$zipfile = tempnam($tmpdir, 'sh_zip');
-			$ziphandle = fopen($zipfile, "w");
-			curl_setopt($ch, CURLOPT_POST, 0);
-			curl_setopt($ch, CURLOPT_HEADER, 0);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-			curl_setopt($ch, CURLOPT_FILE, $ziphandle);
-			$response = curl_exec( $ch );
-			if($response == 1) {
-				$unzipfile = unzip_file( $zipfile, $destination_path);
-					if ( $unzipfile ) {
-						$story['path'] = $destination_path;
-					} else {
-						$story['error'] = array(
-						'pretty' => 'Could not unzip file'
-					);
-					}
-			} else {
-				$story['error'] = array(
-					'pretty' => 'Could not get zip file',
-					'error' => curl_error($ch),
-					'response' => $response
+		if($response == 1) {
+			$unzipfile = unzip_file( $zipfile, $destination_path);
+				if ( $unzipfile ) {
+					// Need to replace the generated directory with story_id
+					$zipdirname = array_slice(scandir($destination_path), 2)[0];
+					rename($destination_path.'/'.$zipdirname, $destination_path.'/'.$story_id);
+				} else {
+					$story['error'] = array(
+					'pretty' => 'Could not unzip file'
 				);
-			}
+				}
 		} else {
 			$story['error'] = array(
-				'pretty' => 'Could not get story link',
+				'pretty' => 'Could not get zip file',
 				'error' => curl_error($ch),
 				'response' => $response
 			);

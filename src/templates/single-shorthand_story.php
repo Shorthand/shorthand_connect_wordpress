@@ -10,11 +10,11 @@
 	<div id="extraHTML">
 		<?php echo trim($meta['extra_html'][0]); ?>
 	</div>
-	
+
 	<style type="text/css">
 		<?php echo get_option('sh_css'); ?>
 	</style>
-	
+
 	<?php
 	endwhile;
 	?>

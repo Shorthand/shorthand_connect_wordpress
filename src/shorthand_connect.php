@@ -25,7 +25,6 @@ if ($version == 'v2') {
 require_once('includes/shorthand_options.php');
 require_once('templates/abstract.php');
 
-
 /* Create the Shorthand post type */
 function shand_create_post_type() {
   $permalink = get_option('sh_permalink');
@@ -246,13 +245,20 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 				$assets_path = sh_get_story_url($post_id, $safe_story_id);
 
     		// Save the head and body
-    		$body = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+				$version = get_option('sh_api_version');
+				$head_data = $story_path.'/component_head.html';
+				$article_data = $story_path.'/component_article.html';
+				if ($version == 'v2') {
+					$head_data = $story_path.'/head.html';
+					$article_data = $story_path.'/article.html';
+				}
+    		$body = shand_fix_content_paths($assets_path, file_get_contents($article_data));
     		update_post_meta($post_id, 'story_body', wp_slash($body));
-				$head = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_head.html'));
+				$head = shand_fix_content_paths($assets_path, file_get_contents($head_data));
 				update_post_meta($post_id, 'story_head', wp_slash($head));
 
     		// Save the abstract
-    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($article_data));
     		remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
