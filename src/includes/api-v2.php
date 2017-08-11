@@ -130,7 +130,9 @@ function sh_copy_story($post_id, $story_id) {
 			$unzipfile = unzip_file( $zipfile, $unzipdir);
 				if ( $unzipfile ) {
 					$unzipname = array_values(array_diff(preg_grep('/^([^.])/', scandir($unzipdir)), [$story_id]))[0];
-					copy_dir($unzipdir.'/'.$unzipname, $destination_path.'/'.$story_id);
+					wp_mkdir_p($destination_path.'/'.$story_id);
+					$err = copy_dir($unzipdir.'/'.$unzipname, $destination_path.'/'.$story_id);
+					$story['path'] = $destination_path.'/'.$story_id;
 				} else {
 					$story['error'] = array(
 					'pretty' => 'Could not unzip file'
