@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4
 Tested up to: 4.6.1
-Stable tag: 1.1.3
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,9 +33,6 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
-
-= 1.1.3 =
-* Enable Shorthand version selection
 
 = 1.1.2 =
 * Fix release issues

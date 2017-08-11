@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4
 Tested up to: 4.6.1
-Stable tag: 1.1.3
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Add your key:
 V1 - Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in Wordpress).
-v2 - Go to your organisation in the top right, and click the cog to get to settings.  Scroll to the bottom, and generate a new key.  Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in Wordpress).
+v2 - Go to your organisation in the top right, and click the cog to get to settings.  Scroll to the bottom, and generate a new key.  Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in Wordpress). 
 4. Optionally change the CSS settings in the options to best present stories within your theme.
 5. Optionally your theme can override the display of Shorthand stories via `single-shorthand_story.php` in your theme directory.
 
@@ -33,15 +33,6 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
-
-= 1.1.3 =
-* Enable Shorthand version selection
-
-= 1.1.2 =
-* Fix release issues
-
-= 1.1.1 =
-* Plugin release for version 2.0 support
 
 = 1.1.0 =
 * Support for Shorthand 2.0

@@ -1,14 +1,14 @@
 <?php
 /**
  * @package Shorthand Connect
- * @version 1.0.7
+ * @version 1.1.3
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.0.7
+Version: 1.1.3
 Author URI: http://shorthand.com
 */
 
@@ -16,10 +16,14 @@ $included = @include_once('config.php');
 if (!$included) {
 	require_once('config.default.php');
 }
-require_once('includes/api.php');
+$version = get_option('sh_api_version');
+if ($version == 'v2') {
+	require_once('includes/api-v2.php');
+} else {
+	require_once('includes/api.php');
+}
 require_once('includes/shorthand_options.php');
 require_once('templates/abstract.php');
-
 
 /* Create the Shorthand post type */
 function shand_create_post_type() {
@@ -59,9 +63,20 @@ add_action( 'init', 'shand_create_post_type' );
 
 
 function shand_wpt_shorthand_story() {
-	
-	global $serverURL;
+
 	global $post;
+
+	global $serverURL;
+	global $serverv2URL;
+
+	$baseurl = '';
+
+	$version = get_option('sh_api_version');
+	//Version 2 already has a proper URL
+	if ($version != 'v2') {
+		$baseurl = $serverURL;
+	}
+
 
 ?>
 	<style>
@@ -113,6 +128,10 @@ function shand_wpt_shorthand_story() {
 			max-height:400px;
 			overflow-y:scroll;
 		}
+		ul.stories img {
+			object-fit: cover;
+			height:110px;
+		}
 	</style>
 <?php
 
@@ -124,8 +143,10 @@ function shand_wpt_shorthand_story() {
 	}
 	$stories = sh_get_stories();
 
-	if(!$stories) {
+	if(!is_array($stories)) {
 		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress settings</a>.';
+	} else if(sizeOf($stories) == 0) {
+		echo 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.';
 	} else {
 		echo '<ul class="stories">';
 		foreach($stories as $story) {
@@ -135,7 +156,7 @@ function shand_wpt_shorthand_story() {
 				$selected = 'checked';
 				$story_selected = 'selected';
 			}
-			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$serverURL.$story->image.'" /><span class="title">'.$story->title.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
+			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$baseurl.$story->image.'" /><span class="title">'.$story->title.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
 		}
 		echo '</ul><div class="clear"></div>';
 	}
@@ -205,7 +226,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     }
 
     if (isset($_REQUEST['story_id'])) {
-			$safe_story_id = intval($_REQUEST['story_id']);
+			$safe_story_id = $_REQUEST['story_id'];
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $safe_story_id ) );
     	$err = sh_copy_story($post_id, $safe_story_id);
     	$story_path = sh_get_story_path($post_id, $safe_story_id);
@@ -224,13 +245,20 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 				$assets_path = sh_get_story_url($post_id, $safe_story_id);
 
     		// Save the head and body
-    		$body = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+				$version = get_option('sh_api_version');
+				$head_file = $story_path.'/component_head.html';
+				$article_file = $story_path.'/component_article.html';
+				if ($version == 'v2') {
+					$head_file = $story_path.'/head.html';
+					$article_file = $story_path.'/article.html';
+				}
+    		$body = shand_fix_content_paths($assets_path, file_get_contents($article_file), $version);
     		update_post_meta($post_id, 'story_body', wp_slash($body));
-				$head = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_head.html'));
+				$head = shand_fix_content_paths($assets_path, file_get_contents($head_file), $version);
 				update_post_meta($post_id, 'story_head', wp_slash($head));
 
     		// Save the abstract
-    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($story_path.'/component_article.html'));
+    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($article_file), $version);
     		remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
     		$post = array(
     			'ID' => $post_id,
@@ -332,9 +360,16 @@ register_activation_hook( __FILE__, 'shand_shorthand_activate' );
 /* UTILITY FUNCTIONS */
 
 /* Fix content paths */
-function shand_fix_content_paths($assets_path, $content) {
-	$content = str_replace('./static/', $assets_path.'/static/', $content);
-	$content = str_replace('./media/', $assets_path.'/media/', $content);
+function shand_fix_content_paths($assets_path, $content, $version) {
+	if ($version == 'v2') {
+		$content = str_replace('./shared/', $assets_path.'/shared/', $content);
+		$content = str_replace('./static/', $assets_path.'/static/', $content);
+		$content = str_replace('./media/', $assets_path.'/media/', $content);
+		$content = str_replace('./theme/', $assets_path.'/theme/', $content);
+	} else {
+		$content = str_replace('./static/', $assets_path.'/static/', $content);
+		$content = str_replace('./media/', $assets_path.'/media/', $content);
+	}
 	return $content;
 }
 
