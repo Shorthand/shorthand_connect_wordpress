@@ -1,14 +1,14 @@
 <?php
 /**
  * @package Shorthand Connect
- * @version 1.1.4
+ * @version 1.1.5
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.1.4
+Version: 1.1.5
 Author URI: http://shorthand.com
 */
 
@@ -362,10 +362,9 @@ register_activation_hook( __FILE__, 'shand_shorthand_activate' );
 /* Fix content paths */
 function shand_fix_content_paths($assets_path, $content, $version) {
 	if ($version == 'v2') {
-		$content = str_replace('./shared/', $assets_path.'/shared/', $content);
+		$content = str_replace('./assets/', $assets_path.'/assets/', $content);
 		$content = str_replace('./static/', $assets_path.'/static/', $content);
-		$content = str_replace('./media/', $assets_path.'/media/', $content);
-		$content = str_replace('./theme/', $assets_path.'/theme/', $content);
+		$content = str_replace('./theme.min.css', $assets_path.'/theme.min.css', $content);
 	} else {
 		$content = str_replace('./static/', $assets_path.'/static/', $content);
 		$content = str_replace('./media/', $assets_path.'/media/', $content);

@@ -1,50 +1,24 @@
 <?php
 
-// VERSION 2 API
+// VERSION 1 API
 
 function sh_get_profile() {
 
-	global $serverv2URL;
-	$token = get_option('sh_v2_token');
+	global $serverURL;
+	$token = get_option('sh_token_key');
+	$user_id = get_option('sh_user_id');
 
-	$tokeninfo = array();
+	$valid_token = false;
 
-	if($token) {
-		$url = $serverv2URL.'/v2/token-info';
-		$ch = curl_init( $url );
-		curl_setopt($ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Token '.$token));
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		$response = curl_exec( $ch );
-		$data = json_decode($response);
-		if(isset($data) && isset($data->name)) {
-			$tokeninfo['username'] = $data->name . ' ('.$data->token_type.' Token)';
-			$tokeninfo['gravatar'] = $data->logo;
-			$tokeninfo = (object)$tokeninfo;
-		}
-	}
-
-	return $tokeninfo;
-}
-
-function sh_get_stories() {
-	global $serverv2URL;
-	$token = get_option('sh_v2_token');
-
-	$valid_token = true;
-
-	$stories = null;
+	$data = array();
 
 	//Attempt to connect to the server
-	if($token) {
-		$url = $serverv2URL.'/v2/stories';
+	if($token && $user_id) {
+		$url = $serverURL.'/api/profile/';
+		$vars = 'user='.$user_id.'&token='.$token;
 		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Token '.$token));
+		curl_setopt( $ch, CURLOPT_POST, 1);
+		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt( $ch, CURLOPT_HEADER, 0);
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
@@ -52,24 +26,36 @@ function sh_get_stories() {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		$response = curl_exec( $ch );
 		$data = json_decode($response);
-		if(isset($data)) {
-			$stories = array();
+	}
+	return $data;
+}
+
+function sh_get_stories() {
+	global $serverURL;
+	$token = get_option('sh_token_key');
+	$user_id = get_option('sh_user_id');
+
+	$valid_token = false;
+
+	$stories = null;
+
+	//Attempt to connect to the server
+	if($token && $user_id) {
+		$url = $serverURL.'/api/index/';
+		$vars = 'user='.$user_id.'&token='.$token;
+		$ch = curl_init( $url );
+		curl_setopt( $ch, CURLOPT_POST, 1);
+		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
+		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt( $ch, CURLOPT_HEADER, 0);
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		$response = curl_exec( $ch );
+		$data = json_decode($response);
+		if(isset($data->stories)) {
 			$valid_token = true;
-			//Something went wrong
-			if ($data->status) {
-				return null;
-			}
-			foreach($data as $storydata) {
-				$story = array(
-					'image' => $storydata->cover,
-					'id' => $storydata->id,
-					'metadata' => (object)array(
-						'description' => $storydata->description
-					),
-					'title' => $storydata->title,
-				);
-				$stories[] = (object)$story;
-			}
+			$stories = $data->stories;
 		}
 	}
 	return $stories;
@@ -98,47 +84,46 @@ function sh_copy_story($post_id, $story_id) {
 	@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
 	WP_Filesystem();
-
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();
-	$destination_path = $destination['path'].'/shorthand/'.$post_id;
+	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
 
-	global $serverv2URL;
-	$token = get_option('sh_v2_token');
+	global $serverURL;
+	$token = get_option('sh_token_key');
+	$user_id = get_option('sh_user_id');
 
 	$valid_token = false;
 
 	$story = array();
 
 	//Attempt to connect to the server
-	if($token) {
-		$url = $serverv2URL.'/v2/stories/'.$story_id;
+	if($token && $user_id) {
+		$url = $serverURL.'/api/story/'.$story_id.'/';
+		$vars = 'user='.$user_id.'&token='.$token;
 		$ch = curl_init($url);
 		$zipfile = tempnam($tmpdir, 'sh_zip');
-		$unzipdir = tempnam($tmpdir, 'sh_unzip').'_dir';
 		$ziphandle = fopen($zipfile, "w");
-		curl_setopt($ch, CURLOPT_POST, 0);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Token '.$token));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt( $ch, CURLOPT_POST, 1);
+		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
+		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt( $ch, CURLOPT_HEADER, 0);
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_FILE, $ziphandle);
 		$response = curl_exec( $ch );
 		if($response == 1) {
-			$unzipfile = unzip_file( $zipfile, $unzipdir);
-				if ( $unzipfile ) {
-					wp_mkdir_p($destination_path.'/'.$story_id);
-					$err = copy_dir($unzipdir, $destination_path.'/'.$story_id);
-					$story['path'] = $destination_path.'/'.$story_id;
-				} else {
-					$story['error'] = array(
+			$unzipfile = unzip_file( $zipfile, $destination_path);
+	   		if ( $unzipfile ) {
+   				$story['path'] = $destination_path;
+   			} else {
+   				$story['error'] = array(
 					'pretty' => 'Could not unzip file'
 				);
-				}
+   			}
 		} else {
 			$story['error'] = array(
-				'pretty' => 'Could not get zip file',
+				'pretty' => 'Could not upload file',
 				'error' => curl_error($ch),
 				'response' => $response
 			);
