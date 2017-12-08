@@ -88,6 +88,10 @@ https://wordpress.org/plugins/about/svn/
 
  - A nicer feed view of the story
 
+== HTTPS ==
+
+ - If you are experiencing issues related to assets being loaded via http (and your site is using https), check your settings and ensure that the site URLs are set to https.
+
 == Troubleshooting ==
 
 Only try these after experiencing issues
