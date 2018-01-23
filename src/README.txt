@@ -20,7 +20,7 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
 1b. Or, Upload `shorthand_connect` to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Add your credentials:
-V1 - Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in Shorthand).
+V1 - Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in the Shorthand editor).
 v2 - Go to your organisation in the top right, and click the cog to get to settings.  Scroll to the bottom, and generate a new key.  Go to Settings > Shorthand and enter in your Token.
 4. Optionally change the CSS settings in the options to best present stories within your theme.
 5. Optionally your theme can override the display of Shorthand stories via `single-shorthand_story.php` in your theme directory.
