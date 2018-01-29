@@ -235,8 +235,6 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     	$err = sh_copy_story($post_id, $safe_story_id);
 			$story_path = sh_get_story_path($post_id, $safe_story_id);
 
-			update_post_meta( $post_id, 'api_version', $version);
-
     	//Sometimes the story needs to be gotten twice
     	if(!isset($story_path)) {
     		$err = sh_copy_story($post_id, $safe_story_id);
@@ -252,6 +250,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 
     		// Save the head and body
 				$version = get_option('sh_api_version');
+				update_post_meta( $post_id, 'api_version', $version);
 				$head_file = $story_path.'/component_head.html';
 				$article_file = $story_path.'/component_article.html';
 				if ($version == 'v2') {
