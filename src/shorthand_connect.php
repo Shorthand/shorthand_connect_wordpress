@@ -133,13 +133,24 @@ function shand_wpt_shorthand_story() {
 			object-fit: cover;
 			height:110px;
 		}
+		p.warning {
+			color: red;
+			font-weight: bold;
+		}
 	</style>
 <?php
 
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
+	$story_api_version = get_post_meta($post->ID, 'api_version', true);
 	if ($selected_story) {
-		echo '<p>Clicking UPDATE will update Wordpress with the latest version of the story from Shorthand.</p>';
-		echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
+		if ($story_api_version == $version) {
+			echo '<p>Clicking UPDATE will update Wordpress with the latest version of the story from Shorthand.</p>';
+			echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
+		}	else {
+			echo '<p class="warning">To update this story from Shorthand, please switch to the correct API version <a href="options-general.php?page=shorthand-options">here</a></p>';
+			echo '<style>#publish { visibility: hidden !important; }</style>';
+			echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
+		}
 		return;
 	}
 	$stories = sh_get_stories();
