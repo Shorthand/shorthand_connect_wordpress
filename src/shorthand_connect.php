@@ -68,6 +68,7 @@ function shand_wpt_shorthand_story() {
 
 	global $serverURL;
 	global $serverv2URL;
+	global $showArchivedStories;
 
 	$baseurl = '';
 
@@ -144,7 +145,7 @@ function shand_wpt_shorthand_story() {
 	$stories = sh_get_stories();
 
 	if(!is_array($stories)) {
-		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress settings</a>.';
+		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress Shorthand settings</a>.';
 	} else if(sizeOf($stories) == 0) {
 		echo 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.';
 	} else {
@@ -158,7 +159,11 @@ function shand_wpt_shorthand_story() {
 			}
 			$archived = '';
 			if ($version == 'v2' && isset($story->story_version) && $story->story_version == '1') {
-				$archived = ' (archived)';
+				if ($showArchivedStories) {
+					$archived = ' (archived)';
+				} else {
+					continue;
+				}
 			}
 			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$baseurl.$story->image.'" /><span class="title">'.$story->title.$archived.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
 		}
@@ -201,12 +206,13 @@ function shand_wpt_shorthand_extra_html() {
 }
 
 function shand_add_shorthand_metaboxes() {
+	global $version;
 	global $post;
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
-		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story - '.$version.' (<a href="options-general.php?page=shorthand-options">change version</a>)', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
     } else {
-    	add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+    	add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story - '.$version.' (<a href="options-general.php?page=shorthand-options">change version</a>)', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
     }
     add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
     add_meta_box('shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
@@ -323,7 +329,7 @@ add_filter( 'pre_get_posts', 'shand_shorthand_get_posts' );
 
 /* Table Hook */
 function shand_add_shorthand_story_columns($columns) {
-    $cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array_slice($columns, 2, count($columns)-2, true);
+		$cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array('api_version' => __('API Version')) + array_slice($columns, 2, count($columns)-2, true);
     return $cols;
 }
 add_filter('manage_shorthand_story_posts_columns' , 'shand_add_shorthand_story_columns');
@@ -335,7 +341,20 @@ function shand_shorthand_show_columns($name) {
     switch ($name) {
         case 'story_id':
             $views = get_post_meta($post->ID, 'story_id', true);
-            echo $views;
+						echo $views;
+						break;
+				case 'api_version':
+						$views = get_post_meta($post->ID, 'api_version', true);
+						if ($views == '') {
+							// Determine the version, save it if possible;
+							$views = 'Unknown';
+							$story_id = get_post_meta($post->ID, 'story_id', true);
+							if ($story_id) {
+								$views = determine_version_id($story_id);
+							}
+						}
+						echo $views;
+						break;
     }
 }
 add_action('manage_posts_custom_column',  'shand_shorthand_show_columns');
@@ -375,6 +394,16 @@ function shand_fix_content_paths($assets_path, $content, $version) {
 		$content = str_replace('./media/', $assets_path.'/media/', $content);
 	}
 	return $content;
+}
+
+function determine_version_id($story_id) {
+	if (substr($story_id, 0, 2) == 'v1') {
+		return 'v1';
+	}
+	if (intval($story_id) > 0) {
+		return 'v1';
+	}
+	return 'v2';
 }
 
 ?>
