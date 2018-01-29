@@ -229,13 +229,13 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     	update_post_meta( $post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']) );
 		}
 
-		update_post_meta( $post_id, 'api_version', $version);
-
     if (isset($_REQUEST['story_id'])) {
 			$safe_story_id = $_REQUEST['story_id'];
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $safe_story_id ) );
     	$err = sh_copy_story($post_id, $safe_story_id);
-    	$story_path = sh_get_story_path($post_id, $safe_story_id);
+			$story_path = sh_get_story_path($post_id, $safe_story_id);
+
+			update_post_meta( $post_id, 'api_version', $version);
 
     	//Sometimes the story needs to be gotten twice
     	if(!isset($story_path)) {
