@@ -1,14 +1,14 @@
 <?php
 /**
  * @package Shorthand Connect
- * @version 1.1.5
+ * @version 1.1.6
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.1.5
+Version: 1.1.6
 Author URI: http://shorthand.com
 */
 
@@ -68,6 +68,7 @@ function shand_wpt_shorthand_story() {
 
 	global $serverURL;
 	global $serverv2URL;
+	global $showArchivedStories;
 
 	$baseurl = '';
 
@@ -96,7 +97,7 @@ function shand_wpt_shorthand_story() {
 			display:block;
 			background:#fafafa;
 			text-align: center;
-			height:140px;
+			height:160px;
 			padding-top:5px;
 			border:1px solid #eeeeee;
 		}
@@ -132,19 +133,30 @@ function shand_wpt_shorthand_story() {
 			object-fit: cover;
 			height:110px;
 		}
+		p.warning {
+			color: red;
+			font-weight: bold;
+		}
 	</style>
 <?php
 
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
+	$story_api_version = get_post_meta($post->ID, 'api_version', true);
 	if ($selected_story) {
-		echo '<p>Clicking UPDATE will update Wordpress with the latest version of the story from Shorthand.</p>';
-		echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
+		if ($story_api_version == $version) {
+			echo '<p>Clicking UPDATE will update Wordpress with the latest version of the story from Shorthand.</p>';
+			echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
+		}	else {
+			echo '<p class="warning">To update this story from Shorthand, please switch to the correct API version <a href="options-general.php?page=shorthand-options">here</a></p>';
+			echo '<style>#publish { visibility: hidden !important; }</style>';
+			echo '<input name="story_id" type="hidden" value="'.$selected_story.'" />';
+		}
 		return;
 	}
 	$stories = sh_get_stories();
 
 	if(!is_array($stories)) {
-		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress settings</a>.';
+		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress Shorthand settings</a>.';
 	} else if(sizeOf($stories) == 0) {
 		echo 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.';
 	} else {
@@ -156,7 +168,15 @@ function shand_wpt_shorthand_story() {
 				$selected = 'checked';
 				$story_selected = 'selected';
 			}
-			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$baseurl.$story->image.'" /><span class="title">'.$story->title.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
+			$archived = '';
+			if ($version == 'v2' && isset($story->story_version) && $story->story_version == '1') {
+				if ($showArchivedStories) {
+					$archived = ' (archived)';
+				} else {
+					continue;
+				}
+			}
+			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$baseurl.$story->image.'" /><span class="title">'.$story->title.$archived.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
 		}
 		echo '</ul><div class="clear"></div>';
 	}
@@ -197,12 +217,13 @@ function shand_wpt_shorthand_extra_html() {
 }
 
 function shand_add_shorthand_metaboxes() {
+	global $version;
 	global $post;
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
-		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story - '.$version.' (<a href="options-general.php?page=shorthand-options">change version</a>)', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
     } else {
-    	add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+    	add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story - '.$version.' (<a href="options-general.php?page=shorthand-options">change version</a>)', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
     }
     add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
     add_meta_box('shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
@@ -223,13 +244,13 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 
     if (isset($_REQUEST['extra_html'])) {
     	update_post_meta( $post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']) );
-    }
+		}
 
     if (isset($_REQUEST['story_id'])) {
 			$safe_story_id = $_REQUEST['story_id'];
     	update_post_meta( $post_id, 'story_id', sanitize_text_field( $safe_story_id ) );
     	$err = sh_copy_story($post_id, $safe_story_id);
-    	$story_path = sh_get_story_path($post_id, $safe_story_id);
+			$story_path = sh_get_story_path($post_id, $safe_story_id);
 
     	//Sometimes the story needs to be gotten twice
     	if(!isset($story_path)) {
@@ -238,7 +259,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     	}
 
     	if(isset($story_path)) {
-    		// The story has been uploaded
+				// The story has been uploaded
     		update_post_meta($post_id, 'story_path', $story_path);
 
     		// Get path to the assets
@@ -246,6 +267,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 
     		// Save the head and body
 				$version = get_option('sh_api_version');
+				update_post_meta( $post_id, 'api_version', $version);
 				$head_file = $story_path.'/component_head.html';
 				$article_file = $story_path.'/component_article.html';
 				if ($version == 'v2') {
@@ -318,7 +340,7 @@ add_filter( 'pre_get_posts', 'shand_shorthand_get_posts' );
 
 /* Table Hook */
 function shand_add_shorthand_story_columns($columns) {
-    $cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array_slice($columns, 2, count($columns)-2, true);
+		$cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array('api_version' => __('API Version')) + array_slice($columns, 2, count($columns)-2, true);
     return $cols;
 }
 add_filter('manage_shorthand_story_posts_columns' , 'shand_add_shorthand_story_columns');
@@ -330,7 +352,20 @@ function shand_shorthand_show_columns($name) {
     switch ($name) {
         case 'story_id':
             $views = get_post_meta($post->ID, 'story_id', true);
-            echo $views;
+						echo $views;
+						break;
+				case 'api_version':
+						$views = get_post_meta($post->ID, 'api_version', true);
+						if ($views == '') {
+							// Determine the version, save it if possible;
+							$views = 'Unknown';
+							$story_id = get_post_meta($post->ID, 'story_id', true);
+							if ($story_id) {
+								$views = determine_version_id($story_id);
+							}
+						}
+						echo $views;
+						break;
     }
 }
 add_action('manage_posts_custom_column',  'shand_shorthand_show_columns');
@@ -370,6 +405,16 @@ function shand_fix_content_paths($assets_path, $content, $version) {
 		$content = str_replace('./media/', $assets_path.'/media/', $content);
 	}
 	return $content;
+}
+
+function determine_version_id($story_id) {
+	if (substr($story_id, 0, 2) == 'v1') {
+		return 'v1';
+	}
+	if (intval($story_id) > 0) {
+		return 'v1';
+	}
+	return 'v2';
 }
 
 ?>
