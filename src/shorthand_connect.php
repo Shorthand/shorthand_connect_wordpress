@@ -223,7 +223,9 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 
     if (isset($_REQUEST['extra_html'])) {
     	update_post_meta( $post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']) );
-    }
+		}
+
+		update_post_meta( $post_id, 'api_version', $version);
 
     if (isset($_REQUEST['story_id'])) {
 			$safe_story_id = $_REQUEST['story_id'];
@@ -238,7 +240,7 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
     	}
 
     	if(isset($story_path)) {
-    		// The story has been uploaded
+				// The story has been uploaded
     		update_post_meta($post_id, 'story_path', $story_path);
 
     		// Get path to the assets
