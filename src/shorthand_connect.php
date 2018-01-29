@@ -96,7 +96,7 @@ function shand_wpt_shorthand_story() {
 			display:block;
 			background:#fafafa;
 			text-align: center;
-			height:140px;
+			height:160px;
 			padding-top:5px;
 			border:1px solid #eeeeee;
 		}
@@ -156,7 +156,11 @@ function shand_wpt_shorthand_story() {
 				$selected = 'checked';
 				$story_selected = 'selected';
 			}
-			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$baseurl.$story->image.'" /><span class="title">'.$story->title.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
+			$archived = '';
+			if ($version == 'v2' && isset($story->story_version) && $story->story_version == '1') {
+				$archived = ' (archived)';
+			}
+			echo '<li class="story '.$story_selected.'"><label><input name="story_id" type="radio" value="'.$story->id.'" '.$selected.' /><img width="150" src="'.$baseurl.$story->image.'" /><span class="title">'.$story->title.$archived.'</span><span class="desc">'.$story->metadata->description.'</span></a></label></li>';
 		}
 		echo '</ul><div class="clear"></div>';
 	}

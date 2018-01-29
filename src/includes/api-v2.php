@@ -67,6 +67,7 @@ function sh_get_stories() {
 						'description' => $storydata->description
 					),
 					'title' => $storydata->title,
+					'story_version' => ''.$storydata->version
 				);
 				$stories[] = (object)$story;
 			}
