@@ -270,6 +270,9 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 				update_post_meta( $post_id, 'api_version', $version);
 				$head_file = $story_path.'/component_head.html';
 				$article_file = $story_path.'/component_article.html';
+				if (substr($safe_story_id, 0, 2) == 'v1') {
+					$version = 'v1';
+				}
 				if ($version == 'v2') {
 					$head_file = $story_path.'/head.html';
 					$article_file = $story_path.'/article.html';

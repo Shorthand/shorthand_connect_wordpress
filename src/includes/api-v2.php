@@ -128,7 +128,7 @@ function sh_copy_story($post_id, $story_id) {
 		$response = curl_exec( $ch );
 		if($response == 1) {
 			$unzipfile = unzip_file( $zipfile, $unzipdir);
-				if ( $unzipfile ) {
+				if ( $unzipfile == 1 ) {
 					wp_mkdir_p($destination_path.'/'.$story_id);
 					$err = copy_dir($unzipdir, $destination_path.'/'.$story_id);
 					$story['path'] = $destination_path.'/'.$story_id;
