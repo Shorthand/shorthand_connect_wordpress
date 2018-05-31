@@ -3,8 +3,8 @@ Contributors: shorthandconnect
 Donate link:
 Tags: shorthand, api
 Requires at least: 4
-Tested up to: 4.6.1
-Stable tag: 1.1.6
+Tested up to: 4.9.6
+Stable tag: 1.1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,11 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.1.7 =
+* Update testing information
+* Default to v2 in new install settings
+* Fix a bug where v1 stories were not identified correctly
 
 = 1.1.6 =
 * Better support for switching between v1 and v2 of the API

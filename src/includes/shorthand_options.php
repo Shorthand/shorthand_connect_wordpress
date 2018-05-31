@@ -87,8 +87,8 @@ function shand_shorthand_options() {
 			<th scope="row"><label for="sh_api_version"><?php _e("API Version", 'sh-api-version' ); ?></label></th>
 			<td>
 			<select name="sh_api_version" id="sh_api_version">
-				<option <?php if (esc_attr($sh_api_version) == 'v1') { echo 'selected' ;} ?> value="v1">Version 1</option>
 				<option <?php if (esc_attr($sh_api_version) == 'v2') { echo 'selected' ;} ?> value="v2">Version 2</option>
+				<option <?php if (esc_attr($sh_api_version) == 'v1') { echo 'selected' ;} ?> value="v1">Version 1 (Deprecated)</option>
 			</select></td>
 		</tr>
 		<?php } ?>
