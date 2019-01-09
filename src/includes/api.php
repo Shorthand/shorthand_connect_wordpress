@@ -16,16 +16,17 @@ function sh_get_profile() {
 	if($token && $user_id) {
 		$url = $serverURL.'/api/profile/';
 		$vars = 'user='.$user_id.'&token='.$token;
-		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		$response = curl_exec( $ch );
-		$data = json_decode($response);
+		$response = wp_remote_post( $url, array(
+			'headers' => array(
+				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
+			),
+			'body'    => array(
+				'user' => $user_id,
+				'token' => $token
+			),
+		));
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode($body);
 	}
 	return $data;
 }
@@ -42,17 +43,19 @@ function sh_get_stories() {
 	//Attempt to connect to the server
 	if($token && $user_id) {
 		$url = $serverURL.'/api/index/';
-		$vars = 'user='.$user_id.'&token='.$token;
-		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		$response = curl_exec( $ch );
-		$data = json_decode($response);
+		$response = wp_remote_post( $url, array(
+			'headers' => array(
+				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
+			),
+			'body'    => array(
+				'user' => $user_id,
+				'token' => $token
+			),
+			'timeout' => '240'
+		));
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode($body);
+
 		if(isset($data->stories)) {
 			$valid_token = true;
 			$stories = $data->stories;
@@ -100,27 +103,30 @@ function sh_copy_story($post_id, $story_id) {
 	if($token && $user_id) {
 		$url = $serverURL.'/api/story/'.$story_id.'/';
 		$vars = 'user='.$user_id.'&token='.$token;
-		$ch = curl_init($url);
 		$zipfile = tempnam($tmpdir, 'sh_zip');
-		$ziphandle = fopen($zipfile, "w");
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $vars);
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		curl_setopt($ch, CURLOPT_FILE, $ziphandle);
-		$response = curl_exec( $ch );
-		if($response == 1) {
+		$response = wp_remote_post( $url, array(
+			'headers' => array(
+				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
+			),
+			'body'    => array(
+				'user' => $user_id,
+				'token' => $token
+			),
+			'timeout' => '600',
+			'stream' => true,
+			'filename' => $zipfile
+		));
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode($body);
+		if($response['response']['code'] == 200) {
 			$unzipfile = unzip_file( $zipfile, $destination_path);
-	   		if ( $unzipfile ) {
-   				$story['path'] = $destination_path;
-   			} else {
-   				$story['error'] = array(
-					'pretty' => 'Could not unzip file'
-				);
-   			}
+			if ( $unzipfile ) {
+				$story['path'] = $destination_path;
+			} else {
+				$story['error'] = array(
+				'pretty' => 'Could not unzip file'
+			);
+			}
 		} else {
 			$story['error'] = array(
 				'pretty' => 'Could not upload file',

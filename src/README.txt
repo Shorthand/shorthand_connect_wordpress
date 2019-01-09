@@ -37,6 +37,7 @@ https://wordpress.org/plugins/about/svn/
 = 1.2.0 =
 * Support for Wordpress v5
 * Clean up settings
+* Remove cURL
 
 = 1.1.8 =
 * Update stable tag
@@ -113,5 +114,4 @@ Only try these after experiencing issues
 
  - Firstly make sure that your www directory is owned by the correct user
  - In your wp-config.php file, add `define('FS_CHMOD_DIR', 0777 )`;
- - Ensure CURL and PHP-CURL are installed (ala: `sudo apt-get install php5-curl`)
  - Contact product@shorthand.com and dekker@shorthand.com for further support and feedback
