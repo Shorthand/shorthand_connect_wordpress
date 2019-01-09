@@ -3,8 +3,8 @@ Contributors: shorthandconnect
 Donate link:
 Tags: shorthand, api
 Requires at least: 4
-Tested up to: 4.9.6
-Stable tag: 1.1.8
+Tested up to: 5.0.3
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,10 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.2.0 =
+* Support for Wordpress v5
+* Clean up settings
 
 = 1.1.8 =
 * Update stable tag

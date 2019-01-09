@@ -104,13 +104,15 @@ function shand_shorthand_options() {
 			<th scope="row"><label for="sh_v2_token"><?php _e("Shorthand Team Token", 'sh-v2-token' ); ?></label></th>
 			<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr($v2_token); ?>" size="28"></td>
 		</tr>
-		<?php if($showServerURL) { ?>
+		<?php if($showServerURL || $serverURL != "https://app.shorthand.com") { ?>
 		<tr class="v1row">
-			<th scope="row"><?php _e("Service URL" ); ?></th>
+			<th scope="row"><?php _e("Service v1 URL" ); ?></th>
 			<td><input type="text" disabled value="<?php echo esc_attr($serverURL); ?>" size="28"></td>
 		</tr>
+		<?php } ?>
+		<?php if($showServerURL || $serverv2URL != "https://api.shorthand.com") { ?>
 		<tr class="v2row">
-			<th scope="row v1row"><?php _e("Service URL" ); ?></th>
+			<th scope="row v1row"><?php _e("Service v2 URL" ); ?></th>
 			<td><input type="text" disabled value="<?php echo esc_attr($serverv2URL); ?>" size="28"></td>
 		</tr>
 		<?php } ?>
@@ -123,7 +125,6 @@ function shand_shorthand_options() {
 	<h3>Shorthand Connect Status</h3>
 	<?php if ($profile) { ?>
 		<p class="status">Successfully connected</p>
-		<img class="grav" src="<?php echo $profile->gravatar; ?>" />
 		<p><strong>Username</strong>: <?php echo $profile->username; ?></p>
 	<?php } else { ?>
 		<p class="status warn">Not Connected</p>
