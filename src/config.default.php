@@ -5,5 +5,6 @@ $serverv2URL = 'https://api.shorthand.com';
 $allowversionswitch = true;
 $showServerURL = false;
 $showArchivedStories = false;
+$noabstract = false;
 
 ?>
