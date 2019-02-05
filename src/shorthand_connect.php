@@ -244,6 +244,8 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 
     if (!$noabstract && isset($_REQUEST['abstract'])) {
     	update_post_meta( $post_id, 'abstract', wp_kses_post($_REQUEST['abstract']) );
+    } else if ($noabstract && get_post_meta( $post_id, 'abstract' )) {
+      delete_post_meta( $post_id, 'abstract' );
     }
 
     if (isset($_REQUEST['extra_html'])) {
