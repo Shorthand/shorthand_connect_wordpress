@@ -298,6 +298,14 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 					);
 					wp_update_post( $post );
 					add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
+				} else  {
+					remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
+					$post = array(
+						'ID' => $post_id,
+						'post_content' => ''
+					);
+					wp_update_post( $post );
+					add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
 				}
     	} else {
     		echo 'Something went wrong, please try again';
