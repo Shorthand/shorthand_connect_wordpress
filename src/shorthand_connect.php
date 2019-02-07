@@ -219,13 +219,16 @@ function shand_wpt_shorthand_extra_html() {
 function shand_add_shorthand_metaboxes() {
 	global $version;
 	global $post;
+	global $noabstract;
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
 		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story - '.$version.' (<a href="options-general.php?page=shorthand-options">change version</a>)', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
     } else {
     	add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story - '.$version.' (<a href="options-general.php?page=shorthand-options">change version</a>)', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
-    }
-    add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
+		}
+		if (!$noabstract) {
+			add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
+		}
     add_meta_box('shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
 }
 add_action( 'add_meta_boxes', 'shand_add_shorthand_metaboxes' );
@@ -233,13 +236,16 @@ add_action( 'add_meta_boxes', 'shand_add_shorthand_metaboxes' );
 
 /* Save the shorthand story */
 function shand_save_shorthand_story( $post_id, $post, $update ) {
+	global $noabstract;
 	$slug = 'shorthand_story';
 	if ( $slug != $post->post_type ) {
         return;
     }
 
-    if (isset($_REQUEST['abstract'])) {
+    if (!$noabstract && isset($_REQUEST['abstract'])) {
     	update_post_meta( $post_id, 'abstract', wp_kses_post($_REQUEST['abstract']) );
+    } else if ($noabstract && get_post_meta( $post_id, 'abstract' )) {
+      delete_post_meta( $post_id, 'abstract' );
     }
 
     if (isset($_REQUEST['extra_html'])) {
@@ -282,15 +288,25 @@ function shand_save_shorthand_story( $post_id, $post, $update ) {
 				$head = shand_fix_content_paths($assets_path, file_get_contents($head_file), $version);
 				update_post_meta($post_id, 'story_head', wp_slash($head));
 
-    		// Save the abstract
-    		$abstract = shand_fix_content_paths($assets_path, file_get_contents($article_file), $version);
-    		remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
-    		$post = array(
-    			'ID' => $post_id,
-    			'post_content' => shand_abstract_template($post_id, wp_kses_post($_REQUEST['abstract']), $abstract)
-    		);
-    		wp_update_post( $post );
-    		add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
+				// Save the abstract
+				if (!$noabstract) {
+					$abstract = shand_fix_content_paths($assets_path, file_get_contents($article_file), $version);
+					remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
+					$post = array(
+						'ID' => $post_id,
+						'post_content' => shand_abstract_template($post_id, wp_kses_post($_REQUEST['abstract']), $abstract)
+					);
+					wp_update_post( $post );
+					add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
+				} else  {
+					remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
+					$post = array(
+						'ID' => $post_id,
+						'post_content' => ''
+					);
+					wp_update_post( $post );
+					add_action( 'save_post', 'shand_save_shorthand_story', 10, 3);
+				}
     	} else {
     		echo 'Something went wrong, please try again';
     		print_r($err);
