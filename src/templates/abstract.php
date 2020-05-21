@@ -8,5 +8,3 @@ function shand_abstract_template($post_id, $abstract, $data) {
 	$abstract .= '<div style="display:none;">'.$data.'</div>';
 	return $abstract;
 }
-
-?>
