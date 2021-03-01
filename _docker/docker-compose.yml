@@ -7,6 +7,8 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     restart: always
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: somewordpress
       MYSQL_DATABASE: wordpress
@@ -22,7 +24,7 @@ services:
       - "8000:80"
     restart: always
     volumes:
-      - ./src:/var/www/html/wp-content/plugins/shorthand_wordpress_connect
+      - ../src:/var/www/html/wp-content/plugins/shorthand_wordpress_connect
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wordpress

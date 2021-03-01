@@ -3,7 +3,7 @@
 Start environment (from root directory).
 
 ```
-docker-compose --file _docker/docker-compose.yml up --detach --detach
+docker-compose --file _docker/docker-compose.yml up --detach --build
 ```
 
 Website is available at [0.0.0.0:8000](http://0.0.0.0:8000) and you should be prompted to complete the install - if not, see below.
@@ -27,4 +27,18 @@ You can ignore any `sendmail` errors.
 ```
 docker-compose --file _docker/docker-compose.yml stop
 docker-compose --file _docker/docker-compose.yml rm -f
+```
+
+### To clear persisant data:
+
+To see if `shorthand_connect_wordpress_db_data` exists.
+
+```
+docker volume ls
+```
+
+If it does, remove it.
+
+```
+docker volume rm shorthand_connect_wordpress_db_data
 ```
