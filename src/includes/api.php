@@ -137,5 +137,3 @@ function sh_copy_story($post_id, $story_id) {
 	}
 	return $story;
 }
-
-?>
