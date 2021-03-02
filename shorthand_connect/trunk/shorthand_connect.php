@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.6
+ * @version 1.3.7
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.6
+Version: 1.3.7
 Author URI: http://shorthand.com
 */
 
