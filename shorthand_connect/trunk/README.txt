@@ -34,6 +34,9 @@ https://wordpress.org/plugins/about/svn/
 
 == Changelog ==
 
+= 1.3.7 =
+* Updates to internal php and API handling
+
 = 1.3.6 =
 * Better sanitize input
 

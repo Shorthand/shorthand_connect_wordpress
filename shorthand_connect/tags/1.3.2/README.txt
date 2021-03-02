@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4
 Tested up to: 5.0.3
-Stable tag: 1.3.7
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,12 +33,6 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
-
-= 1.3.7 =
-* Updates to internal php and API handling
-
-= 1.3.6 =
-* Better sanitize input
 
 = 1.3.2 =
 * Add support for hashed themes

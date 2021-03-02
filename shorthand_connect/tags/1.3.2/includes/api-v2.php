@@ -1,64 +1,73 @@
 <?php
 
-// VERSION 1 API
+// VERSION 2 API
 
 function sh_get_profile() {
 
-	global $serverURL;
-	$token = get_option('sh_token_key');
-	$user_id = get_option('sh_user_id');
+	global $serverv2URL;
+	$token = get_option('sh_v2_token');
 
-	$valid_token = false;
+	$tokeninfo = array();
 
-	$data = array();
-
-	//Attempt to connect to the server
-	if($token && $user_id) {
-		$url = $serverURL.'/api/profile/';
-		$vars = 'user='.$user_id.'&token='.$token;
-		$response = wp_remote_post( $url, array(
-			'headers' => array(
+	if($token) {
+		$url = $serverv2URL.'/v2/token-info';
+		$response = wp_remote_get( $url, array(
+			headers => array(
+				'Authorization' => 'Token '.$token,
 				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
-			),
-			'body'    => array(
-				'user' => $user_id,
-				'token' => $token
-			),
-		));
+			)
+		) );
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode($body);
+		if(isset($data) && isset($data->name)) {
+			$tokeninfo['username'] = $data->name . ' ('.$data->token_type.' Token)';
+			$tokeninfo['gravatar'] = $data->logo;
+			$tokeninfo = (object)$tokeninfo;
+		}
 	}
-	return $data;
+
+	return $tokeninfo;
 }
 
 function sh_get_stories() {
-	global $serverURL;
-	$token = get_option('sh_token_key');
-	$user_id = get_option('sh_user_id');
+	global $serverv2URL;
+	$token = get_option('sh_v2_token');
 
-	$valid_token = false;
+	$valid_token = true;
 
 	$stories = null;
 
 	//Attempt to connect to the server
-	if($token && $user_id) {
-		$url = $serverURL.'/api/index/';
-		$response = wp_remote_post( $url, array(
+	if($token) {
+		$url = $serverv2URL.'/v2/stories';
+		$response = wp_remote_get( $url, array(
 			'headers' => array(
+				'Authorization' => 'Token '.$token,
 				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
 			),
-			'body'    => array(
-				'user' => $user_id,
-				'token' => $token
-			),
 			'timeout' => '240'
-		));
+		) );
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode($body);
-
-		if(isset($data->stories)) {
+		if(isset($data)) {
+			$stories = array();
 			$valid_token = true;
-			$stories = $data->stories;
+			//Something went wrong
+			if ($data->status) {
+				return null;
+			}
+			foreach($data as $storydata) {
+				$story = array(
+					'image' => $storydata->cover,
+					'id' => $storydata->id,
+					'metadata' => (object)array(
+						'description' => $storydata->description
+					),
+					'title' => $storydata->title,
+					'story_version' => ''.$storydata->version
+				);
+				$stories[] = (object)$story;
+			}
 		}
 	}
 	return $stories;
@@ -87,49 +96,46 @@ function sh_copy_story($post_id, $story_id) {
 	@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
 	WP_Filesystem();
+
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();
-	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
+	$destination_path = $destination['path'].'/shorthand/'.$post_id;
 
-	global $serverURL;
-	$token = get_option('sh_token_key');
-	$user_id = get_option('sh_user_id');
+	global $serverv2URL;
+	$token = get_option('sh_v2_token');
 
 	$valid_token = false;
 
 	$story = array();
 
 	//Attempt to connect to the server
-	if($token && $user_id) {
-		$url = $serverURL.'/api/story/'.$story_id.'/';
-		$vars = 'user='.$user_id.'&token='.$token;
+	if($token) {
+		$url = $serverv2URL.'/v2/stories/'.$story_id;
 		$zipfile = tempnam($tmpdir, 'sh_zip');
-		$response = wp_remote_post( $url, array(
+		$unzipdir = tempnam($tmpdir, 'sh_unzip').'_dir';
+		$response = wp_remote_get( $url, array(
 			'headers' => array(
+				'Authorization' => 'Token '.$token,
 				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
-			),
-			'body'    => array(
-				'user' => $user_id,
-				'token' => $token
 			),
 			'timeout' => '600',
 			'stream' => true,
 			'filename' => $zipfile
-		));
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode($body);
+		) );
 		if($response['response']['code'] == 200) {
-			$unzipfile = unzip_file( $zipfile, $destination_path);
-			if ( $unzipfile ) {
-				$story['path'] = $destination_path;
-			} else {
-				$story['error'] = array(
-				'pretty' => 'Could not unzip file'
-			);
-			}
+			$unzipfile = unzip_file( $zipfile, $unzipdir);
+				if ( $unzipfile == 1 ) {
+					wp_mkdir_p($destination_path.'/'.$story_id);
+					$err = copy_dir($unzipdir, $destination_path.'/'.$story_id);
+					$story['path'] = $destination_path.'/'.$story_id;
+				} else {
+					$story['error'] = array(
+					'pretty' => 'Could not unzip file'
+				);
+				}
 		} else {
 			$story['error'] = array(
-				'pretty' => 'Could not upload file',
+				'pretty' => 'Could not get zip file',
 				'error' => curl_error($ch),
 				'response' => $response
 			);
@@ -137,3 +143,5 @@ function sh_copy_story($post_id, $story_id) {
 	}
 	return $story;
 }
+
+?>

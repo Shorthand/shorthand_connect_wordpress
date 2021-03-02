@@ -11,3 +11,5 @@ if ( defined( 'SHORTHAND_NOABSTRACT' ) ){
 } else {
     $noabstract = false;
 }
+
+?>
