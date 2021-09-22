@@ -55,7 +55,7 @@ function sh_get_stories() {
 		}
 		foreach($data as $storydata) {
 			$story = array(
-				'image' => $storydata->cover,
+				'image' => $storydata->signedCover,
 				'id' => $storydata->id,
 				'metadata' => (object)array(
 					'description' => $storydata->description
