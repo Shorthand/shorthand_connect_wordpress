@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4
 Tested up to: 5.8.1
-Stable tag: 1.3.8
+Stable tag: 1.3.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,9 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.9 =
+* Updated Contact emails
 
 = 1.3.8 =
 * Updated Signed URLs for thumbnails
@@ -129,4 +132,4 @@ Only try these after experiencing issues
 
  - Firstly make sure that your www directory is owned by the correct user
  - In your wp-config.php file, add `define('FS_CHMOD_DIR', 0777 )`;
- - Contact product@shorthand.com and dekker@shorthand.com for further support and feedback
+ - Contact help@shorthand.com and ben@shorthand.com for further support and feedback
