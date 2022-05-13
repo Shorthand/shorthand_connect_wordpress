@@ -104,13 +104,13 @@ function shand_shorthand_options() {
 			<th scope="row"><label for="sh_v2_token"><?php _e("Shorthand Team Token", 'sh-v2-token' ); ?></label></th>
 			<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr($v2_token); ?>" size="28"></td>
 		</tr>
-		<?php if($showServerURL || $serverURL != "https://test-dep-updates-app.test.shorthand.com") { ?>
+		<?php if($showServerURL || $serverURL != "https://api.shorthand.com") { ?>
 		<tr class="v1row">
 			<th scope="row"><?php _e("Service v1 URL" ); ?></th>
 			<td><input type="text" disabled value="<?php echo esc_attr($serverURL); ?>" size="28"></td>
 		</tr>
 		<?php } ?>
-		<?php if($showServerURL || $serverv2URL != "https://test-dep-updates-api.test.shorthand.com") { ?>
+		<?php if($showServerURL || $serverv2URL != "api.shorthand.com") { ?>
 		<tr class="v2row">
 			<th scope="row v1row"><?php _e("Service v2 URL" ); ?></th>
 			<td><input type="text" disabled value="<?php echo esc_attr($serverv2URL); ?>" size="28"></td>

@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 5.9.3
-Stable tag: 1.3.13
+Stable tag: 1.3.11
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -58,12 +58,6 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
-
-= 1.3.13 =
-* Bumping versions
-
-= 1.3.12 =
-* Bumping versions
 
 = 1.3.11 =
 * Added Post-processing Regex JSON for stripping/modifying head and body content of Shorthand Stories. Also added custom field "no_update"; if true, updating the Wordpress Shorthand Story won't fetch and replace the existing content.

@@ -1,7 +1,7 @@
 <?php
 
-$serverURL = 'https://test-dep-updates-app.test.shorthand.com';
-$serverv2URL = 'https://test-dep-updates-api.test.shorthand.com';
+$serverURL = 'https://api.shorthand.com';
+$serverv2URL = 'api.shorthand.com';
 $allowversionswitch = true;
 $showServerURL = false;
 $showArchivedStories = false;

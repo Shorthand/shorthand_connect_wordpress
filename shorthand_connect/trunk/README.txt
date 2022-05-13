@@ -2,9 +2,10 @@
 Contributors: shorthandconnect
 Donate link:
 Tags: shorthand, api
-Requires at least: 4
-Tested up to: 5.8.1
-Stable tag: 1.3.9
+Requires at least: 4.0
+Tested up to: 5.9.3
+Stable tag: 1.3.13
+Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,14 +17,38 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
 
 == Installation ==
 
-1a. Install the search for the plugin and install it within wp-admin:
-1b. Or, Upload `shorthand_connect` to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Add your credentials:
-V1 - Go to Settings > Shorthand and enter in your user ID and API Key (get these from your account page in the Shorthand editor).
-v2 - Go to your organisation in the top right, and click the cog to get to settings.  Scroll to the bottom, and generate a new key.  Go to Settings > Shorthand and enter in your Token.
+1. Install the search for the plugin and install it within wp-admin.
+  - Or alternately upload `shorthand_connect` to the `/wp-content/plugins/` directory.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Go to Settings -> Shorthand to add your Shorthand API Token retrieved in the next step.
+3. Get your API token from Shorthand.com: (Only Admin/Owners will have access to generate API Tokens)
+  - Open the workspace settings; either by clicking your organisation name from the dashboard OR from the top right menu when editing a story.
+  - Under the sub-heading API Tokens generate either a Team Token or Workspace Token.
+     - A Team Token only has access to published/prepared stories under the associated team.
+     - A Workspace Token has access to all published/prepared stories.
 4. Optionally change the CSS settings in the options to best present stories within your theme.
 5. Optionally your theme can override the display of Shorthand stories via `single-shorthand_story.php` in your theme directory.
+6. Optionally apply post-processing in the form of regex queries; within Settings, Post-Processing.
+
+~~~
+ { 
+  "head":
+  [
+    { 
+      "query":  "/<title.(.*?)<\/title>/",
+      "replace":""
+    },
+    {
+      "query":  "/regex string/",
+      "replace":"String to replace it"
+    },
+    ...
+    
+  ],
+  "body":[] 
+}
+~~~
+
 
 == Updating ==
 https://wordpress.org/plugins/about/svn/
@@ -33,6 +58,18 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.13 =
+* Bumping versions
+
+= 1.3.12 =
+* Bumping versions
+
+= 1.3.11 =
+* Added Post-processing Regex JSON for stripping/modifying head and body content of Shorthand Stories. Also added custom field "no_update"; if true, updating the Wordpress Shorthand Story won't fetch and replace the existing content.
+
+= 1.3.10 =
+* Updated Installation instructions (Documentation only)
 
 = 1.3.9 =
 * Updated Contact emails
@@ -133,3 +170,4 @@ Only try these after experiencing issues
  - Firstly make sure that your www directory is owned by the correct user
  - In your wp-config.php file, add `define('FS_CHMOD_DIR', 0777 )`;
  - Contact help@shorthand.com and ben@shorthand.com for further support and feedback
+ - Some WP Plugins can aggressively cache or control how content is displayed at the theme-level; check page templates to ensure nothing is conflicting.

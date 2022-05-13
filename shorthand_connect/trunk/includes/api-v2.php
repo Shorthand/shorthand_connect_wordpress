@@ -5,7 +5,7 @@
 function sh_v2_api_get($url, $options) {
 	global $serverv2URL;
 	$token = get_option('sh_v2_token');
-
+	
 	if (!$token) {
 		return false;
 	}

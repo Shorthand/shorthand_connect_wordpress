@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.7
+ * @version 1.3.13
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.7
+Version: 1.3.13
 Author URI: http://shorthand.com
 */
 
@@ -58,7 +58,7 @@ function shand_create_post_type()
 			'taxonomies' => array('category', 'post_tag'),
 		)
 	);
-
+	
 	register_taxonomy_for_object_type('category', 'shorthand_story');
 	register_taxonomy_for_object_type('post_tag', 'shorthand_story');
 }
@@ -268,11 +268,16 @@ function shand_save_shorthand_story($post_id, $post, $update)
 		delete_post_meta($post_id, 'abstract');
 	}
 
+	if(!get_post_meta($post_id, 'no_update')) {
+		update_post_meta($post_id, 'no_update', "false");
+	}
+
 	if (isset($_REQUEST['extra_html'])) {
 		update_post_meta($post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']));
 	}
 
-	if (isset($_REQUEST['story_id'])) {
+	if (isset($_REQUEST['story_id']) && get_post_meta($post_id, 'no_update')[0] !== "true") {
+		
 		$safe_story_id = preg_replace("/\W|_/", '', $_REQUEST['story_id']);
 		update_post_meta($post_id, 'story_id', sanitize_text_field($safe_story_id));
 		$err = sh_copy_story($post_id, $safe_story_id);
@@ -284,7 +289,7 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			$story_path = sh_get_story_path($post_id, $safe_story_id);
 		}
 
-		if (isset($story_path)) {
+		if (isset($story_path) ) {
 			// The story has been uploaded
 			update_post_meta($post_id, 'story_path', $story_path);
 
@@ -303,9 +308,17 @@ function shand_save_shorthand_story($post_id, $post, $update)
 				$head_file = $story_path . '/head.html';
 				$article_file = $story_path . '/article.html';
 			}
+			$post_processing_queries = json_decode(base64_decode(get_option('sh_regex_list')));
+
 			$body = shand_fix_content_paths($assets_path, file_get_contents($article_file), $version);
+			if(isset($post_processing_queries->body)){
+				$body = shand_post_processing($body,$post_processing_queries->body);
+			}
 			update_post_meta($post_id, 'story_body', wp_slash($body));
 			$head = shand_fix_content_paths($assets_path, file_get_contents($head_file), $version);
+			if(isset($post_processing_queries->head)){
+				$head = shand_post_processing($head, $post_processing_queries->head);
+			}
 			update_post_meta($post_id, 'story_head', wp_slash($head));
 
 			// Save the abstract
@@ -453,6 +466,22 @@ function shand_fix_content_paths($assets_path, $content, $version)
 		$content = str_replace('./static/', $assets_path . '/static/', $content);
 		$content = str_replace('./media/', $assets_path . '/media/', $content);
 	}
+
+	return $content;
+}
+
+function shand_post_processing($content, $queries)
+{
+	if ($queries == null){
+		return $content;
+	}
+	
+	foreach ($queries as $query) {
+		if(isset($query->query) && isset($query->replace)){
+			$content = preg_replace($query->query, $query->replace, $content);
+		}
+	}
+
 	return $content;
 }
 

@@ -1,6 +1,6 @@
 <?php
 
-$serverURL = 'https://app.shorthand.com';
+$serverURL = 'https://api.shorthand.com';
 $serverv2URL = 'https://api.shorthand.com';
 $allowversionswitch = true;
 $showServerURL = false;
