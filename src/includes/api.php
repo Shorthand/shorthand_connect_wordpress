@@ -103,7 +103,7 @@ function sh_copy_story($post_id, $story_id) {
 	if($token && $user_id) {
 		$url = $serverURL.'/api/story/'.$story_id.'/';
 		$vars = 'user='.$user_id.'&token='.$token;
-		$zipfile = tempnam($tmpdir, 'sh_zip');
+		$zipfile = wp_tempnam($tmpdir, 'sh_zip');
 		$response = wp_remote_post( $url, array(
 			'headers' => array(
 				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',

@@ -101,8 +101,8 @@ function sh_copy_story($post_id, $story_id) {
 	$story = array();
 
 	//Attempt to connect to the server
-	$zipfile = tempnam($tmpdir, 'sh_zip');
-	$unzipdir = tempnam($tmpdir, 'sh_unzip').'_dir';
+	$zipfile = wp_tempnam($tmpdir, 'sh_zip');
+	$unzipdir = wp_tempnam($tmpdir, 'sh_unzip').'_dir';
 	$response = sh_v2_api_get('/v2/stories/'.$story_id, array(
 		'timeout' => '600',
 		'stream' => true,
