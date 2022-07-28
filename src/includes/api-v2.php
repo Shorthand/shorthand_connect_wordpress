@@ -108,30 +108,34 @@ function sh_copy_story($post_id, $story_id) {
 		'stream' => true,
 		'filename' => $zipfile
 	));
-	if($response['response']['code'] == 200) {
-		$unzipfile = unzip_file( $zipfile, $unzipdir);
-			if ( $unzipfile == 1 ) {
-				wp_mkdir_p($destination_path.'/'.$story_id);
-				$err = copy_dir($unzipdir, $destination_path.'/'.$story_id);
-				if (is_wp_error($err)) {
-					$story['error'] = array(
-						'pretty' => 'Could not copy story into Wordpress',
-						'error' => $err->get_error_message()
-					);
-				} else {
-					$story['path'] = $destination_path.'/'.$story_id;
-				}
-			} else {
-				$story['error'] = array(
-					'pretty' => 'Could not unzip file'
-				);
-			}
-	} else {
+	if (is_wp_error($response)) {
 		$story['error'] = array(
-			'pretty' => 'Could not get zip file',
+			'pretty' => ' Request to Shorthand failed',
+			'error' => $response->get_error_message($response)
+		);
+	} else if (!$response || $response['response']['code'] != 200) {
+		$story['error'] = array(
+			'pretty' => 'Request to Shorthand failed; check the token is configured correctly',
 			'response' => $response
 		);
+	} else {
+		$unzipfile = unzip_file( $zipfile, $unzipdir);
+		if ( $unzipfile == 1 ) {
+			wp_mkdir_p($destination_path.'/'.$story_id);
+			$err = copy_dir($unzipdir, $destination_path.'/'.$story_id);
+			if (is_wp_error($err)) {
+				$story['error'] = array(
+					'pretty' => 'Could not copy story into Wordpress',
+					'error' => $err->get_error_message()
+				);
+			} else {
+				$story['path'] = $destination_path.'/'.$story_id;
+			}
+		} else {
+			$story['error'] = array(
+				'pretty' => 'Could not unzip file'
+			);
+		}
 	}
-
 	return $story;
 }
