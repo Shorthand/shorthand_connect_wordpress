@@ -36,7 +36,7 @@ function shand_shorthand_options() {
 	global $showServerURL;
 
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.' )) );
 	}
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_token_key', sanitize_text_field($_POST['sh_token_key']));
