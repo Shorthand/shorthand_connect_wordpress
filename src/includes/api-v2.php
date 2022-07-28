@@ -20,8 +20,12 @@ function sh_v2_api_get($url, $options) {
 		),
 		$options
 	);
-
-	return wp_remote_get($url, $request_options);
+	if(function_exists("vip_safe_wp_remote_get")){
+		return vip_safe_wp_remote_get($url, $request_options);
+	}else{
+		return wp_remote_get($url, $request_options);
+	}
+	
 }
 
 function sh_v2_api_get_json($url, $options) {
