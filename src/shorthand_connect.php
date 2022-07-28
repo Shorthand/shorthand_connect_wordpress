@@ -161,11 +161,11 @@ function shand_wpt_shorthand_story()
 	if ($selected_story) {
 		if ($story_api_version == $version) {
 			echo '<p>Clicking UPDATE will update Wordpress with the latest version of the story from Shorthand.</p>';
-			echo '<input name="story_id" type="hidden" value="' . $selected_story . '" />';
+			echo '<input name="story_id" type="hidden" value="' . esc_attr($selected_story) . '" />';
 		} else {
 			echo '<p class="warning">To update this story from Shorthand, please switch to the correct API version <a href="options-general.php?page=shorthand-options">here</a></p>';
 			echo '<style>#publish { visibility: hidden !important; }</style>';
-			echo '<input name="story_id" type="hidden" value="' . $selected_story . '" />';
+			echo '<input name="story_id" type="hidden" value="' . esc_attr($selected_story) . '" />';
 		}
 		return;
 	}
@@ -192,14 +192,14 @@ function shand_wpt_shorthand_story()
 					continue;
 				}
 			}
-			echo '<li class="story ' . $story_selected . '"><label><input name="story_id" type="radio" value="' . $story->id . '" ' . $selected . ' /><img width="150" src="' . $baseurl . $story->image . '" /><span class="title">' . $story->title . $archived . '</span><span class="desc">' . $story->metadata->description . '</span></a></label></li>';
+			echo '<li class="story ' . esc_attr($story_selected) . '"><label><input name="story_id" type="radio" value="' . esc_attr($story->id) . '" ' . esc_html($selected) . ' /><img width="150" src="' . esc_url($baseurl . $story->image) . '" /><span class="title">' . esc_html($story->title . $archived) . '</span><span class="desc">' . esc_html($story->metadata->description) . '</span></a></label></li>';
 		}
 		echo '</ul><div class="clear"></div>';
 	}
 
 	// Noncename needed to verify where the data originated
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		esc_attr(wp_create_nonce(plugin_basename(__FILE__))) . '" />';
 
 	?>
 	<script>
@@ -221,7 +221,7 @@ function shand_wpt_shorthand_abstract()
 	global $post;
 	$abstract = get_post_meta($post->ID, 'abstract', true);
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		esc_attr(wp_create_nonce(plugin_basename(__FILE__))) . '" />';
 	echo '<textarea id="abstract" name="abstract">' . esc_textarea($abstract) . '</textarea>';
 }
 
