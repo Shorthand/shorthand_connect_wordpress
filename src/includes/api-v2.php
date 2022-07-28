@@ -38,7 +38,7 @@ function sh_get_profile() {
 	$tokeninfo = array();
 
 	$data = sh_v2_api_get_json('/v2/token-info', array());
-	if ($data && isset($data->name)) {
+	if ($data && isset($data->organisation_id)) {
 		$tokeninfo['username'] = $data->name . ' ('.$data->token_type.' Token)';
 		$tokeninfo['gravatar'] = $data->logo;
 		$tokeninfo = (object)$tokeninfo;
@@ -54,7 +54,7 @@ function sh_get_stories() {
 	if($data) {
 		$stories = array();
 		//Something went wrong
-		if ($data->status) {
+		if (isset($data->status) && $data->status) {
 			return null;
 		}
 		foreach($data as $storydata) {
