@@ -340,7 +340,13 @@ function shand_save_shorthand_story($post_id, $post, $update)
 				wp_update_post($post);
 				add_action('save_post', 'shand_save_shorthand_story', 10, 3);
 			}
+
+			delete_post_meta($post_id, 'story_diagnostic');
+
 		} else {
+
+			update_post_meta($post_id, 'story_diagnostic', $err);
+
 			echo 'Something went wrong, please try again';
 			print_r($err);
 			die();
