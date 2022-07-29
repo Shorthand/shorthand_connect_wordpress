@@ -76,6 +76,11 @@ function sh_get_stories() {
 
 function sh_get_story_path($post_id, $story_id) {
 	WP_Filesystem();
+	global $wp_filesystem;
+	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
+		$creds = request_filesystem_credentials( site_url() );
+		wp_filesystem( $creds );
+	}
 	$destination = wp_upload_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
 	if(!file_exists($destination_path)) {
@@ -86,6 +91,12 @@ function sh_get_story_path($post_id, $story_id) {
 
 function sh_get_story_url($post_id, $story_id) {
 	WP_Filesystem();
+	global $wp_filesystem;
+
+	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
+		$creds = request_filesystem_credentials( site_url() );
+		wp_filesystem( $creds );
+	}
 	$destination = wp_upload_dir();
 	$destination_url = $destination['url'].'/shorthand/'.$post_id.'/'.$story_id;
 	return $destination_url;
@@ -93,10 +104,15 @@ function sh_get_story_url($post_id, $story_id) {
 
 function sh_copy_story($post_id, $story_id) {
 
-	// Set the maximum memory limit for the entire operation (this is already called later by unzip_file, but lets do it earlier)
-	@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
-
+	wp_raise_memory_limit('admin');
 	WP_Filesystem();
+
+	global $wp_filesystem;
+
+	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
+		$creds = request_filesystem_credentials( site_url() );
+		wp_filesystem( $creds );
+	}
 
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();

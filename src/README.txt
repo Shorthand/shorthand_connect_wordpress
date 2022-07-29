@@ -3,8 +3,8 @@ Contributors: shorthandconnect
 Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
-Tested up to: 5.9.3
-Stable tag: 1.3.14
+Tested up to: 6.0.0
+Stable tag: 1.3.16
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -58,6 +58,9 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.15 =
+* Fixed incorrect trunk copy in previous release.
 
 = 1.3.14 =
 * Added story-specific error tracking and targeted updates for those using WP VIP Hosting.
