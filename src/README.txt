@@ -59,6 +59,9 @@ https://wordpress.org/plugins/about/svn/
 
 == Changelog ==
 
+= 1.3.16 =
+* Removed references to v1 API (has been deprecated for 12+ months) and updated filesystem calls to be WP-specific.
+
 = 1.3.15 =
 * Fixed incorrect trunk copy in previous release.
 
