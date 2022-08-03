@@ -139,7 +139,7 @@ function sh_copy_story($post_id, $story_id) {
 			'response' => $response
 		);
 	} else {
-		if(function_exists("vip_safe_wp_remote_get")){
+		if(defined('WPCOM_IS_VIP_ENV')){
 			//WP VIP HOSTING
 			$zip = new ZipArchive;
 			if ( $zip->open($zipfile) == true ) {

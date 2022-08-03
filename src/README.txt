@@ -1,10 +1,10 @@
 === Shorthand Connect ===
 Contributors: shorthandconnect
-Donate link:
+Donate link: 
 Tags: shorthand, api
 Requires at least: 4.0
-Tested up to: 6.0.0
-Stable tag: 1.3.16
+Tested up to: 6.0.1
+Stable tag: 1.3.18
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -58,6 +58,12 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.18 =
+* Restored previous WP file_get_contents fetch for VIP-hosted customers 
+
+= 1.3.17 =
+* Added alternate method of story ZIP extraction for WP VIP-hosted customers.
 
 = 1.3.16 =
 * Removed references to v1 API (has been deprecated for 12+ months) and updated filesystem calls to be WP-specific.

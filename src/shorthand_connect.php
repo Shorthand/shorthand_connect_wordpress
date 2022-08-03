@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.16
+ * @version 1.3.18
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.16
+Version: 1.3.18
 Author URI: http://shorthand.com
 */
 
@@ -293,6 +293,8 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			//Log any story-specific errors to the metadata 
 			if(isset($err['error'])){
 				update_post_meta($post_id, 'ERROR', json_encode($err));
+			}else{
+				delete_post_meta($post_id, 'ERROR');
 			}
 
 			// Get path to the assets
@@ -306,20 +308,23 @@ function shand_save_shorthand_story($post_id, $post, $update)
 
 			$post_processing_queries = json_decode(base64_decode(get_option('sh_regex_list')));
 
-			$body = shand_fix_content_paths($assets_path, $wp_filesystem->get_contents($article_file));
+			$body = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($article_file) : $wp_filesystem->get_contents($article_file));
+			$head = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($head_file) 	: $wp_filesystem->get_contents($head_file));
+
 			if(isset($post_processing_queries->body)){
 				$body = shand_post_processing($body,$post_processing_queries->body);
 			}
-			update_post_meta($post_id, 'story_body', wp_slash($body));
-			$head = shand_fix_content_paths($assets_path, $wp_filesystem->get_contents($head_file));
+			
 			if(isset($post_processing_queries->head)){
 				$head = shand_post_processing($head, $post_processing_queries->head);
 			}
+
+			update_post_meta($post_id, 'story_body', wp_slash($body));
 			update_post_meta($post_id, 'story_head', wp_slash($head));
 
 			// Save the abstract
 			if (!$noabstract) {
-				$abstract = shand_fix_content_paths($assets_path, $wp_filesystem->get_contents($article_file));
+				$abstract = $body;
 				remove_action('save_post', 'shand_save_shorthand_story', 10, 3);
 				$post = array(
 					'ID' => $post_id,
