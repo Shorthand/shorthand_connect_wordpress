@@ -5,7 +5,6 @@
 function sh_v2_api_get($url, $options) {
 	global $serverv2URL;
 	$token = get_option('sh_v2_token');
-	
 	if (!$token) {
 		return false;
 	}
@@ -15,13 +14,14 @@ function sh_v2_api_get($url, $options) {
 		array(
 			'headers' => array(
 				'Authorization' => 'Token '.$token,
-				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
-			)
+				'user-agent'  =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2'
+			),
+			'http_api_args' => $options
 		),
 		$options
 	);
-	if(function_exists("vip_safe_wp_remote_get")){
-		return vip_safe_wp_remote_get($url, $request_options);
+	if(function_exists("vip_safe_wp_remote_get") && !isset($options['timeout'])){
+		return vip_safe_wp_remote_get($url,false,1,3,10, $request_options);
 	}else{
 		return wp_remote_get($url, $request_options);
 	}
@@ -121,8 +121,8 @@ function sh_copy_story($post_id, $story_id) {
 	$story = array();
 
 	//Attempt to connect to the server
-	$zipfile = wp_tempnam($tmpdir, 'sh_zip');
-	$unzipdir = wp_tempnam($tmpdir, 'sh_unzip').'_dir';
+	$zipfile = wp_tempnam('sh_zip',$tmpdir);
+	$unzipdir = wp_tempnam('sh_unzip',$tmpdir).'_dir';
 	$response = sh_v2_api_get('/v2/stories/'.$story_id, array(
 		'timeout' => '600',
 		'stream' => true,
@@ -146,8 +146,12 @@ function sh_copy_story($post_id, $story_id) {
 			if (is_wp_error($err)) {
 				$story['error'] = array(
 					'pretty' => 'Could not copy story into Wordpress',
-					'error' => $err->get_error_message()
+					'error' => $err->get_error_message(),
+					'unzip error'=> $unzipfile
 				);
+				if(function_exists("wp_filesize")){
+					$story['error']['downloaded zip size'] = wp_filesize($zipfile);
+				}
 			} else {
 				$story['path'] = $destination_path.'/'.$story_id;
 			}

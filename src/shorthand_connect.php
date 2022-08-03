@@ -290,6 +290,11 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			// The story has been uploaded
 			update_post_meta($post_id, 'story_path', $story_path);
 
+			//Log any story-specific errors to the metadata 
+			if(isset($err['error'])){
+				update_post_meta($post_id, 'ERROR', json_encode($err));
+			}
+
 			// Get path to the assets
 			$assets_path = sh_get_story_url($post_id, $safe_story_id);
 
