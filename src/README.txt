@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.0.1
-Stable tag: 1.3.18
+Stable tag: 1.3.20
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -58,6 +58,12 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.20 =
+* Restored flush_rewrite_rules() to shorthand_options.php that was lost in a previous update.
+
+= 1.3.19 =
+* Mis-fire release for 1.3.20
 
 = 1.3.18 =
 * Restored previous WP file_get_contents fetch for VIP-hosted customers 
