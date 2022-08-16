@@ -51,7 +51,6 @@ function shand_shorthand_options() {
 	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_permalink', sanitize_text_field($_POST['sh_permalink']));
 		shand_create_post_type();
-		flush_rewrite_rules();
 	}
 	$permalink_structure = esc_html(get_option('sh_permalink'));
 

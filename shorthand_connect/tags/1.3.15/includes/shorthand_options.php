@@ -39,10 +39,17 @@ function shand_shorthand_options() {
 		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.' )) );
 	}
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+		update_option('sh_token_key', sanitize_text_field($_POST['sh_token_key']));
 		update_option('sh_v2_token', sanitize_text_field($_POST['sh_v2_token']));
+		$safe_user_id = intval( $_POST['sh_user_id'] );
+		update_option('sh_user_id', $safe_user_id);
+		update_option('sh_api_version', sanitize_text_field($_POST['sh_api_version']));
 	}
 
+	$token = esc_html(get_option('sh_token_key'));
 	$v2_token = esc_html(get_option('sh_v2_token'));
+	$user_id = esc_html(get_option('sh_user_id'));
+	$sh_api_version = esc_html(get_option('sh_api_version'));
 	
 
 	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
@@ -85,6 +92,24 @@ function shand_shorthand_options() {
 		<?php echo $n_once ?>
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<table class="form-table"><tbody>
+		<?php if($allowversionswitch) { ?>
+		<tr>
+			<th scope="row"><label for="sh_api_version"><?php _e("API Version", 'sh-api-version' ); ?></label></th>
+			<td>
+			<select name="sh_api_version" id="sh_api_version">
+				<option <?php if (esc_attr($sh_api_version) == 'v2') { echo 'selected' ;} ?> value="v2">Version 2</option>
+				<option <?php if (esc_attr($sh_api_version) == 'v1') { echo 'selected' ;} ?> value="v1">Version 1 (Deprecated)</option>
+			</select></td>
+		</tr>
+		<?php } ?>
+		<tr class="v1row">
+			<th scope="row"><label for="sh_user_id"><?php _e("Shorthand User ID", 'sh-user-value' ); ?></label></th>
+			<td><input type="text" id="sh_user_id" name="sh_user_id" value="<?php echo esc_attr($user_id); ?>" size="9"></td>
+		</tr>
+		<tr class="v1row">
+			<th scope="row"><label for="sh_token_key"><?php _e("Shorthand API Token", 'sh-token-value' ); ?></label></th>
+			<td><input type="text" id="sh_token_key" name="sh_token_key" value="<?php echo esc_attr($token); ?>" size="28"></td>
+		</tr>
 		<tr class="v2row">
 			<th scope="row"><label for="sh_v2_token"><?php _e("Shorthand Team Token", 'sh-v2-token' ); ?></label></th>
 			<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr($v2_token); ?>" size="28"></td>
@@ -209,6 +234,34 @@ function shand_shorthand_options() {
   display: inherit;
 }
 	</style>
+	<script>
+		document.getElementById("sh_api_version").addEventListener("change", updateShOptions);
+		function updateShOptions() {
+			var x = document.getElementById("sh_api_version");
+			switch (x.value) {
+				case 'v1':
+					for(var i=0; i < document.getElementsByClassName("v1row").length; i++) {
+						document.getElementsByClassName("v1row")[i].setAttribute("class", "v1row");
+					}
+					for(var i=0; i < document.getElementsByClassName("v2row").length; i++) {
+						document.getElementsByClassName("v2row")[i].setAttribute("class", "v2row row-hidden");
+					}
+					break;
+				case 'v2':
+					for(var i=0; i < document.getElementsByClassName("v1row").length; i++) {
+						document.getElementsByClassName("v1row")[i].setAttribute("class", "v1row row-hidden");
+					}
+					for(var i=0; i < document.getElementsByClassName("v2row").length; i++) {
+						document.getElementsByClassName("v2row")[i].setAttribute("class", "v2row");
+					}
+			}
+		}
+		(function() {
+			updateShOptions();
+		})();
+	</script>
+
+
 <?php
 }
 
