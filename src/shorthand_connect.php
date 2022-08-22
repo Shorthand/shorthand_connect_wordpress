@@ -24,6 +24,10 @@ require_once('includes/api-v2.php');
 require_once('includes/shorthand_options.php');
 require_once('templates/abstract.php');
 
+if ( !function_exists('WP_Filesystem') ) {
+	require_once(ABSPATH . 'wp-admin/includes/file.php');
+}
+
 /* Create the Shorthand post type */
 function shand_create_post_type()
 {
