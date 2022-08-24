@@ -315,6 +315,9 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			$body = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($article_file) : $wp_filesystem->get_contents($article_file));
 			$head = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($head_file) 	: $wp_filesystem->get_contents($head_file));
 
+			$body = apply_filters('sh_pre_process_body', $body, $assets_path, $article_file);
+			$head = apply_filters('sh_pre_process_head', $head, $assets_path, $head_file);
+			
 			if(isset($post_processing_queries->body)){
 				$body = shand_post_processing($body,$post_processing_queries->body);
 			}
@@ -322,6 +325,9 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			if(isset($post_processing_queries->head)){
 				$head = shand_post_processing($head, $post_processing_queries->head);
 			}
+			
+			$body = apply_filters('sh_post_process_body', $body, $assets_path, $article_file);
+			$head = apply_filters('sh_post_process_head', $head, $assets_path, $head_file);
 
 			update_post_meta($post_id, 'story_body', wp_slash($body));
 			update_post_meta($post_id, 'story_head', wp_slash($head));
