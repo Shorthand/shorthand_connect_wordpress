@@ -196,5 +196,8 @@ function sh_copy_story($post_id, $story_id) {
 			}
 		}
 	}
+	
+	do_action('sh_copy_story', $post_id, $story_id, $story);
+	
 	return $story;
 }
