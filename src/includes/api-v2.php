@@ -83,9 +83,13 @@ function sh_get_story_path($post_id, $story_id) {
 	}
 	$destination = wp_upload_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
+	
 	if(!file_exists($destination_path)) {
 		$destination_path = null;
 	}
+	
+	$destination_path = apply_filters('sh_get_story_path', $destination_path, $destination);
+	
 	return $destination_path;
 }
 
