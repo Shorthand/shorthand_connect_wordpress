@@ -101,8 +101,12 @@ function sh_get_story_url($post_id, $story_id) {
 		$creds = request_filesystem_credentials( site_url() );
 		wp_filesystem( $creds );
 	}
+	
 	$destination = wp_upload_dir();
 	$destination_url = $destination['url'].'/shorthand/'.$post_id.'/'.$story_id;
+	
+	$destination_url = apply_filters('sh_get_story_url', $destination_url);
+	
 	return $destination_url;
 }
 
