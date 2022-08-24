@@ -480,6 +480,8 @@ function shand_fix_content_paths($assets_path, $content)
 	$content = str_replace('./static/', $assets_path . '/static/', $content);
 	$content = preg_replace('/.(\/theme-\w+.min.css)/', $assets_path . '$1', $content);
 	
+	$content = apply_filters('shand_fix_content_paths', $content);
+	
 	return $content;
 }
 
