@@ -75,12 +75,8 @@ function sh_get_stories() {
 }
 
 function sh_get_story_path($post_id, $story_id) {
-	WP_Filesystem();
-	global $wp_filesystem;
-	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
-		$creds = request_filesystem_credentials( site_url() );
-		wp_filesystem( $creds );
-	}
+	
+	init_WP_Filesystem();
 	$destination = wp_upload_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
 	
@@ -94,13 +90,8 @@ function sh_get_story_path($post_id, $story_id) {
 }
 
 function sh_get_story_url($post_id, $story_id) {
-	WP_Filesystem();
-	global $wp_filesystem;
 
-	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
-		$creds = request_filesystem_credentials( site_url() );
-		wp_filesystem( $creds );
-	}
+	init_WP_Filesystem();
 	
 	$destination = wp_upload_dir();
 	$destination_url = $destination['url'].'/shorthand/'.$post_id.'/'.$story_id;
@@ -113,14 +104,7 @@ function sh_get_story_url($post_id, $story_id) {
 function sh_copy_story($post_id, $story_id) {
 
 	wp_raise_memory_limit('admin');
-	WP_Filesystem();
-
-	global $wp_filesystem;
-
-	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
-		$creds = request_filesystem_credentials( site_url() );
-		wp_filesystem( $creds );
-	}
+	init_WP_Filesystem();
 
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();
@@ -147,57 +131,44 @@ function sh_copy_story($post_id, $story_id) {
 			'response' => $response
 		);
 	} else {
-		if(defined('WPCOM_IS_VIP_ENV')){
-			//WP VIP HOSTING
-			$zip = new ZipArchive;
-			if ( $zip->open($zipfile) == true ) {
-				wp_mkdir_p($destination_path.'/'.$story_id);
-				$zip->extractTo($destination_path.'/'.$story_id);
-				$zip->close();
-				if (is_wp_error($zip)) {
-					$story['error'] = array(
-						'pretty' => 'Could not copy story into Wordpress',
-						'error' => $err->get_error_message(),
-						'unzip error'=> $unzipfile
-					);
-					if(function_exists("wp_filesize")){
-						$story['error']['downloaded zip size'] = wp_filesize($zipfile);
-					}
-				} else {
-					$story['path'] = $destination_path.'/'.$story_id;
+		
+		//WP VIP HOSTING COMPATIBILITY
+		$zip = new ZipArchive;
+		if ( $zip->open($zipfile) == true ) {
+			wp_mkdir_p($destination_path.'/'.$story_id);
+			$zip->extractTo($destination_path.'/'.$story_id);
+			$zip->close();
+			if (is_wp_error($zip)) {
+				$story['error'] = array(
+					'pretty' => 'Could not copy story into Wordpress',
+					'error' => $err->get_error_message(),
+					'unzip error'=> $unzipfile
+				);
+				if(function_exists("wp_filesize")){
+					$story['error']['downloaded zip size'] = wp_filesize($zipfile);
 				}
 			} else {
-				$story['error'] = array(
-					'pretty' => 'Could not unzip file'
-				);
+				$story['path'] = $destination_path.'/'.$story_id;
 			}
-		}else{
-			//Standard WP
-			$unzipfile = unzip_file( $zipfile, $unzipdir);
-			if ( $unzipfile == 1 ) {
-				wp_mkdir_p($destination_path.'/'.$story_id);
-				$err = copy_dir($unzipdir, $destination_path.'/'.$story_id);
-				if (is_wp_error($err)) {
-					$story['error'] = array(
-						'pretty' => 'Could not copy story into Wordpress',
-						'error' => $err->get_error_message(),
-						'unzip error'=> $unzipfile
-					);
-					if(function_exists("wp_filesize")){
-						$story['error']['downloaded zip size'] = wp_filesize($zipfile);
-					}
-				} else {
-					$story['path'] = $destination_path.'/'.$story_id;
-				}
-			} else {
-				$story['error'] = array(
-					'pretty' => 'Could not unzip file'
-				);
-			}
+		} else {
+			$story['error'] = array(
+				'pretty' => 'Could not unzip file'
+			);
 		}
+		
 	}
 	
 	do_action('sh_copy_story', $post_id, $story_id, $story);
 	
 	return $story;
+}
+
+
+function init_WP_Filesystem(){
+	WP_Filesystem();
+	global $wp_filesystem;
+	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
+		$creds = request_filesystem_credentials( site_url() );
+		wp_filesystem( $creds );
+	}
 }
