@@ -83,9 +83,13 @@ function sh_get_story_path($post_id, $story_id) {
 	}
 	$destination = wp_upload_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id.'/'.$story_id;
+	
 	if(!file_exists($destination_path)) {
 		$destination_path = null;
 	}
+	
+	$destination_path = apply_filters('sh_get_story_path', $destination_path, $destination);
+	
 	return $destination_path;
 }
 
@@ -97,8 +101,12 @@ function sh_get_story_url($post_id, $story_id) {
 		$creds = request_filesystem_credentials( site_url() );
 		wp_filesystem( $creds );
 	}
+	
 	$destination = wp_upload_dir();
 	$destination_url = $destination['url'].'/shorthand/'.$post_id.'/'.$story_id;
+	
+	$destination_url = apply_filters('sh_get_story_url', $destination_url);
+	
 	return $destination_url;
 }
 
@@ -188,5 +196,8 @@ function sh_copy_story($post_id, $story_id) {
 			}
 		}
 	}
+	
+	do_action('sh_copy_story', $post_id, $story_id, $story);
+	
 	return $story;
 }
