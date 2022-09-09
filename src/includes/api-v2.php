@@ -113,12 +113,11 @@ function sh_copy_story($post_id, $story_id) {
 	$story = array();
 
 	//Attempt to connect to the server
-	$zipfile = wp_tempnam('sh_zip',$tmpdir);
-	$unzipdir = wp_tempnam('sh_unzip',$tmpdir).'_dir';
+	$zip_file = wp_tempnam('sh_zip',$tmpdir);
 	$response = sh_v2_api_get('/v2/stories/'.$story_id, array(
 		'timeout' => '600',
 		'stream' => true,
-		'filename' => $zipfile
+		'filename' => $zip_file
 	));
 	if (is_wp_error($response)) {
 		$story['error'] = array(
@@ -131,31 +130,7 @@ function sh_copy_story($post_id, $story_id) {
 			'response' => $response
 		);
 	} else {
-		
-		//WP VIP HOSTING COMPATIBILITY
-		$zip = new ZipArchive;
-		if ( $zip->open($zipfile) == true ) {
-			wp_mkdir_p($destination_path.'/'.$story_id);
-			$zip->extractTo($destination_path.'/'.$story_id);
-			$zip->close();
-			if (is_wp_error($zip)) {
-				$story['error'] = array(
-					'pretty' => 'Could not copy story into Wordpress',
-					'error' => $err->get_error_message(),
-					'unzip error'=> $unzipfile
-				);
-				if(function_exists("wp_filesize")){
-					$story['error']['downloaded zip size'] = wp_filesize($zipfile);
-				}
-			} else {
-				$story['path'] = $destination_path.'/'.$story_id;
-			}
-		} else {
-			$story['error'] = array(
-				'pretty' => 'Could not unzip file'
-			);
-		}
-		
+		$story = extractStoryContent($zip_file, $destination_path, $story_id);
 	}
 	
 	do_action('sh_copy_story', $post_id, $story_id, $story);
@@ -171,4 +146,32 @@ function init_WP_Filesystem(){
 		$creds = request_filesystem_credentials( site_url() );
 		wp_filesystem( $creds );
 	}
+}
+
+function extractStoryContent($zip_file, $destination_path,$story_id){
+	//WP VIP HOSTING COMPATIBILITY
+	$zip = new ZipArchive;
+	if ( $zip->open($zip_file)) {
+		wp_mkdir_p($destination_path.'/'.$story_id);
+		$zip->extractTo($destination_path.'/'.$story_id);
+		$zip->close();
+		if (is_wp_error($zip)) {
+			$story['error'] = array(
+				'pretty' => 'Could not copy story into Wordpress',
+				'error' => $zip->get_error_message(),
+				'unzip error'=> $zip_file
+			);
+			if(function_exists("wp_filesize")){
+				$story['error']['downloaded zip size'] = wp_filesize($zip_file);
+			}
+		} else {
+			$story['path'] = $destination_path.'/'.$story_id;
+		}
+	} else {
+		$story['error'] = array(
+			'pretty' => 'Could not unzip file'
+		);
+	}
+
+	return $story;
 }
