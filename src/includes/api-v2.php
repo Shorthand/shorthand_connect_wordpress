@@ -174,3 +174,109 @@ function extractStoryContent($zip_file, $destination_path,$story_id){
 
 	return $story;
 }
+
+
+// DEBUG 
+
+function sh_test_1a_fetch_story_to_tmp($post_id, $story_id) {
+
+	wp_raise_memory_limit('admin');
+	init_WP_Filesystem();
+
+	$destination = wp_upload_dir();
+	$tmpdir = get_temp_dir();
+	$destination_path = $destination['path'].'/shorthand/'.$post_id;
+
+	//Attempt to connect to the server
+	$zip_file = wp_tempnam('sh_zip',$tmpdir);
+	$response = sh_v2_api_get('/v2/stories/'.$story_id, array(
+		'timeout' => '600',
+		'stream' => true,
+		'filename' => $zip_file
+	));
+	if (is_wp_error($response)) {
+		$story['error'] = array(
+			'pretty' => ' Request to Shorthand failed',
+			'error' => $response->get_error_message($response)
+		);
+	} else if (!$response || $response['response']['code'] != 200) {
+		$story['error'] = array(
+			'pretty' => 'Request to Shorthand failed; check the token is configured correctly',
+			'response' => $response
+		);
+	}
+
+	return $story;
+}
+
+function sh_test_1b_fetch_story_to_uploads($post_id, $story_id) {
+
+	wp_raise_memory_limit('admin');
+	init_WP_Filesystem();
+
+	$destination = wp_upload_dir();
+	$tmpdir = $destination['path'].'/zips/'.$post_id;
+	$destination_path = $destination['path'].'/shorthand/'.$post_id;
+
+	//Attempt to connect to the server
+	wp_mkdir_p($tmpdir);
+	$zip_file = $tmpdir . '/' . $story_id . '.zip';
+	$response = sh_v2_api_get('/v2/stories/'.$story_id, array(
+		'timeout' => '600',
+		'stream' => true,
+		'filename' => $zip_file
+	));
+	if (is_wp_error($response)) {
+		$story['error'] = array(
+			'pretty' => ' Request to Shorthand failed',
+			'error' => $response->get_error_message($response)
+		);
+	} else if (!$response || $response['response']['code'] != 200) {
+		$story['error'] = array(
+			'pretty' => 'Request to Shorthand failed; check the token is configured correctly',
+			'response' => $response
+		);
+	}
+
+	return $story;
+}
+
+function sh_test_2a_extract_story_from_tmp($post_id, $story_id) {
+
+	wp_raise_memory_limit('admin');
+	init_WP_Filesystem();
+
+	$destination = wp_upload_dir();
+	$tmpdir = get_temp_dir();
+	$uploads_zip_file = $destination['path'].'/zips/'.$post_id . '/' . $story_id . '.zip';
+	$destination_path = $destination['path'].'/shorthand/'.$post_id;
+
+	$zip_file = $tmpdir . $post_id . '_' . $story_id . '.zip';
+	if (!copy($uploads_zip_file, $zip_file)) {
+		$story['error'] = array(
+			'pretty' => 'Copying file from uploads to tmp failed',
+			'source' => $uploads_zip_file,
+			'dest' => $zip_file
+		);
+	} else {
+		$story = extractStoryContent($zip_file, $destination_path, $story_id);
+	}
+
+	return $story;
+}
+
+function sh_test_2b_extract_story_from_uploads($post_id, $story_id) {
+
+	wp_raise_memory_limit('admin');
+	init_WP_Filesystem();
+
+	$destination = wp_upload_dir();
+	$tmpdir = $destination['path'].'/zips/'.$post_id;
+	$destination_path = $destination['path'].'/shorthand/'.$post_id;
+
+	//Attempt to connect to the server
+	$zip_file = $tmpdir . '/' . $story_id . '.zip';
+	$story = extractStoryContent($zip_file, $destination_path, $story_id);
+
+	return $story;
+}

@@ -80,6 +80,9 @@ function shand_wpt_shorthand_story()
 
 	$version = 'v2';
 
+	$sh_debug_test = filter_var(get_option('sh_debug_test'), FILTER_VALIDATE_BOOLEAN);
+	
+
 
 ?>
 	<style>
@@ -197,6 +200,12 @@ function shand_wpt_shorthand_story()
 	?>
 	<script>
 		jQuery('li.story input:radio').click(function() {
+
+			<?php if($sh_debug_test){ ?>
+			//DEBUG MODE
+			jQuery('button.shand_test_action').attr('data-storyid', jQuery(this).val()); // inform test buttons of selection
+			jQuery('button.shand_test_action').prop('disabled', false); // enable test buttons
+			<?php } ?>
 			jQuery('li.story').removeClass('selected');
 			jQuery(this).parent().parent().addClass('selected');
 			jQuery('label#title-prompt-text').text('');
@@ -207,25 +216,11 @@ function shand_wpt_shorthand_story()
 		});
 	</script>
 <?php
+	if($sh_debug_test){
+	shand_wpt_shorthand_tests();
+	}
 }
 
-function shand_wpt_shorthand_abstract()
-{
-	global $post;
-	$abstract = get_post_meta($post->ID, 'abstract', true);
-	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		esc_attr(wp_create_nonce(plugin_basename(__FILE__))) . '" />';
-	echo '<textarea id="abstract" name="abstract">' . esc_textarea($abstract) . '</textarea>';
-}
-
-function shand_wpt_shorthand_extra_html()
-{
-	global $post;
-	$extra_html = get_post_meta($post->ID, 'extra_html', true);
-	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		wp_create_nonce(plugin_basename(__FILE__)) . '" />';
-	echo '<textarea id="codearea" name="extra_html">' . esc_textarea($extra_html) . '</textarea>';
-}
 
 function shand_add_shorthand_metaboxes()
 {
@@ -527,6 +522,111 @@ function determine_version_id($story_id)
 		return 'v1';
 	}
 	return 'v2';
+}
+
+/* UI AND ACTIONS FOR TESTING DOWNLOADS */
+
+
+add_action('wp_ajax_shand_test_1a', 'shand_test_1a');
+add_action('wp_ajax_shand_test_1b', 'shand_test_1b');
+add_action('wp_ajax_shand_test_2a', 'shand_test_2a');
+add_action('wp_ajax_shand_test_2b', 'shand_test_2b');
+
+/* Show testing buttons */
+function shand_wpt_shorthand_tests()
+{
+	global $post;
+	$selected_story = get_post_meta($post->ID, 'story_id', true);
+
+	if ($selected_story) {
+		$disabled=false;
+	} else {
+		$disabled=true;
+	}
+?>
+	<button id="shand_test_1a" disabled="<?php echo $disabled; ?>" class="shand_test_action" data-storyid="<?php echo $selected_story; ?>">Test 1A - save to tmp</button>
+	<button id="shand_test_1b" disabled="<?php echo $disabled; ?>" class="shand_test_action" data-storyid="<?php echo $selected_story; ?>">Test 1B - save to uploads</button>
+	<button id="shand_test_2a" disabled="<?php echo $disabled; ?>" class="shand_test_action" data-storyid="<?php echo $selected_story; ?>">Test 2A - (copy from uploads and) extract from tmp</button>
+	<button id="shand_test_2b" disabled="<?php echo $disabled; ?>" class="shand_test_action" data-storyid="<?php echo $selected_story; ?>">Test 2B - extract from uploads</button>
+	<script type="text/javascript">
+	jQuery( document ).ready( function($) {
+		$( 'button.shand_test_action' ).on( 'click', function(e) {
+			e.preventDefault();
+			var action = jQuery(this).attr('id');
+			var story_id = jQuery(this).attr('data-storyid');
+			$.post(ajaxurl, {action, story_id}, function( data ) {
+					console.log( data + ', Completed' );
+			} );
+		} );
+	} );
+	</script>
+<?php
+}
+
+function shand_test_1a() {
+	global $post;
+	$story_id = $_REQUEST['story_id'];
+	$err = sh_test_1a_fetch_story_to_tmp($post->ID ?? "unsaved", $story_id);
+	if (isset($err["error"])) {
+		wp_send_json_error($err, 500);
+	} else {
+		wp_send_json($err);
+	}
+	die();
+}
+
+function shand_test_1b() {
+	global $post;
+	$story_id = $_REQUEST['story_id'];
+	$err = sh_test_1b_fetch_story_to_uploads($post->ID ?? "unsaved", $story_id);
+	if (isset($err["error"])) {
+		wp_send_json_error($err, 500);
+	} else {
+		wp_send_json($err);
+	}
+	die();
+}
+
+function shand_test_2a() {
+	global $post;
+	$story_id = $_REQUEST['story_id'];
+	$err = sh_test_2a_extract_story_from_tmp($post->ID ?? "unsaved", $story_id);
+	if (isset($err["error"])) {
+		wp_send_json_error($err, 500);
+	} else {
+		wp_send_json($err);
+	}
+	die();
+}
+
+function shand_test_2b() {
+	global $post;
+	$story_id = $_REQUEST['story_id'];
+	$err = sh_test_2b_extract_story_from_uploads($post->ID ?? "unsaved", $story_id);
+	if (isset($err["error"])) {
+		wp_send_json_error($err, 500);
+	} else {
+		wp_send_json($err);
+	}
+	die();
+}
+
+function shand_wpt_shorthand_abstract()
+{
+	global $post;
+	$abstract = get_post_meta($post->ID, 'abstract', true);
+	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
+		esc_attr(wp_create_nonce(plugin_basename(__FILE__))) . '" />';
+	echo '<textarea id="abstract" name="abstract">' . esc_textarea($abstract) . '</textarea>';
+}
+
+function shand_wpt_shorthand_extra_html()
+{
+	global $post;
+	$extra_html = get_post_meta($post->ID, 'extra_html', true);
+	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
+		wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+	echo '<textarea id="codearea" name="extra_html">' . esc_textarea($extra_html) . '</textarea>';
 }
 
 ?>
