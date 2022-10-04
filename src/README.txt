@@ -60,7 +60,9 @@ https://wordpress.org/plugins/about/svn/
 == Changelog ==
 
 = 1.3.22 =
-* Add experimental option to offload media asset fetch to cron job. By default the `no_update` field is set to true after the initial save.
+* Add experimental option to offload media asset fetch to cron job. 
+* Add experimental option to enable a series of debugging tests (buttons on new story form).
+* By default the `no_update` field is set to true after the initial save. 
 
 = 1.3.21 =
 * Refactored the zip extraction code. Added hooks to story copy flow.
