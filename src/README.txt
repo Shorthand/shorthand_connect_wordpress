@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.0.1
-Stable tag: 1.3.20
+Stable tag: 1.3.22
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -58,6 +58,12 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.22 =
+* Add experimental option to offload media asset fetch to cron job. By default the `no_update` field is set to true after the initial save.
+
+= 1.3.21 =
+* Refactored the zip extraction code. Added hooks to story copy flow.
 
 = 1.3.20 =
 * Restored flush_rewrite_rules() to shorthand_options.php that was lost in a previous update.
