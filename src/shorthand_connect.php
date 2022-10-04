@@ -555,7 +555,8 @@ function shand_wpt_shorthand_tests()
 			var action = jQuery(this).attr('id');
 			var story_id = jQuery(this).attr('data-storyid');
 			$.post(ajaxurl, {action, story_id}, function( data ) {
-					console.log( data + ', Completed' );
+				console.log('Test: ' + action);
+				console.log(data);
 			} );
 		} );
 	} );
