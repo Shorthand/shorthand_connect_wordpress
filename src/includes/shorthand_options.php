@@ -76,6 +76,13 @@ function shand_shorthand_options() {
 
 	$sh_regex_list = base64_decode(get_option('sh_regex_list'));
 
+	//Experimental Settings
+	if( isset($_POST['sh_submit_hidden_experimental']) && $_POST['sh_submit_hidden_experimental'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+		update_option('sh_media_split', $_POST['sh_media_split']);
+	}
+	$sh_media_split = filter_var(get_option('sh_media_split'), FILTER_VALIDATE_BOOLEAN);
+
+
 	$profile = sh_get_profile();
 	$n_once = wp_nonce_field( 'sh-update-configuration' );
 
@@ -209,6 +216,20 @@ function shand_shorthand_options() {
   display: inherit;
 }
 	</style>
+
+<h3>Experimental Features</h3>
+		<p>Early access features that are still subject to change.</p>
+		
+		<form name="form_experimental" method="post">
+			<?php echo $n_once ?>
+			<input type="hidden" name="sh_submit_hidden_experimental" value="Y" />
+			<input type="checkbox" id="sh_media_split" name="sh_media_split" value="true" <?php echo esc_attr($sh_media_split ? 'checked' : '') ?> />
+			<label for="sh_media_split">Import story assets into media library</label>
+			<p>Assets will be fetched individually and imported into the WP media library. Used to reduce the overall zip fetch time and size but will result in a longer fetch time for full story update.</p>
+			<p class="submit">
+				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+			</p>
+		</form>
 <?php
 }
 

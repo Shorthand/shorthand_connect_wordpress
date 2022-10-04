@@ -102,7 +102,7 @@ function sh_get_story_url($post_id, $story_id) {
 }
 
 function sh_copy_story($post_id, $story_id) {
-
+	$sh_media_split = filter_var(get_option('sh_media_split'), FILTER_VALIDATE_BOOLEAN);
 	wp_raise_memory_limit('admin');
 	init_WP_Filesystem();
 
@@ -114,7 +114,7 @@ function sh_copy_story($post_id, $story_id) {
 
 	//Attempt to connect to the server
 	$zip_file = wp_tempnam('sh_zip',$tmpdir);
-	$response = sh_v2_api_get('/v2/stories/'.$story_id, array(
+	$response = sh_v2_api_get('/v2/stories/'.$story_id.($sh_media_split?'?without_assets=true':''), array(
 		'timeout' => '600',
 		'stream' => true,
 		'filename' => $zip_file
@@ -131,6 +131,9 @@ function sh_copy_story($post_id, $story_id) {
 		);
 	} else {
 		$story = extractStoryContent($zip_file, $destination_path, $story_id);
+		if($sh_media_split){
+			$story['asset_dictionary'] = sh_fetchIndividualMedia($post_id, $story_id,$destination_path);
+		}
 	}
 	
 	do_action('sh_copy_story', $post_id, $story_id, $story);
@@ -146,6 +149,60 @@ function init_WP_Filesystem(){
 		$creds = request_filesystem_credentials( site_url() );
 		wp_filesystem( $creds );
 	}
+}
+
+function sh_fetchIndividualMedia($post_id, $story_id, $destination_path){
+	add_filter( 'upload_mimes', 'sh_add_video_mimes' );
+	$media_list = json_decode(wp_remote_retrieve_body(sh_v2_api_get('/v2/stories/'.$story_id.'/public-assets', array(
+		'timeout' => '600'))));
+
+	$media_dictionary = array();
+	sh_cleaupExistingAssets($post_id);
+	foreach ($media_list as $media) {
+		array_push($media_dictionary, array("Original"=>$media->fullFileName, "Uploaded"=>sh_downloadPublicMedia($media,$post_id)));
+		foreach ($media->breakpoints as $breakpoint){
+			array_push($media_dictionary, array("Original"=>$breakpoint->fullFileName, "Uploaded"=>sh_downloadPublicMedia($breakpoint,$post_id)));
+		}
+	} 
+
+	return $media_dictionary;
+}
+
+function sh_cleaupExistingAssets($post_id){
+	$media_list = get_children($post_id);
+	foreach ($media_list as $media) {
+		wp_delete_attachment($media->ID, true);
+	} 
+}
+
+function sh_downloadPublicMedia($media, $post_id){
+
+	$media_tmp = download_url($media->path);
+
+    if(is_wp_error( $media_tmp )){
+        return "FAILED";
+    }else {
+        $media_size = filesize($media_tmp);
+		$media_name = preg_replace('/\'\.(?=[^.]*\.)\'/', '-', $media->fullFileName);
+
+        $file = array(
+           'name' => $media_name,
+           'type' => $media->mime,
+           'tmp_name' => $media_tmp,
+           'error' => 0,
+           'size' => $media_size
+        );
+
+        $new_media = media_handle_sideload( $file, $post_id, null);
+		$new_url = wp_get_attachment_url($new_media);
+        return preg_replace('/^https?:/','',$new_url);
+    }
+
+}
+
+function sh_add_video_mimes( $allowed_mimes ) {
+    $allowed_mimes['mp4'] = 'video/mp4';
+    return $allowed_mimes;
 }
 
 function extractStoryContent($zip_file, $destination_path,$story_id){

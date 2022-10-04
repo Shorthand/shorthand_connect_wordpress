@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.20
+ * @version 1.3.21
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.20
+Version: 1.3.21
 Author URI: http://shorthand.com
 */
 
@@ -296,13 +296,14 @@ function shand_save_shorthand_story($post_id, $post, $update)
 
 			//Log any story-specific errors to the metadata 
 			if(isset($err['error'])){
-				update_post_meta($post_id, 'ERROR', json_encode($err));
+				update_post_meta($post_id, 'ERROR', json_encode($err['error']));
 			}else{
 				delete_post_meta($post_id, 'ERROR');
 			}
 
 			// Get path to the assets
 			$assets_path = sh_get_story_url($post_id, $safe_story_id);
+			$asset_dictionary = $err['asset_dictionary'] ?? null;
 
 			// Save the head and body
 			$version = get_option('sh_api_version');
@@ -312,8 +313,8 @@ function shand_save_shorthand_story($post_id, $post, $update)
 
 			$post_processing_queries = json_decode(base64_decode(get_option('sh_regex_list')));
 
-			$body = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($article_file) : $wp_filesystem->get_contents($article_file));
-			$head = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($head_file) 	: $wp_filesystem->get_contents($head_file));
+			$body = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($article_file) : $wp_filesystem->get_contents($article_file),$asset_dictionary);
+			$head = shand_fix_content_paths($assets_path, defined('WPCOM_IS_VIP_ENV')? file_get_contents($head_file) 	: $wp_filesystem->get_contents($head_file), null);
 
 			$body = apply_filters('sh_pre_process_body', $body, $assets_path, $article_file);
 			$head = apply_filters('sh_pre_process_head', $head, $assets_path, $head_file);
@@ -473,10 +474,16 @@ register_activation_hook(__FILE__, 'shand_shorthand_activate');
 /* UTILITY FUNCTIONS */
 
 /* Fix content paths */
-function shand_fix_content_paths($assets_path, $content)
+function shand_fix_content_paths($assets_path, $content, $asset_dictionary)
 {
-	
-	$content = str_replace('./assets/', $assets_path . '/assets/', $content);
+	if(isset($asset_dictionary)){
+		foreach($asset_dictionary as $asset ){
+			$content = preg_replace('/(?=\.\/assets\/)([^ ]*)('.$asset['Original'].')/', $asset['Uploaded'], $content);
+		}
+	}else{
+		$content = str_replace('./assets/', $assets_path . '/assets/', $content);
+	}
+
 	$content = str_replace('./static/', $assets_path . '/static/', $content);
 	$content = preg_replace('/.(\/theme-\w+.min.css)/', $assets_path . '$1', $content);
 	

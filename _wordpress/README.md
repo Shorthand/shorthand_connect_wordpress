@@ -54,3 +54,23 @@ If it does, remove it.
 ```
 docker volume rm shorthand_connect_wordpress_db_data
 ```
+
+### Local Docker Dev Networking
+
+#create bridge network
+docker network create WPDevNetwork
+
+#connect dylan_dev
+docker network connect WPDevNetwork dev_dylan
+
+#connect web (drupal)
+docker network connect WPDevNetwork web (or whatever the name of the WP container is)
+
+#inspect network to see ip address of dylan_dev (in the below command we've assumed 172.18.0.2)
+docker network inspect WPDevNetwork
+
+#set api.dylan.local in /etc/hosts of drupal container (change 172.18.0.2 if the above ip address shows differently)
+docker-compose --file \_wordpress/docker-compose.yml exec web bash -c "echo '172.18.0.2 app.dylan.local' >> /etc/hosts"
+
+#Ensure the correct api url is being used for local dev - in ShorthandApiv2.php:
+$serverv2URL = 'app.dylan.local/api';
