@@ -245,6 +245,19 @@ function shand_add_shorthand_metaboxes()
 }
 add_action('add_meta_boxes', 'shand_add_shorthand_metaboxes');
 
+function shand_save_media_fetch($post_id, $story_id){
+	update_post_meta($post_id, 'media_status', '[Fetching media...]');
+	$media = sh_copy_story($post_id, $story_id, false );
+	if (is_wp_error($media)) {
+		update_post_meta($post_id, 'media_status', $media);
+	}else{
+		update_post_meta($post_id, 'media_status', '[Completed]');
+	}
+	
+	
+}
+add_action('sh_media_fetch', 'shand_save_media_fetch', 10, 2);
+
 
 /* Save the shorthand story */
 function shand_save_shorthand_story($post_id, $post, $update)
@@ -279,15 +292,21 @@ function shand_save_shorthand_story($post_id, $post, $update)
 	}
 
 	if (isset($_REQUEST['story_id']) && $_REQUEST['story_id'] !== "" && get_post_meta($post_id, 'no_update')[0] !== "true") {
-		
+		update_post_meta($post_id, 'no_update', "true");
+		$sh_media_cron_offload = filter_var(get_option('sh_media_cron_offload'), FILTER_VALIDATE_BOOLEAN);
 		$safe_story_id = preg_replace("/\W|_/", '', $_REQUEST['story_id']);
 		update_post_meta($post_id, 'story_id', sanitize_text_field($safe_story_id));
-		$err = sh_copy_story($post_id, $safe_story_id);
+		$err = sh_copy_story($post_id, $safe_story_id, $sh_media_cron_offload);
 		$story_path = sh_get_story_path($post_id, $safe_story_id);
 		//Sometimes the story needs to be gotten twice
 		if (!isset($story_path)) {
-			$err = sh_copy_story($post_id, $safe_story_id);
+			$err = sh_copy_story($post_id, $safe_story_id, $sh_media_cron_offload );
 			$story_path = sh_get_story_path($post_id, $safe_story_id);
+			
+		}
+		if($sh_media_cron_offload){
+			update_post_meta($post_id, 'media_status', '[Awaiting media fetch...]');
+			wp_schedule_single_event(time() + 20, 'sh_media_fetch', array( $post_id, $safe_story_id ));
 		}
 
 		if (isset($story_path) ) {
@@ -365,7 +384,6 @@ function shand_save_shorthand_story($post_id, $post, $update)
 	}
 }
 add_action('save_post', 'shand_save_shorthand_story', 10, 3);
-
 
 /* Load Shorthand Template Hook */
 function shand_load_single_shorthand_template($template)

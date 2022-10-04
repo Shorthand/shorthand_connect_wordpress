@@ -101,7 +101,7 @@ function sh_get_story_url($post_id, $story_id) {
 	return $destination_url;
 }
 
-function sh_copy_story($post_id, $story_id) {
+function sh_copy_story($post_id, $story_id, $without_assets=false) {
 
 	wp_raise_memory_limit('admin');
 	init_WP_Filesystem();
@@ -109,12 +109,11 @@ function sh_copy_story($post_id, $story_id) {
 	$destination = wp_upload_dir();
 	$tmpdir = get_temp_dir();
 	$destination_path = $destination['path'].'/shorthand/'.$post_id;
-
 	$story = array();
 
 	//Attempt to connect to the server
 	$zip_file = wp_tempnam('sh_zip',$tmpdir);
-	$response = sh_v2_api_get('/v2/stories/'.$story_id, array(
+	$response = sh_v2_api_get('/v2/stories/'.$story_id.($without_assets?'?without_assets=true':''), array(
 		'timeout' => '600',
 		'stream' => true,
 		'filename' => $zip_file

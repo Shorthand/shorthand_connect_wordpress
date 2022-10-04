@@ -76,6 +76,12 @@ function shand_shorthand_options() {
 
 	$sh_regex_list = base64_decode(get_option('sh_regex_list'));
 
+	//Experimental Settings
+	if( isset($_POST['sh_submit_hidden_experimental']) && $_POST['sh_submit_hidden_experimental'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+		update_option('sh_media_cron_offload', $_POST['sh_media_cron_offload']);
+	}
+	$sh_media_cron_offload = filter_var(get_option('sh_media_cron_offload'), FILTER_VALIDATE_BOOLEAN);
+
 	$profile = sh_get_profile();
 	$n_once = wp_nonce_field( 'sh-update-configuration' );
 
@@ -209,6 +215,21 @@ function shand_shorthand_options() {
   display: inherit;
 }
 	</style>
+
+<h3>Experimental Features</h3>
+		<p>Early access features that are still subject to change.</p>
+		
+		<form name="form_experimental" method="post">
+			<?php echo $n_once ?>
+			<input type="hidden" name="sh_submit_hidden_experimental" value="Y" />
+			<input type="checkbox" id="sh_media_cron_offload" name="sh_media_cron_offload" value="true" <?php echo esc_attr($sh_media_cron_offload ? 'checked' : '') ?> />
+			<label for="sh_media_cron_offload">Import media assets via cron</label>
+			<p>Assets will be fetched after story save to prevent potential execution timeouts. Media won't be immediately available on save but progress will be updated based on the `media_status` field.</p>
+			<p>It is advised that Shorthand Story Posts are saved as a draft first to trigger the cron job prior to public publishing.</p>
+			<p class="submit">
+				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+			</p>
+		</form>
 <?php
 }
 
