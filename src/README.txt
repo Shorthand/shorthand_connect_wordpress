@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.0.1
-Stable tag: 1.3.22
+Stable tag: 1.3.23
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -58,6 +58,10 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.23 =
+* Add extra debug option to execute media-only fetch.
+* Fixed error display on Cron failure.
 
 = 1.3.22 =
 * Add experimental option to offload media asset fetch to cron job. 

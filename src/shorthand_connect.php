@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.22
+ * @version 1.3.23
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.22
+Version: 1.3.23
 Author URI: http://shorthand.com
 */
 
@@ -65,6 +65,34 @@ function shand_create_post_type()
 	register_taxonomy_for_object_type('post_tag', 'shorthand_story');
 }
 add_action('init', 'shand_create_post_type');
+
+function shand_wpt_shorthand_media_fetch(){
+	global $post;
+
+	global $serverURL;
+	global $serverv2URL;
+	global $showArchivedStories;
+
+	$story_id = get_post_meta($post->ID, 'story_id', true);
+
+	?>
+		<button id="shand_test_media_fetch" class="shand_test_media_fetch" data-postid="<?php echo $post->ID; ?>" data-storyid="<?php echo $story_id; ?>">Execute Media Fetch Function</button>
+		<script>
+			jQuery( document ).ready( function($) {
+				$( 'button.shand_test_media_fetch' ).on( 'click', function(e) {
+					e.preventDefault();
+					var action = jQuery(this).attr('id');
+					var story_id = jQuery(this).attr('data-storyid');
+					var post_id = jQuery(this).attr('data-postid');
+					$.post(ajaxurl, {action, story_id, post_id}, function( data ) {
+						console.log('Test: ' + action);
+						console.log(data);
+					} );
+				} );
+			} );
+		</script>
+	<?php
+}
 
 
 function shand_wpt_shorthand_story()
@@ -217,7 +245,7 @@ function shand_wpt_shorthand_story()
 	</script>
 <?php
 	if($sh_debug_test){
-	shand_wpt_shorthand_tests();
+		shand_wpt_shorthand_tests();
 	}
 }
 
@@ -227,11 +255,15 @@ function shand_add_shorthand_metaboxes()
 	global $version;
 	global $post;
 	global $noabstract;
+	$sh_debug_test = filter_var(get_option('sh_debug_test'), FILTER_VALIDATE_BOOLEAN);
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
 		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
 	} else {
 		add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+	}
+	if($sh_debug_test && $selected_story){
+		add_meta_box('shand_wpt_shorthand_media_fetch', 'DEBUG: Manual Media Fetch (Simulate Cron Task)', 'shand_wpt_shorthand_media_fetch', 'shorthand_story', 'normal', 'default');
 	}
 	if (!$noabstract) {
 		add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
@@ -243,8 +275,10 @@ add_action('add_meta_boxes', 'shand_add_shorthand_metaboxes');
 function shand_save_media_fetch($post_id, $story_id){
 	update_post_meta($post_id, 'media_status', '[Fetching media...]');
 	$media = sh_copy_story($post_id, $story_id, false );
-	if (is_wp_error($media)) {
-		update_post_meta($post_id, 'media_status', $media);
+	if (isset($media['error'])) {
+		$error = json_encode($media['error']);
+		error_log($error);
+		update_post_meta($post_id, 'media_status', $error);
 	}else{
 		update_post_meta($post_id, 'media_status', '[Completed]');
 	}
@@ -531,6 +565,15 @@ add_action('wp_ajax_shand_test_1a', 'shand_test_1a');
 add_action('wp_ajax_shand_test_1b', 'shand_test_1b');
 add_action('wp_ajax_shand_test_2a', 'shand_test_2a');
 add_action('wp_ajax_shand_test_2b', 'shand_test_2b');
+add_action('wp_ajax_shand_test_media_fetch', 'shand_test_media_fetch');
+
+function shand_test_media_fetch(){
+	global $post;
+	$story_id = $_REQUEST['story_id'];
+	$post_id = $_REQUEST['post_id'];
+	shand_save_media_fetch($post_id, $story_id);
+	die();
+}
 
 /* Show testing buttons */
 function shand_wpt_shorthand_tests()

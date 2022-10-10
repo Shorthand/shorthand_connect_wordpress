@@ -133,7 +133,8 @@ function sh_copy_story($post_id, $story_id, $without_assets=false) {
 	}
 	
 	do_action('sh_copy_story', $post_id, $story_id, $story);
-	
+	unlink($zip_file);
+
 	return $story;
 }
 
