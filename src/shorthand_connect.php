@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.23
+ * @version 1.3.24
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.23
+Version: 1.3.24
 Author URI: http://shorthand.com
 */
 
@@ -274,7 +274,7 @@ add_action('add_meta_boxes', 'shand_add_shorthand_metaboxes');
 
 function shand_save_media_fetch($post_id, $story_id){
 	update_post_meta($post_id, 'media_status', '[Fetching media...]');
-	$media = sh_copy_story($post_id, $story_id, false );
+	$media = sh_copy_story($post_id, $story_id, false, true );
 	if (isset($media['error'])) {
 		$error = json_encode($media['error']);
 		error_log($error);
@@ -335,7 +335,7 @@ function shand_save_shorthand_story($post_id, $post, $update)
 		}
 		if($sh_media_cron_offload){
 			update_post_meta($post_id, 'media_status', '[Awaiting media fetch...]');
-			wp_schedule_single_event(time() + 20, 'sh_media_fetch', array( $post_id, $safe_story_id ));
+			wp_schedule_single_event(time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ));
 		}
 
 		if (isset($story_path) ) {
