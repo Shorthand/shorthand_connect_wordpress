@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.24
+ * @version 1.3.25
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.24
+Version: 1.3.25
 Author URI: http://shorthand.com
 */
 
@@ -188,9 +188,7 @@ function shand_wpt_shorthand_story()
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	$story_api_version = get_post_meta($post->ID, 'api_version', true);
 	if ($selected_story) {
-			echo '<p>Clicking UPDATE will update Wordpress with the latest version of the story from Shorthand unless `no_update` is set to "true"</p>';
-			echo '<input name="story_id" type="hidden" value="' . esc_attr($selected_story) . '" />';
-		
+		shand_wpt_update_story($selected_story);
 		return;
 	}
 	$stories = sh_get_stories();
@@ -249,6 +247,16 @@ function shand_wpt_shorthand_story()
 	}
 }
 
+/* Show update UI */
+function shand_wpt_update_story($storyId)
+{
+?>
+	<p>This will update Wordpress with the latest version of the story from Shorthand.</p>
+	<?php wp_nonce_field('shand_update_story', 'shand_update_story_nonce'); ?>
+	<input name="story_id" type="hidden" value="<?php esc_attr_e($storyId); ?>"/>
+	<input name="save" type="submit" value="Update Story" formaction="?shand_update"/>
+<?php
+}
 
 function shand_add_shorthand_metaboxes()
 {
@@ -319,8 +327,10 @@ function shand_save_shorthand_story($post_id, $post, $update)
 	if (isset($_REQUEST['extra_html'])) {
 		update_post_meta($post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']));
 	}
-
-	if (isset($_REQUEST['story_id']) && $_REQUEST['story_id'] !== "" && get_post_meta($post_id, 'no_update')[0] !== "true") {
+	
+	$do_update_story = isset($_REQUEST['shand_update']) || get_post_meta($post_id, 'no_update')[0] !== "true";
+	
+	if (isset($_REQUEST['story_id']) && $_REQUEST['story_id'] !== "" && $do_update_story) {
 		update_post_meta($post_id, 'no_update', "true");
 		$sh_media_cron_offload = filter_var(get_option('sh_media_cron_offload'), FILTER_VALIDATE_BOOLEAN);
 		$safe_story_id = preg_replace("/\W|_/", '', $_REQUEST['story_id']);

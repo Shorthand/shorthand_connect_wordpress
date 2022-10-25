@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.0.1
-Stable tag: 1.3.24
+Stable tag: 1.3.25
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -58,6 +58,10 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.25 =
+* Fixed global variable error causing Cron failure
+* Added button to update story from Shorthand
 
 = 1.3.24 =
 * Media-only fetch will now strictly fetch only media to remove potential over-write errors upon extraction.
