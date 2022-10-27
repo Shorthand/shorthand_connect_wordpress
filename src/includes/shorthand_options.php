@@ -79,10 +79,8 @@ function shand_shorthand_options() {
 	//Experimental Settings
 	if( isset($_POST['sh_submit_hidden_experimental']) && $_POST['sh_submit_hidden_experimental'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_media_cron_offload', $_POST['sh_media_cron_offload']);
-		update_option('sh_debug_test', $_POST['sh_debug_test']);
 	}
 	$sh_media_cron_offload = filter_var(get_option('sh_media_cron_offload'), FILTER_VALIDATE_BOOLEAN);
-	$sh_debug_test = filter_var(get_option('sh_debug_test'), FILTER_VALIDATE_BOOLEAN);
 
 	$profile = sh_get_profile();
 	$n_once = wp_nonce_field( 'sh-update-configuration' );
@@ -229,8 +227,6 @@ function shand_shorthand_options() {
 			<p>Assets will be fetched after story save to prevent potential execution timeouts. Media won't be immediately available on save but progress will be updated based on the `media_status` field.</p>
 			<p>It is advised that Shorthand Story Posts are saved as a draft first to trigger the cron job prior to public publishing.</p>
 			<br/>
-			<input type="checkbox" id="sh_debug_test" name="sh_debug_test" value="true" <?php echo esc_attr($sh_debug_test ? 'checked' : '') ?> />
-			<label for="sh_debug_test">Show/Hide extra debug tests on Shorthand Story form.</label>
 			<p class="submit">
 				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
 			</p>
