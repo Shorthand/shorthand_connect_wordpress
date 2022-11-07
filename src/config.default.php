@@ -1,6 +1,13 @@
 <?php
 
-$serverURL = 'https://app.shorthand.com';
+global $serverURL;
+global $serverv2URL;
+global $allowversionswitch;
+global $showServerURL;
+global $showArchivedStories;
+global $noabstract;
+
+$serverURL = 'https://api.shorthand.com';
 $serverv2URL = 'https://api.shorthand.com';
 $allowversionswitch = true;
 $showServerURL = false;

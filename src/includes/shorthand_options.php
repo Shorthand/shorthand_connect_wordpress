@@ -36,19 +36,14 @@ function shand_shorthand_options() {
 	global $showServerURL;
 
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.' )) );
 	}
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
-		update_option('sh_token_key', sanitize_text_field($_POST['sh_token_key']));
 		update_option('sh_v2_token', sanitize_text_field($_POST['sh_v2_token']));
-		$safe_user_id = intval( $_POST['sh_user_id'] );
-		update_option('sh_user_id', $safe_user_id);
-		update_option('sh_api_version', sanitize_text_field($_POST['sh_api_version']));
 	}
-	$token = esc_html(get_option('sh_token_key'));
+
 	$v2_token = esc_html(get_option('sh_v2_token'));
-	$user_id = esc_html(get_option('sh_user_id'));
-	$sh_api_version = esc_html(get_option('sh_api_version'));
+	
 
 	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_css', wp_kses_post($_POST['sh_css']));
@@ -69,9 +64,23 @@ function shand_shorthand_options() {
 	$no_css = false;
 	if ($sh_css == '') {
 		$no_css = true;
-		update_option('sh_css', $default_site_css);
+		if(isset($default_site_css)){
+			update_option('sh_css', $default_site_css);
+		}
 		$sh_css = $default_sh_site_css;
 	}
+
+	if(isset($_POST['sh_submit_hidden_four']) && $_POST['sh_submit_hidden_four'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+		update_option('sh_regex_list', base64_encode(wp_unslash($_POST['sh_regex_list'])));
+	}
+
+	$sh_regex_list = base64_decode(get_option('sh_regex_list'));
+
+	//Experimental Settings
+	if( isset($_POST['sh_submit_hidden_experimental']) && $_POST['sh_submit_hidden_experimental'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+		update_option('sh_media_cron_offload', $_POST['sh_media_cron_offload']);
+	}
+	$sh_media_cron_offload = filter_var(get_option('sh_media_cron_offload'), FILTER_VALIDATE_BOOLEAN);
 
 	$profile = sh_get_profile();
 	$n_once = wp_nonce_field( 'sh-update-configuration' );
@@ -82,40 +91,10 @@ function shand_shorthand_options() {
 		<?php echo $n_once ?>
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<table class="form-table"><tbody>
-		<?php if($allowversionswitch) { ?>
-		<tr>
-			<th scope="row"><label for="sh_api_version"><?php _e("API Version", 'sh-api-version' ); ?></label></th>
-			<td>
-			<select name="sh_api_version" id="sh_api_version">
-				<option <?php if (esc_attr($sh_api_version) == 'v2') { echo 'selected' ;} ?> value="v2">Version 2</option>
-				<option <?php if (esc_attr($sh_api_version) == 'v1') { echo 'selected' ;} ?> value="v1">Version 1 (Deprecated)</option>
-			</select></td>
-		</tr>
-		<?php } ?>
-		<tr class="v1row">
-			<th scope="row"><label for="sh_user_id"><?php _e("Shorthand User ID", 'sh-user-value' ); ?></label></th>
-			<td><input type="text" id="sh_user_id" name="sh_user_id" value="<?php echo esc_attr($user_id); ?>" size="9"></td>
-		</tr>
-		<tr class="v1row">
-			<th scope="row"><label for="sh_token_key"><?php _e("Shorthand API Token", 'sh-token-value' ); ?></label></th>
-			<td><input type="text" id="sh_token_key" name="sh_token_key" value="<?php echo esc_attr($token); ?>" size="28"></td>
-		</tr>
 		<tr class="v2row">
 			<th scope="row"><label for="sh_v2_token"><?php _e("Shorthand Team Token", 'sh-v2-token' ); ?></label></th>
 			<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr($v2_token); ?>" size="28"></td>
 		</tr>
-		<?php if($showServerURL || $serverURL != "https://app.shorthand.com") { ?>
-		<tr class="v1row">
-			<th scope="row"><?php _e("Service v1 URL" ); ?></th>
-			<td><input type="text" disabled value="<?php echo esc_attr($serverURL); ?>" size="28"></td>
-		</tr>
-		<?php } ?>
-		<?php if($showServerURL || $serverv2URL != "https://api.shorthand.com") { ?>
-		<tr class="v2row">
-			<th scope="row v1row"><?php _e("Service v2 URL" ); ?></th>
-			<td><input type="text" disabled value="<?php echo esc_attr($serverv2URL); ?>" size="28"></td>
-		</tr>
-		<?php } ?>
 		</tbody></table>
 		<p class="submit">
 			<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
@@ -159,6 +138,56 @@ function shand_shorthand_options() {
 			</p>
 		</form>
 
+	<h3>Post-processing</h3>
+		<p>Use this to create a JSON object of regex queries and replacements.</p>
+		<p><em>This Example removes title tags from within the head tag by replacing it with nothing.</em></p>
+<pre><code>
+  { 
+    "head":
+	[
+	  { 
+	    &quot;query&quot;:&quot;/&lt;title.(.*?)&lt;\/title&gt;/&quot;,
+	    &quot;replace&quot;:&quot;&quot;
+	  }
+	],
+    "body":[] 
+  }
+
+</code></pre>
+		<form name="form2" method="post" onsubmit="padJson()">
+			<?php echo $n_once ?>
+			<input type="hidden" name="sh_submit_hidden_four" value="Y" />
+			<textarea rows="10" cols="80" id="sh_regex_list" name="sh_regex_list"><?php echo stripslashes($sh_regex_list); ?></textarea>
+			<p class="submit">
+				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+			</p>
+		</form>
+		<script>
+			let textarea = document.querySelector("textarea#sh_regex_list");
+  
+			function padJson() {
+				console.log('updated JSON');
+				textarea.value = textarea.value.replace(/\\/g, '\\\\');
+			}
+			
+			
+			textarea.addEventListener("keyup", function(event) {
+				try{
+					JSON.parse(textarea.value);
+					textarea.setCustomValidity("");
+					
+				}catch(err){
+					if(textarea.value != ""){
+						console.log("Invalid JSON");
+						textarea.setCustomValidity("Invalid JSON in the Post-processing field");
+					}else{
+						textarea.setCustomValidity("");
+					}
+				}
+				
+			});
+		</script>
+
 	<style>
 		img.grav {
 			float: left;
@@ -180,35 +209,28 @@ function shand_shorthand_options() {
 		.row-hidden {
 			display:none;
 		}
+
+		code {
+  font-family: monospace;
+  display: inherit;
+}
 	</style>
-	<script>
-		document.getElementById("sh_api_version").addEventListener("change", updateShOptions);
-		function updateShOptions() {
-			var x = document.getElementById("sh_api_version");
-			switch (x.value) {
-				case 'v1':
-					for(var i=0; i < document.getElementsByClassName("v1row").length; i++) {
-						document.getElementsByClassName("v1row")[i].setAttribute("class", "v1row");
-					}
-					for(var i=0; i < document.getElementsByClassName("v2row").length; i++) {
-						document.getElementsByClassName("v2row")[i].setAttribute("class", "v2row row-hidden");
-					}
-					break;
-				case 'v2':
-					for(var i=0; i < document.getElementsByClassName("v1row").length; i++) {
-						document.getElementsByClassName("v1row")[i].setAttribute("class", "v1row row-hidden");
-					}
-					for(var i=0; i < document.getElementsByClassName("v2row").length; i++) {
-						document.getElementsByClassName("v2row")[i].setAttribute("class", "v2row");
-					}
-			}
-		}
-		(function() {
-			updateShOptions();
-		})();
-	</script>
 
-
+<h3>Experimental Features</h3>
+		<p>Early access features that are still subject to change.</p>
+		
+		<form name="form_experimental" method="post">
+			<?php echo $n_once ?>
+			<input type="hidden" name="sh_submit_hidden_experimental" value="Y" />
+			<input type="checkbox" id="sh_media_cron_offload" name="sh_media_cron_offload" value="true" <?php echo esc_attr($sh_media_cron_offload ? 'checked' : '') ?> />
+			<label for="sh_media_cron_offload">Import media assets via cron</label>
+			<p>Assets will be fetched after story save to prevent potential execution timeouts. Media won't be immediately available on save but progress will be updated based on the `media_status` field.</p>
+			<p>It is advised that Shorthand Story Posts are saved as a draft first to trigger the cron job prior to public publishing.</p>
+			<br/>
+			<p class="submit">
+				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+			</p>
+		</form>
 <?php
 }
 
