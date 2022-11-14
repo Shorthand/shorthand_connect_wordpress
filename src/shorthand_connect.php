@@ -252,7 +252,14 @@ function shand_wpt_update_story($storyId)
 
 	<div class="publishing-actions">
 		<input name="story_id" type="hidden" value="<?php esc_attr_e($storyId); ?>"/>
-		<input id="shorthand_update" name="save" class="button-shorthand" type="submit" value="Update Shorthand Story" formaction="?shand_update"/>
+		<input
+			id="shorthand_update"
+			name="save"
+			class="button-shorthand"
+			type="submit"
+			value="Update Shorthand Story"
+			formaction="?shand_update"
+		/>
 		
 		<script>
 			jQuery('#post').submit(function() {
@@ -275,12 +282,32 @@ function shand_add_shorthand_metaboxes()
 	global $noabstract;
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
-		add_meta_box('shand_wpt_shorthand_story_update', 'Update Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'side', 'high');
+		add_meta_box(
+			'shand_wpt_shorthand_story_update',
+			'Update Shorthand Story',
+			'shand_wpt_shorthand_story',
+			'shorthand_story',
+			'side',
+			'high'
+		);
 	} else {
-		add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+		add_meta_box(
+			'shand_wpt_shorthand_story',
+			'Select Shorthand Story',
+			'shand_wpt_shorthand_story',
+			'shorthand_story', 'normal',
+			'default'
+		);
 	}
 	if (!$noabstract) {
-		add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
+		add_meta_box(
+			'shand_wpt_shorthand_abstract',
+			'Add story abstract',
+			'shand_wpt_shorthand_abstract',
+			'shorthand_story',
+			'normal',
+			'default'
+		);
 	}
 	add_meta_box('shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
 }
@@ -478,8 +505,7 @@ add_filter('pre_get_posts', 'shand_shorthand_get_posts');
 /* Table Hook */
 function shand_add_shorthand_story_columns($columns)
 {
-	$cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array_slice($columns, 2, count($columns) - 2, true);
-	return $cols;
+	return array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array_slice($columns, 2, count($columns) - 2, true);
 }
 add_filter('manage_shorthand_story_posts_columns', 'shand_add_shorthand_story_columns');
 
