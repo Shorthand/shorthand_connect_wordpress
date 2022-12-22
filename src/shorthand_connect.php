@@ -2,14 +2,14 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.25
+ * @version 1.3.26
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.25
+Version: 1.3.26
 Author URI: http://shorthand.com
 */
 
@@ -122,6 +122,44 @@ function shand_wpt_shorthand_story()
 			clear: left;
 		}
 
+		div.publishing-actions{
+			padding: 10px;
+			clear: both;
+			border-top: 1px solid #dcdcde;
+			background: #f6f7f7;
+			margin: -12px;
+			margin-top: -12px;
+			margin-top: 10px;
+			display: flex;
+			justify-content: center;
+		}
+
+		.button-shorthand{
+			background-color: #000;
+			border: 1px solid #000;
+			transition: background-color .15s ease,color .15s ease;
+			color: #fff;
+			font-family: poppins,sans-serif;
+			font-size: 13px;
+			font-weight: 600;
+			letter-spacing: 0;
+			line-height: 1;
+			padding: 1em 2em;
+			text-decoration: none;
+			cursor:pointer;
+			border-radius: .9em;
+		}
+
+		.button-shorthand:hover{
+			background-color: #fff;
+			border-color: #000;
+			color: #000;
+		}
+
+		.button-shorthand:disabled{
+			pointer-events:none;
+		}
+
 		#codearea {
 			border: 1px solid #999999;
 			font-family: Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
@@ -153,7 +191,6 @@ function shand_wpt_shorthand_story()
 	<?php
 
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
-	$story_api_version = get_post_meta($post->ID, 'api_version', true);
 	if ($selected_story) {
 		shand_wpt_update_story($selected_story);
 		return;
@@ -211,8 +248,30 @@ function shand_wpt_update_story($storyId)
 ?>
 	<p>This will update Wordpress with the latest version of the story from Shorthand.</p>
 	<?php wp_nonce_field('shand_update_story', 'shand_update_story_nonce'); ?>
-	<input name="story_id" type="hidden" value="<?php esc_attr_e($storyId); ?>"/>
-	<input name="save" type="submit" value="Update Story" formaction="?shand_update"/>
+
+
+	<div class="publishing-actions">
+		<input name="story_id" type="hidden" value="<?php esc_attr_e($storyId); ?>"/>
+		<input
+			id="shorthand_update"
+			name="save"
+			class="button-shorthand"
+			type="submit"
+			value="Update Shorthand Story"
+			formaction="?shand_update"
+		/>
+		
+		<script>
+			jQuery('#post').submit(function() {
+				jQuery('#shorthand_update').prop('disabled', true);
+			});
+		</script>
+
+	</div>
+
+	
+
+	
 <?php
 }
 
@@ -223,12 +282,32 @@ function shand_add_shorthand_metaboxes()
 	global $noabstract;
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
-		add_meta_box('shand_wpt_shorthand_story', 'Update Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+		add_meta_box(
+			'shand_wpt_shorthand_story_update',
+			'Update Shorthand Story',
+			'shand_wpt_shorthand_story',
+			'shorthand_story',
+			'side',
+			'high'
+		);
 	} else {
-		add_meta_box('shand_wpt_shorthand_story', 'Select Shorthand Story', 'shand_wpt_shorthand_story', 'shorthand_story', 'normal', 'default');
+		add_meta_box(
+			'shand_wpt_shorthand_story',
+			'Select Shorthand Story',
+			'shand_wpt_shorthand_story',
+			'shorthand_story', 'normal',
+			'default'
+		);
 	}
 	if (!$noabstract) {
-		add_meta_box('shand_wpt_shorthand_abstract', 'Add story abstract', 'shand_wpt_shorthand_abstract', 'shorthand_story', 'normal', 'default');
+		add_meta_box(
+			'shand_wpt_shorthand_abstract',
+			'Add story abstract',
+			'shand_wpt_shorthand_abstract',
+			'shorthand_story',
+			'normal',
+			'default'
+		);
 	}
 	add_meta_box('shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default');
 }
@@ -426,8 +505,7 @@ add_filter('pre_get_posts', 'shand_shorthand_get_posts');
 /* Table Hook */
 function shand_add_shorthand_story_columns($columns)
 {
-	$cols = array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array('api_version' => __('API Version')) + array_slice($columns, 2, count($columns) - 2, true);
-	return $cols;
+	return array_slice($columns, 0, 2, true) + array('story_id' => __('Shorthand Story ID')) + array_slice($columns, 2, count($columns) - 2, true);
 }
 add_filter('manage_shorthand_story_posts_columns', 'shand_add_shorthand_story_columns');
 
