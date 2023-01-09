@@ -1,10 +1,20 @@
 <?php
 
-/* Options */
+/**
+ * Page: Options.
+ *
+ * Everything related to /options-general.php?page=shorthand-options goes in this page
+ * 
+ */
+
+
+
+//Add Shorthand Options to the WordPress Admin
 function shand_shorthand_menu() {
 	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shand_shorthand_options' );
 }
 
+// CSS for Options
 $default_sh_site_css = '
 /* START CSS FOR DEFAULT WP THEMES */
 .site {
@@ -35,6 +45,7 @@ function shand_shorthand_options() {
 	global $allowversionswitch;
 	global $showServerURL;
 
+    // 
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.' )) );
 	}
@@ -102,6 +113,16 @@ function shand_shorthand_options() {
 		</p>
 		<hr />
 	</form>
+
+	<h3>Mass Update Stories</h3>
+	<form name="form1" method="post">
+		<input type="hidden" name="sh_submit_hidden" value="Y" />
+		<p class="submit">
+			<input type="submit" name="masssubmit" class="button-primary" value="<?php esc_attr_e('Mass Update Stories') ?>" />
+		</p>
+		<hr />
+	</form>
+
 
 	<h3>Shorthand Connect Status</h3>
 	<?php if ($profile) { ?>
