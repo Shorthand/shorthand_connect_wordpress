@@ -86,8 +86,7 @@ function shand_shorthand_options() {
 	$n_once = wp_nonce_field( 'sh-update-configuration' );
 
 ?>
-
-<h3>Shorthand API Configuration</h3>
+	<h3>Shorthand API Configuration</h3>
 	<form name="form1" method="post">
 		<?php echo $n_once ?>
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
@@ -102,7 +101,6 @@ function shand_shorthand_options() {
 		</p>
 		<hr />
 	</form>
-
 	<h3>Shorthand Connect Status</h3>
 	<?php if ($profile) { ?>
 		<p class="status">Successfully connected</p>
@@ -123,6 +121,8 @@ function shand_shorthand_options() {
 				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
 			</p>
 		</form>
+
+
 
 	<h3>Shorthand Story Page CSS (theme wide CSS)</h3>
 		<p>Use this CSS to customise Shorthand Story pages to better suit your theme</p>

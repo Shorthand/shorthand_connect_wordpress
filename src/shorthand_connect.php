@@ -2,21 +2,15 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.27
+ * @version 1.3.26
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.27
+Version: 1.3.26
 Author URI: http://shorthand.com
-*/
-
-/* API FUNCTIONS LIST */
-/*
-
-	
 */
 
 $included = @include_once('config.php');
@@ -26,9 +20,9 @@ if (!$included) {
 $version = 'v2';
 
 require_once('includes/api-v2.php');
+require_once('includes/mass_pull.php');
 
 require_once('includes/shorthand_options.php');
-require_once('includes/mass_pull.php');
 require_once('templates/abstract.php');
 
 if ( !function_exists('WP_Filesystem') ) {
@@ -47,7 +41,6 @@ function shand_create_post_type()
 		array(
 			'labels' => array(
 				'name' => __('Shorthand'),
-				'all_items' => __('All Stories'), //Added to follow default WP post structure
 				'singular_name' => __('Shorthand Story'),
 				'add_new' => __('Add Shorthand Story'),
 				'add_new_item' => __('Add Shorthand Story'),
@@ -196,8 +189,8 @@ function shand_wpt_shorthand_story()
 			font-weight: bold;
 		}
 	</style>
-
 	<?php
+
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
 	if ($selected_story) {
 		shand_wpt_update_story($selected_story);
@@ -276,11 +269,13 @@ function shand_wpt_update_story($storyId)
 		</script>
 
 	</div>
+
+	
+
+	
 <?php
 }
-?>
 
-<?php
 function shand_add_shorthand_metaboxes()
 {
 	global $version;
@@ -432,7 +427,7 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			// Save the abstract
 			if (!$noabstract) {
 				$abstract = $body;
-				remove_action('save_post', '$post_', 10, 3);
+				remove_action('save_post', 'shand_save_shorthand_story', 10, 3);
 				$post = array(
 					'ID' => $post_id,
 					'post_content' => shand_abstract_template($post_id, wp_kses_post($_REQUEST['abstract']), $abstract)
@@ -624,7 +619,7 @@ function shand_wpt_shorthand_extra_html()
 	echo '<textarea id="codearea" name="extra_html">' . esc_textarea($extra_html) . '</textarea>';
 }
 
-/* BRAD CUSTOM */
+/* Brad Code */
 
 /* Add "Pull Story" to post dropdown */
 add_filter('bulk_actions-edit-shorthand_story', function($bulk_actions) {
@@ -654,7 +649,6 @@ add_filter('handle_bulk_actions-edit-shorthand_story', function($redirect_url, $
 	return $redirect_url;
 }, 10, 3);
 
-
 /* Add Notice after post has pulled */
 add_action('admin_notices', function() {
 	if (!empty($_REQUEST['bulk-pulled-stories'])) {
@@ -663,6 +657,4 @@ add_action('admin_notices', function() {
 	}
 });
 
-
 ?>
-

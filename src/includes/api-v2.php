@@ -1,16 +1,7 @@
 <?php
 
-/* API FUNCTIONS LIST */
-/*
-	1. Get Author profile
-	2. Get Stories
-	3. Get Story Files Localized path
-	4. Get Shorthand Story url
-	5. Copy Story Zip
-	6. Extract Zip File
-*/
-
 // VERSION 2 API
+
 function sh_v2_api_get($url, $options) {
 	global $serverv2URL;
 	$token = get_option('sh_v2_token');
@@ -43,10 +34,6 @@ function sh_v2_api_get_json($url, $options) {
 	return json_decode($body);
 }
 
-/*
-/* Name: Get Author profile */
-/* Desc: Return a username and gravatar based on 
-*/
 function sh_get_profile() {
 	$tokeninfo = array();
 
@@ -60,11 +47,6 @@ function sh_get_profile() {
 	return $tokeninfo;
 }
 
-
-/*
-/* Name: Get Stories */
-/* Desc: Return an array of objects (Stories) - image, id, metadata, description, title and story_version
-*/
 function sh_get_stories() {
 	$stories = null;
 
@@ -92,10 +74,6 @@ function sh_get_stories() {
 	return $stories;
 }
 
-/*
-/* Name: Get Story Files Localized path */
-/* Desc: Checks if there's files in the destination path
-*/
 function sh_get_story_path($post_id, $story_id) {
 	
 	init_WP_Filesystem();
@@ -111,10 +89,6 @@ function sh_get_story_path($post_id, $story_id) {
 	return $destination_path;
 }
 
-/*
-/* Name: Get Shorthand Story url */
-/* Desc: Checks if there's files in the destination path
-*/
 function sh_get_story_url($post_id, $story_id) {
 
 	init_WP_Filesystem();
@@ -127,12 +101,6 @@ function sh_get_story_url($post_id, $story_id) {
 	return $destination_url;
 }
 
-
-/*
-/* Name: Copy Story Zip */
-/* Desc: This function redownloads the story extract but does not update meta fields.
-/* Note: You will need to run shand_update_story($post_id, $story_id) as well in most cases
-*/
 function sh_copy_story($post_id, $story_id, $without_assets=false, $assets_only=false) {
 
 	wp_raise_memory_limit('admin');
@@ -180,11 +148,6 @@ function init_WP_Filesystem(){
 	}
 }
 
-
-/*
-/* Name: Extract Zip File */
-/* Desc: This function unzips a file downloaded via another function sh_copy_story()
-*/
 function extractStoryContent($zip_file, $destination_path,$story_id){
 	//WP VIP HOSTING COMPATIBILITY
 	$zip = new ZipArchive;

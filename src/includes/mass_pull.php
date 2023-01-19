@@ -79,8 +79,7 @@ function shand_update_story($post_id, $story_id) {
 			'post_title' => $obj->meta->title
 		);
 		wp_update_post($post_data);
-
-		//update_post_meta($post_id, 'extra_html', $obj->meta->title);	
+        
 		update_post_meta($post_id, 'story_body', wp_slash($body));
 		update_post_meta($post_id, 'story_head', wp_slash($head));
 
