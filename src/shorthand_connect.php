@@ -619,8 +619,6 @@ function shand_wpt_shorthand_extra_html()
 	echo '<textarea id="codearea" name="extra_html">' . esc_textarea($extra_html) . '</textarea>';
 }
 
-/* Brad Code */
-
 /* Add "Pull Story" to post dropdown */
 add_filter('bulk_actions-edit-shorthand_story', function($bulk_actions) {
 	$bulk_actions['bulk-pull-stories'] = __('Pull Story', 'txtdomain');
