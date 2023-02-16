@@ -325,12 +325,11 @@ add_action('sh_media_fetch', 'shand_save_media_fetch', 10, 2);
 
 
 /* Save the shorthand story */
-function shand_save_shorthand_story($post_id, $post, $update)
+function shand_save_shorthand_story($post_id, $post)
 {
 	WP_Filesystem();
-
 	global $wp_filesystem;
-
+	
 	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base') ) {
 		$creds = request_filesystem_credentials( site_url() );
 		wp_filesystem( $creds );

@@ -5,7 +5,7 @@ global $showServerURL;
 global $showArchivedStories;
 global $noabstract;
 
-$serverURL = 'https://test-pla-676-publishingplugins-update-plugins-api.test.shorthand.com';
+$serverURL = 'https://api.shorthand.com';
 $showServerURL = false;
 $showArchivedStories = false;
 

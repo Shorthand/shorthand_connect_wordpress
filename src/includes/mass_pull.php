@@ -1,12 +1,11 @@
 <?php
-
 /*
 /* Name: Update Story Meta Fields Function */
 /* Desc: This function sets each custom meta field, should be paired with sh_copy_story().
 /* Note: Unzipping a fresh story copy won't update the fields
 */
-function shand_update_story($post_id, $story_id) {
-
+function shand_update_story($post_id, $story_id)
+{
 	init_WP_Filesystem();
 	global $wp_filesystem;
 	global $post;
@@ -19,8 +18,6 @@ function shand_update_story($post_id, $story_id) {
 	$obj = sh_v2_api_get_json('/v2/stories/' . $story_id . '/settings', array('timeout' => '240'));
 	
 	$err = sh_copy_story($post_id, $safe_story_id, $sh_media_cron_offload);
-
-	$sh_title = get_post_meta( $post_id, 'title', true );
 
 	$story_path = sh_get_story_path($post_id, $safe_story_id);
 	//Sometimes the story needs to be gotten twice
@@ -38,7 +35,7 @@ function shand_update_story($post_id, $story_id) {
 		// The story has been uploaded
 		update_post_meta($post_id, 'story_path', $story_path);
 
-		//Log any story-specific errors to the metadata 
+		//Log any story-specific errors to the metadata
 		if(isset($err['error'])){
 			update_post_meta($post_id, 'ERROR', json_encode($err));
 		}else{
@@ -83,13 +80,10 @@ function shand_update_story($post_id, $story_id) {
 		delete_post_meta($post_id, 'story_diagnostic');
 
 	} else {
-
 		update_post_meta($post_id, 'story_diagnostic', $err);
-
 		echo 'Something went wrong, please try again';
 		print_r($err);
 		die();
 	}
 
 }
-?>
