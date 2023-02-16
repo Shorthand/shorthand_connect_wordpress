@@ -17,9 +17,7 @@ if (file_exists('config.php')) {
     include_once('config.php');
 } else {
     require_once('config.default.php');
-}
-$version = 'v2';
-define( 'shorthand_connect', plugin_dir_path( __FILE__ ) );
+}define( 'shorthand_connect', plugin_dir_path( __FILE__ ) );
 
 require_once('includes/api.php');
 require_once('includes/mass_pull.php');
@@ -71,15 +69,10 @@ add_action('init', 'shand_create_post_type');
 
 function shand_wpt_shorthand_story()
 {
-
 	global $post;
-
 	global $serverURL;
 	global $showArchivedStories;
-
 	$baseurl = '';
-
-	$version = 'v2';
 
 ?>
 	<style>
@@ -214,7 +207,7 @@ function shand_wpt_shorthand_story()
 				$story_selected = 'selected';
 			}
 			$archived = '';
-			if ($version == 'v2' && isset($story->story_version) && $story->story_version == '1') {
+			if (isset($story->story_version) && $story->story_version == '1') {
 				if ($showArchivedStories) {
 					$archived = ' (archived)';
 				} else {
@@ -280,7 +273,6 @@ function shand_wpt_update_story($storyId)
 
 function shand_add_shorthand_metaboxes()
 {
-	global $version;
 	global $post;
 	global $noabstract;
 	$selected_story = get_post_meta($post->ID, 'story_id', true);
@@ -388,7 +380,7 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			// The story has been uploaded
 			update_post_meta($post_id, 'story_path', $story_path);
 
-			//Log any story-specific errors to the metadata 
+			//Log any story-specific errors to the metadata
 			if(isset($err['error'])){
 				update_post_meta($post_id, 'ERROR', json_encode($err));
 			}else{
@@ -399,8 +391,6 @@ function shand_save_shorthand_story($post_id, $post, $update)
 			$assets_path = sh_get_story_url($post_id, $safe_story_id);
 
 			// Save the head and body
-			$version = get_option('sh_api_version');
-			update_post_meta($post_id, 'api_version', $version);
 			$head_file = $story_path . '/head.html';
 			$article_file = $story_path . '/article.html';
 
@@ -562,8 +552,6 @@ function shand_shorthand_activate()
 register_activation_hook(__FILE__, 'shand_shorthand_activate');
 
 
-/* UTILITY FUNCTIONS */
-
 /* Fix content paths */
 function shand_fix_content_paths($assets_path, $content)
 {
@@ -622,13 +610,13 @@ function shand_wpt_shorthand_extra_html()
 }
 
 /* Add "Pull Story" to post dropdown */
-add_filter('bulk_actions-edit-shorthand_story', function($bulk_actions) {
+add_filter('bulk_actions-edit-shorthand_story', function ($bulk_actions) {
 	$bulk_actions['bulk-pull-stories'] = __('Pull Story', 'txtdomain');
 	return $bulk_actions;
 });
 
 /* Pull the stories */
-add_filter('handle_bulk_actions-edit-shorthand_story', function($redirect_url, $action, $post_ids) {
+add_filter('handle_bulk_actions-edit-shorthand_story', function ($redirect_url, $action, $post_ids) {
 	//Run on posts which have bulk-pull-stories set to true
 	if ($action == 'bulk-pull-stories') {
 		$storyids = array();
@@ -650,7 +638,7 @@ add_filter('handle_bulk_actions-edit-shorthand_story', function($redirect_url, $
 }, 10, 3);
 
 /* Add Notice after post has pulled */
-add_action('admin_notices', function() {
+add_action('admin_notices', function () {
 	if (!empty($_REQUEST['bulk-pulled-stories'])) {
 		$num_changed = (int) $_REQUEST['bulk-pulled-stories'];
 		printf('<div id="message" class="updated notice is-dismissable"><p>' . __('Pulled %d stories.' , 'txtdomain') . '</p></div>', $num_changed);

@@ -1,10 +1,8 @@
 <?php
-
 /* Options */
 function shand_shorthand_menu() {
 	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shand_shorthand_options' );
 }
-
 $default_sh_site_css = '
 /* START CSS FOR DEFAULT WP THEMES */
 .site {
@@ -27,8 +25,8 @@ $default_sh_site_css = '
 /* END CSS FOR DEFAULT WP THEMES */
 ';
 
-function shand_shorthand_options() {
-
+function shand_shorthand_options()
+{
 	global $default_sh_site_css;
 	global $serverURL;
 	global $showServerURL;
@@ -39,10 +37,8 @@ function shand_shorthand_options() {
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_v2_token', sanitize_text_field($_POST['sh_v2_token']));
 	}
-
 	$v2_token = esc_html(get_option('sh_v2_token'));
 	
-
 	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
 		update_option('sh_css', wp_kses_post($_POST['sh_css']));
 	}
@@ -57,7 +53,6 @@ function shand_shorthand_options() {
 		update_option('sh_permalink', 'shorthand_story');
 		$permalink_structure = esc_html(get_option('sh_permalink'));
 	}
-
 	$sh_css = get_option('sh_css');
 	$no_css = false;
 	if ($sh_css == '') {
@@ -140,17 +135,16 @@ function shand_shorthand_options() {
 		<p>Use this to create a JSON object of regex queries and replacements.</p>
 		<p><em>This Example removes title tags from within the head tag by replacing it with nothing.</em></p>
 <pre><code>
-  { 
+  {
     "head":
 	[
-	  { 
+	  {
 	    &quot;query&quot;:&quot;/&lt;title.(.*?)&lt;\/title&gt;/&quot;,
 	    &quot;replace&quot;:&quot;&quot;
 	  }
 	],
-    "body":[] 
+    "body":[]
   }
-
 </code></pre>
 		<form name="form2" method="post" onsubmit="padJson()">
 			<?php echo $n_once ?>

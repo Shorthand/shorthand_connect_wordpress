@@ -49,10 +49,7 @@ function shand_update_story($post_id, $story_id) {
 		$assets_path = sh_get_story_url($post_id, $safe_story_id);
 
 		// Save the head and body
-		$version = get_option('sh_api_version');
-		
-		update_post_meta($post_id, 'api_version', $version);
-		$head_file = $story_path . '/head.html';
+				$head_file = $story_path . '/head.html';
 		$article_file = $story_path . '/article.html';
 
 		$post_processing_queries = json_decode(base64_decode(get_option('sh_regex_list')));
