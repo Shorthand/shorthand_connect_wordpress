@@ -1,15 +1,11 @@
 <?php
 
 global $serverURL;
-global $serverv2URL;
-global $allowversionswitch;
 global $showServerURL;
 global $showArchivedStories;
 global $noabstract;
 
-$serverURL = 'https://api.shorthand.com';
-$serverv2URL = 'https://api.shorthand.com';
-$allowversionswitch = true;
+$serverURL = 'https://test-pla-676-publishingplugins-update-plugins-api.test.shorthand.com';
 $showServerURL = false;
 $showArchivedStories = false;
 

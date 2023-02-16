@@ -2,24 +2,26 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.27
+ * @version 1.3.28
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.27
+Version: 1.3.28
 Author URI: http://shorthand.com
 */
 
-$included = @include_once('config.php');
-if (!$included) {
-	require_once('config.default.php');
+if (file_exists('config.php')) {
+    include_once('config.php');
+} else {
+    require_once('config.default.php');
 }
 $version = 'v2';
+define( 'shorthand_connect', plugin_dir_path( __FILE__ ) );
 
-require_once('includes/api-v2.php');
+require_once('includes/api.php');
 require_once('includes/mass_pull.php');
 
 require_once('includes/shorthand_options.php');
@@ -73,7 +75,6 @@ function shand_wpt_shorthand_story()
 	global $post;
 
 	global $serverURL;
-	global $serverv2URL;
 	global $showArchivedStories;
 
 	$baseurl = '';
@@ -197,10 +198,11 @@ function shand_wpt_shorthand_story()
 		return;
 	}
 	$stories = sh_get_stories();
+	$profile = sh_get_profile();
 
-	if (!is_array($stories)) {
+	if (!($profile)) {
 		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress Shorthand settings</a>.';
-	} else if (sizeOf($stories) == 0) {
+	} elseif ($stories === null) {
 		echo 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.';
 	} else {
 		echo '<ul class="stories">';

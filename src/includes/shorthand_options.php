@@ -31,8 +31,6 @@ function shand_shorthand_options() {
 
 	global $default_sh_site_css;
 	global $serverURL;
-	global $serverv2URL;
-	global $allowversionswitch;
 	global $showServerURL;
 
 	if ( !current_user_can( 'manage_options' ) )  {
