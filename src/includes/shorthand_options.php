@@ -29,7 +29,6 @@ function shand_shorthand_options()
 {
 	global $default_sh_site_css;
 	global $serverURL;
-	global $showServerURL;
 
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.' )) );
