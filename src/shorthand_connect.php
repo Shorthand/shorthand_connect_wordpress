@@ -14,11 +14,10 @@ Author URI: http://shorthand.com
 */
 
 if (file_exists('config.php')) {
-    include_once('config.php');
+	include_once('config.php');
 } else {
-    require_once('config.default.php');
-}define( 'shorthand_connect', plugin_dir_path( __FILE__ ) );
-
+	require_once('config.default.php');
+}
 require_once('includes/api.php');
 require_once('includes/mass_pull.php');
 
@@ -347,7 +346,7 @@ function shand_save_shorthand_story($post_id, $post)
 		delete_post_meta($post_id, 'abstract');
 	}
 
-	if(!get_post_meta($post_id, 'no_update')) {
+	if (!get_post_meta($post_id, 'no_update')) {
 		update_post_meta($post_id, 'no_update', "false");
 	}
 
@@ -370,7 +369,7 @@ function shand_save_shorthand_story($post_id, $post)
 			$story_path = sh_get_story_path($post_id, $safe_story_id);
 			
 		}
-		if($sh_media_cron_offload){
+		if ($sh_media_cron_offload){
 			update_post_meta($post_id, 'media_status', '[Awaiting media fetch...]');
 			wp_schedule_single_event(time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ));
 		}
@@ -401,11 +400,11 @@ function shand_save_shorthand_story($post_id, $post)
 			$body = apply_filters('sh_pre_process_body', $body, $assets_path, $article_file);
 			$head = apply_filters('sh_pre_process_head', $head, $assets_path, $head_file);
 			
-			if(isset($post_processing_queries->body)){
+			if (isset($post_processing_queries->body)){
 				$body = shand_post_processing($body,$post_processing_queries->body);
 			}
 			
-			if(isset($post_processing_queries->head)){
+			if (isset($post_processing_queries->head)){
 				$head = shand_post_processing($head, $post_processing_queries->head);
 			}
 			
@@ -502,32 +501,6 @@ function shand_add_shorthand_story_columns($columns)
 add_filter('manage_shorthand_story_posts_columns', 'shand_add_shorthand_story_columns');
 
 
-/* Table Hook */
-function shand_shorthand_show_columns($name)
-{
-	global $post;
-	switch ($name) {
-		case 'story_id':
-			$views = get_post_meta($post->ID, 'story_id', true);
-			echo $views;
-			break;
-		case 'api_version':
-			$views = get_post_meta($post->ID, 'api_version', true);
-			if ($views == '') {
-				// Determine the version, save it if possible;
-				$views = 'Unknown';
-				$story_id = get_post_meta($post->ID, 'story_id', true);
-				if ($story_id) {
-					$views = determine_version_id($story_id);
-				}
-			}
-			echo $views;
-			break;
-	}
-}
-add_action('manage_posts_custom_column',  'shand_shorthand_show_columns');
-
-
 /* Filter to fix post type tags */
 function shand_post_type_tags_fix($request)
 {
@@ -577,17 +550,6 @@ function shand_post_processing($content, $queries)
 	}
 
 	return $content;
-}
-
-function determine_version_id($story_id)
-{
-	if (substr($story_id, 0, 2) == 'v1') {
-		return 'v1';
-	}
-	if (intval($story_id) > 0) {
-		return 'v1';
-	}
-	return 'v2';
 }
 
 function shand_wpt_shorthand_abstract()
