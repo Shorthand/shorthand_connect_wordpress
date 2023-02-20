@@ -65,6 +65,7 @@ https://wordpress.org/plugins/about/svn/
 
 = 1.3.28 =
 * Code clean up & bug fixes
+* Remove legacy API code
 
 = 1.3.27 =
 * Added Mass Publishing Feature
