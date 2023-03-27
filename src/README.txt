@@ -66,6 +66,7 @@ https://wordpress.org/plugins/about/svn/
 = 1.3.28 =
 * Code clean up & bug fixes
 * Remove legacy API code
+* Introduce a 'Disable Advanced Custom Fields' option under Experimental Features
 
 = 1.3.27 =
 * Added Mass Publishing Feature
