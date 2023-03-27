@@ -193,7 +193,7 @@ function shand_wpt_shorthand_story()
 	$profile = sh_get_profile();
 
 	if (!($profile)) {
-		echo 'Could not connect to Shorthand, please check your <a href="options-general.php?page=shorthand-options">Wordpress Shorthand settings</a>.';
+		echo 'Could not connect to Shorthand, please check your API token in <a href="options-general.php?page=shorthand-options">Shorthand settings</a>.';
 	} elseif ($stories === null) {
 		echo 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.';
 	} else {
@@ -485,9 +485,9 @@ add_action('wp_head', 'hook_css');
 /* Get Posts Hook */
 function shand_shorthand_get_posts($query)
 {
-	if (is_home() && $query->is_main_query())
-		$query->set('post_type', array('post', 'shorthand_story'));
-
+	if (is_home() && $query->is_main_query()) {
+		$query->set( 'post_type', array( 'post', 'shorthand_story' ) );
+	}
 	return $query;
 }
 add_filter('pre_get_posts', 'shand_shorthand_get_posts');
@@ -527,13 +527,10 @@ register_activation_hook(__FILE__, 'shand_shorthand_activate');
 /* Fix content paths */
 function shand_fix_content_paths($assets_path, $content)
 {
-	
 	$content = str_replace('./assets/', $assets_path . '/assets/', $content);
 	$content = str_replace('./static/', $assets_path . '/static/', $content);
 	$content = preg_replace('/.(\/theme-\w+.min.css)/', $assets_path . '$1', $content);
-	
 	$content = apply_filters('shand_fix_content_paths', $content);
-	
 	return $content;
 }
 
@@ -542,13 +539,11 @@ function shand_post_processing($content, $queries)
 	if ($queries == null){
 		return $content;
 	}
-	
 	foreach ($queries as $query) {
 		if(isset($query->query) && isset($query->replace)){
 			$content = preg_replace($query->query, $query->replace, $content);
 		}
 	}
-
 	return $content;
 }
 
@@ -570,6 +565,16 @@ function shand_wpt_shorthand_extra_html()
 	echo '<textarea id="codearea" name="extra_html">' . esc_textarea($extra_html) . '</textarea>';
 }
 
+function remove_wp_meta_box() {
+	if (function_exists('acf')) { // Check if ACF is installed and enabled
+	  $sh_disable_acf = filter_var(get_option('sh_disable_acf'), FILTER_VALIDATE_BOOLEAN);
+	  if ($sh_disable_acf) {
+		add_filter('acf/settings/remove_wp_meta_box', '__return_false');
+	  }
+	}
+  }
+  add_action('acf/init', 'remove_wp_meta_box');
+  
 /* Add "Pull Story" to post dropdown */
 add_filter('bulk_actions-edit-shorthand_story', function ($bulk_actions) {
 	$bulk_actions['bulk-pull-stories'] = __('Pull Story', 'txtdomain');
@@ -605,5 +610,3 @@ add_action('admin_notices', function () {
 		printf('<div id="message" class="updated notice is-dismissable"><p>' . __('Pulled %d stories.' , 'txtdomain') . '</p></div>', $num_changed);
 	}
 });
-
-?>

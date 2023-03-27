@@ -1,5 +1,4 @@
 <?php
-
 function sh_v2_api_get($url, $options)
 {
 	$token = get_option('sh_v2_token');
@@ -8,21 +7,24 @@ function sh_v2_api_get($url, $options)
 	}
 	global $serverURL;
 	$url = $serverURL . $url;
-	$plugin_data = get_plugin_data(plugin_dir_path(__FILE__) . '../shorthand_connect.php');
+	$plugin_path = plugin_dir_path( dirname( __FILE__ ) ) . '/shorthand_connect.php';
+	$plugin_data = get_file_data( $plugin_path, array( 'Version' => 'Version' ) );
 	$plugin_version = $plugin_data['Version'];
+	
 	$wp_version = $GLOBALS['wp_version'];
 	$user_agent = 'WordPress/' . $wp_version . ' Shorthand/' . $plugin_version;
 	
 	$request_options = array_merge(
 		array(
 			'headers' => array(
-				'Authorization' => 'Token '.$token,
+				'Authorization' => 'Token ' . $token,
 				'user-agent'  => $user_agent,
 			),
 			'http_api_args' => $options
 		),
 		$options
 	);
+	
 	if (function_exists("vip_safe_wp_remote_get") && !isset($options['timeout'])){
 		return vip_safe_wp_remote_get($url,false,1,3,10, $request_options);
 	} else {
