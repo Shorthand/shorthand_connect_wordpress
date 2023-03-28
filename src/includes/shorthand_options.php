@@ -222,8 +222,8 @@ function shand_shorthand_options()
 <p>It is advised that Shorthand Story Posts are saved as a draft first to trigger the cron job prior to public publishing.</p>
 <br/>
 <input type="checkbox" id="sh_disable_acf" name="sh_disable_acf" value="true" <?php echo esc_attr($sh_disable_acf ? 'checked' : '') ?> />
-<label for="sh_disable_acf">Disable Advanced Custom Fieldss</label>
-<p>This is to prevent any potential issues that could cause the Shorthand Custom Fields to become hidden by Advanced Custom Fields.</p>
+<label for="sh_disable_acf">Disable Advanced Custom Fields</label>
+<p>Used to prevent any potential issues that could cause the Shorthand Custom Fields to become hidden by Advanced Custom Fields.</p>
 </br>
 <p class="submit">
 <input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
