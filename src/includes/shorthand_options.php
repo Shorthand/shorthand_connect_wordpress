@@ -25,6 +25,20 @@ $default_sh_site_css = '
 /* END CSS FOR DEFAULT WP THEMES */
 ';
 
+// JSON Checker
+function validate_json($json_string) {
+    // Try to decode the JSON data. If it fails, the JSON is invalid.
+    $json_data = json_decode($json_string, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        // The JSON is invalid.
+        return false;
+    }
+
+    // If the data is valid JSON, re-encode it to ensure it's correctly formatted.
+    return json_encode($json_data);
+}
+
 function shand_shorthand_options()
 {
 	global $default_sh_site_css;
@@ -34,17 +48,32 @@ function shand_shorthand_options()
 		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.' )) );
 	}
 	if( isset($_POST['sh_submit_hidden']) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
-		update_option('sh_v2_token', sanitize_text_field($_POST['sh_v2_token']));
+		//If there's a token set, use it, if not set it to an empty string
+		$sh_v2_token = isset($_POST['sh_v2_token']) ? sanitize_text_field($_POST['sh_v2_token']) : '';
+		update_option('sh_v2_token', $sh_v2_token);
 	}
+	
 	$v2_token = esc_html(get_option('sh_v2_token'));
 	
 	if( isset($_POST['sh_submit_hidden_two']) && $_POST['sh_submit_hidden_two'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
-		update_option('sh_css', wp_kses_post($_POST['sh_css']));
+		//Check if there's custom CSS, if there is, use wp_kses_post() to sanitize otherwise set an empty string
+		$sh_css = isset($_POST['sh_css']) ? wp_kses_post($_POST['sh_css']) : '';
+		update_option('sh_css', $sh_css);
 	}
-	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
-		update_option('sh_permalink', sanitize_text_field($_POST['sh_permalink']));
+
+
+	// Rather than running a rewrite flush everytime a post is submitted, run it on plugin activate/deactivate
+	function shand_rewrite_flush() {
 		shand_create_post_type();
 		flush_rewrite_rules();
+	}
+	register_activation_hook( __FILE__, 'shand_rewrite_flush' );
+	register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
+
+	if( isset($_POST['sh_submit_hidden_three']) && $_POST['sh_submit_hidden_three'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+		//Check if there's custom permalink, if there is, use sanitize_text_field() to sanitize potential HTML and then set an empty string
+		$sh_permalink = isset($_POST['sh_permalink']) ? sanitize_text_field($_POST['sh_permalink']) : '';
+		update_option('sh_permalink', $sh_permalink);
 	}
 	$permalink_structure = esc_html(get_option('sh_permalink'));
 
@@ -62,8 +91,16 @@ function shand_shorthand_options()
 		$sh_css = $default_sh_site_css;
 	}
 
-	if (isset($_POST['sh_submit_hidden_four']) && $_POST['sh_submit_hidden_four'] == 'Y' && check_admin_referer( 'sh-update-configuration' )) {
-		update_option('sh_regex_list', base64_encode(wp_unslash($_POST['sh_regex_list'])));
+
+
+	if (isset($_POST['sh_submit_hidden_four']) && $_POST['sh_submit_hidden_four'] == 'Y' && check_admin_referer('sh-update-configuration')) {
+		$sh_regex_list = isset($_POST['sh_regex_list']) ? validate_json(wp_unslash($_POST['sh_regex_list'])) : '';
+	
+		if ($sh_regex_list !== false) {
+			update_option('sh_regex_list', base64_encode($sh_regex_list));
+		} else {
+			// Handle invalid JSON error here.
+		}
 	}
 
 	$sh_regex_list = base64_decode(get_option('sh_regex_list'));
@@ -79,7 +116,10 @@ function shand_shorthand_options()
   $sh_disable_acf = filter_var(get_option('sh_disable_acf'), FILTER_VALIDATE_BOOLEAN);
   
 	$profile = sh_get_profile();
-	$n_once = wp_nonce_field( 'sh-update-configuration' );
+
+	ob_start();
+	wp_nonce_field( 'sh-update-configuration' );
+	$n_once  = ob_get_clean();
 
 ?>
 	<h3>Shorthand API Configuration</h3>
@@ -88,7 +128,7 @@ function shand_shorthand_options()
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<table class="form-table"><tbody>
 		<tr class="v2row">
-			<th scope="row"><label for="sh_v2_token"><?php _e("Shorthand Team Token", 'sh-v2-token' ); ?></label></th>
+			<th scope="row"><label for="sh_v2_token"><?php esc_html_e("Shorthand Team Token", 'sh-v2-token' ); ?></label></th>
 			<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr($v2_token); ?>" size="28"></td>
 		</tr>
 		</tbody></table>
@@ -100,7 +140,7 @@ function shand_shorthand_options()
 	<h3>Shorthand Connect Status</h3>
 	<?php if ($profile) { ?>
 		<p class="status">Successfully connected</p>
-		<p><strong>Username</strong>: <?php echo $profile->username; ?></p>
+		<p><strong>Username</strong>: <?php echo esc_html($profile->username); ?></p>
 	<?php } else { ?>
 		<p class="status warn">Not Connected</p>
 	<?php } ?>
@@ -115,9 +155,22 @@ function shand_shorthand_options()
 			</p>
 			<p class="submit">
 				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+				<input type="submit" name="Flush" class="button-secondary" value="Flush Rewrite Rules" />
 			</p>
 		</form>
 
+		<?php 
+		//Flush the Rewrite rules via admin rather than on post
+			if (isset($_POST['Flush'])) {
+				// Check if the user has the appropriate capability
+				if (current_user_can('manage_options')) {
+					shand_rewrite_flush();
+				} else {
+					// Show an error message or handle the lack of capability in some other way
+					echo 'You do not have permission to perform this action.';
+				}
+			}
+		?>
 
 
 	<h3>Shorthand Story Page CSS (theme wide CSS)</h3>

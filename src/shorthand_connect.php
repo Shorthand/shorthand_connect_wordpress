@@ -2,27 +2,27 @@
 
 /**
  * @package Shorthand Connect
- * @version 1.3.28
+ * @version 1.3.29
  */
 /*
 Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your Wordpress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.28
+Version: 1.3.29
 Author URI: http://shorthand.com
 */
 
-if (file_exists('config.php')) {
-	include_once('config.php');
+if (file_exists( plugin_dir_path( __FILE__) . 'config.php')) {
+	include_once( plugin_dir_path( __FILE__) . 'config.php');
 } else {
-	require_once('config.default.php');
+	require_once( plugin_dir_path( __FILE__) . 'config.default.php');
 }
-require_once('includes/api.php');
-require_once('includes/mass_pull.php');
+require_once( plugin_dir_path( __FILE__) . 'includes/api.php');
+require_once( plugin_dir_path( __FILE__) . 'includes/mass_pull.php');
 
-require_once('includes/shorthand_options.php');
-require_once('templates/abstract.php');
+require_once( plugin_dir_path( __FILE__) . 'includes/shorthand_options.php');
+require_once( plugin_dir_path( __FILE__) . 'templates/abstract.php');
 
 if ( !function_exists('WP_Filesystem') ) {
 	require_once(ABSPATH . 'wp-admin/includes/file.php');
@@ -340,18 +340,21 @@ function shand_save_shorthand_story($post_id, $post)
 		return;
 	}
 
-	if (!$noabstract && isset($_REQUEST['abstract'])) {
-		update_post_meta($post_id, 'abstract', wp_kses_post($_REQUEST['abstract']));
-	} else if ($noabstract && get_post_meta($post_id, 'abstract')) {
-		delete_post_meta($post_id, 'abstract');
-	}
+	//Check if these fields are nonce_verified
+	if (isset($_POST['eventmeta_noncename']) && wp_verify_nonce($_POST['eventmeta_noncename'], plugin_basename(__FILE__))) {
+		if (!$noabstract && isset($_REQUEST['abstract'])) {
+			update_post_meta($post_id, 'abstract', wp_kses_post($_REQUEST['abstract']));
+		} else if ($noabstract && get_post_meta($post_id, 'abstract')) {
+			delete_post_meta($post_id, 'abstract');
+		}
+	
+		if (!get_post_meta($post_id, 'no_update')) {
+			update_post_meta($post_id, 'no_update', "false");
+		}
 
-	if (!get_post_meta($post_id, 'no_update')) {
-		update_post_meta($post_id, 'no_update', "false");
-	}
-
-	if (isset($_REQUEST['extra_html'])) {
-		update_post_meta($post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']));
+		if (isset($_REQUEST['extra_html'])) {
+			update_post_meta($post_id, 'extra_html', wp_kses_post($_REQUEST['extra_html']));
+		}
 	}
 	
 	$do_update_story = isset($_REQUEST['shand_update']) || get_post_meta($post_id, 'no_update')[0] !== "true";
@@ -359,10 +362,21 @@ function shand_save_shorthand_story($post_id, $post)
 	if (isset($_REQUEST['story_id']) && $_REQUEST['story_id'] !== "" && $do_update_story) {
 		update_post_meta($post_id, 'no_update', "true");
 		$sh_media_cron_offload = filter_var(get_option('sh_media_cron_offload'), FILTER_VALIDATE_BOOLEAN);
-		$safe_story_id = preg_replace("/\W|_/", '', $_REQUEST['story_id']);
+
+		//Sanitize but also check if the query is GET or POST
+		if (isset($_REQUEST['story_id'])) {
+			$story_id = filter_input(INPUT_GET, 'story_id', FILTER_SANITIZE_STRING);
+			if ($story_id === null) { // If the variable is not present in the $_GET array
+				$story_id = filter_input(INPUT_POST, 'story_id', FILTER_SANITIZE_STRING);
+			}
+			$safe_story_id = preg_replace("/\W|_/", '', $story_id);
+		}
+		
+
 		update_post_meta($post_id, 'story_id', sanitize_text_field($safe_story_id));
 		$err = sh_copy_story($post_id, $safe_story_id, $sh_media_cron_offload);
 		$story_path = sh_get_story_path($post_id, $safe_story_id);
+		
 		//Sometimes the story needs to be gotten twice
 		if (!isset($story_path)) {
 			$err = sh_copy_story($post_id, $safe_story_id, $sh_media_cron_offload );
@@ -519,7 +533,7 @@ add_filter('request', 'shand_post_type_tags_fix');
 function shand_shorthand_activate()
 {
 	shand_create_post_type();
-	flush_rewrite_rules();
+	shand_rewrite_flush();
 }
 register_activation_hook(__FILE__, 'shand_shorthand_activate');
 
@@ -561,7 +575,7 @@ function shand_wpt_shorthand_extra_html()
 	global $post;
 	$extra_html = get_post_meta($post->ID, 'extra_html', true);
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		wp_create_nonce(plugin_basename(__FILE__)) . '" />';
+		esc_attr(wp_create_nonce(plugin_basename(__FILE__))) . '" />';
 	echo '<textarea id="codearea" name="extra_html">' . esc_textarea($extra_html) . '</textarea>';
 }
 
