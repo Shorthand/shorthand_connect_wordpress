@@ -495,14 +495,32 @@ function hook_css()
 }
 add_action('wp_head', 'hook_css');
 
-
 /* Get Posts Hook */
 function shand_shorthand_get_posts($query)
 {
-	if (is_home() && $query->is_main_query()) {
-		$query->set( 'post_type', array( 'post', 'shorthand_story' ) );
-	}
-	return $query;
+	if (is_admin()) {
+        return $query;
+    }
+
+    if ($query->is_main_query() && !is_admin()) {
+        $queried_object = get_queried_object();
+        $shorthand_templates = array('single-shorthand_story.php', 'templates/single-shorthand_story.php', 'template-parts/single-shorthand_story.php');
+
+        // Check if the queried object uses a Shorthand Post template from the array
+        if ($queried_object 
+            && isset($queried_object->ID) 
+            && in_array(get_page_template_slug($queried_object->ID), $shorthand_templates)) {
+            
+            // Get the current post type(s)
+            $post_type = $query->get('post_type');
+            
+            // If the post type hasn't been modified, then add the shorthand post type
+            if (empty($post_type) || $post_type == 'post') {
+                $query->set('post_type', array('post', 'shorthand_story'));
+            }
+        }
+    }
+    return $query;
 }
 add_filter('pre_get_posts', 'shand_shorthand_get_posts');
 
