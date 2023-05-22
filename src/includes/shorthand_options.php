@@ -121,8 +121,11 @@ function shand_shorthand_options()
 	wp_nonce_field( 'sh-update-configuration' );
 	$n_once  = ob_get_clean();
 
-?>
-	<h3>Shorthand API Configuration</h3>
+?>	
+<div class="container">
+	<div class="py-1">
+	<h1>Shorthand API Configuration</h1>
+	<h2>Shorthand Connect Status</h2>
 	<form name="form1" method="post">
 		<?php echo $n_once ?>
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
@@ -132,20 +135,22 @@ function shand_shorthand_options()
 			<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr($v2_token); ?>" size="28"></td>
 		</tr>
 		</tbody></table>
-		<p class="submit">
-			<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
-		</p>
-		<hr />
-	</form>
-	<h3>Shorthand Connect Status</h3>
-	<?php if ($profile) { ?>
+		<?php if ($profile) { ?>
 		<p class="status">Successfully connected</p>
 		<p><strong>Username</strong>: <?php echo esc_html($profile->username); ?></p>
 	<?php } else { ?>
 		<p class="status warn">Not Connected</p>
 	<?php } ?>
 	<div style='clear:both'></div>
-	<h3>Shorthand Permalink Structure</h3>
+		<p class="submit">
+			<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+		</p>
+	</form>
+	</div>
+
+
+	<div class="py-1">
+	<h2>Shorthand Permalink Structure</h2>
 		<p>Use this to set the permalink structure of Shorthand story URLs</p>
 		<form name="form2" method="post">
 			<?php echo $n_once ?>
@@ -171,9 +176,10 @@ function shand_shorthand_options()
 				}
 			}
 		?>
+	</div>
 
-
-	<h3>Shorthand Story Page CSS (theme wide CSS)</h3>
+	<div class="py-1">
+	<h2>Shorthand Story Page CSS (theme wide CSS)</h2>
 		<p>Use this CSS to customise Shorthand Story pages to better suit your theme</p>
 		<?php if ($no_css) { ?>
 			<p class="status warn">No custom CSS found, using default theme CSS</p>
@@ -186,22 +192,24 @@ function shand_shorthand_options()
 				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
 			</p>
 		</form>
+		</div>
 
-	<h3>Post-processing</h3>
+	<div class="py-1">	
+	<h2>Post-processing</h2>
 		<p>Use this to create a JSON object of regex queries and replacements.</p>
 		<p><em>This Example removes title tags from within the head tag by replacing it with nothing.</em></p>
-<pre><code>
-  {
-    "head":
-	[
-	  {
-	    &quot;query&quot;:&quot;/&lt;title.(.*?)&lt;\/title&gt;/&quot;,
-	    &quot;replace&quot;:&quot;&quot;
-	  }
-	],
-    "body":[]
-  }
-</code></pre>
+		<pre><code>
+		{
+			"head":
+			[
+			{
+				&quot;query&quot;:&quot;/&lt;title.(.*?)&lt;\/title&gt;/&quot;,
+				&quot;replace&quot;:&quot;&quot;
+			}
+			],
+			"body":[]
+		}
+		</code></pre>
 		<form name="form2" method="post" onsubmit="padJson()">
 			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_four" value="Y" />
@@ -235,8 +243,40 @@ function shand_shorthand_options()
 				
 			});
 		</script>
-
-	<style>
+	</div>
+	
+	<div class="py-1">
+		<h2>Experimental Features</h2>
+		<p>Early access features that are still subject to change.</p>
+		<form name="form_experimental" method="post">
+		<?php echo $n_once ?>
+		<input type="hidden" name="sh_submit_hidden_experimental" value="Y" />
+		<input type="checkbox" id="sh_media_cron_offload" name="sh_media_cron_offload" value="true" <?php echo esc_attr($sh_media_cron_offload ? 'checked' : '') ?> />
+		<label for="sh_media_cron_offload">Import media assets via cron</label>
+		<p>Assets will be fetched after story save to prevent potential execution timeouts. Media won't be immediately available on save but progress will be updated based on the `media_status` field.</p>
+		<p>It is advised that Shorthand Story Posts are saved as a draft first to trigger the cron job prior to public publishing.</p>
+		<br/>
+		<input type="checkbox" id="sh_disable_acf" name="sh_disable_acf" value="true" <?php echo esc_attr($sh_disable_acf ? 'checked' : '') ?> />
+		<label for="sh_disable_acf">Disable Advanced Custom Fields</label>
+		<p>Used to prevent any potential issues that could cause the Shorthand Custom Fields to become hidden by Advanced Custom Fields.</p>
+		</br>
+		<p class="submit">
+		<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
+		</p>
+		</form>
+		</div>
+	</div>
+		</div>
+<style>
+		.py-1 {
+			padding: 1em;
+		}
+		.bg-white {
+			background: white;
+		}
+		.container {
+			max-width: 980px;
+		}
 		img.grav {
 			float: left;
 			width:80px;
@@ -257,31 +297,16 @@ function shand_shorthand_options()
 		.row-hidden {
 			display:none;
 		}
-
+		#wpfooter {
+			position: unset;
+		}
 		code {
-  font-family: monospace;
-  display: inherit;
-}
+			font-family: monospace;
+			display: inherit;
+		}
 	</style>
 
-<h3>Experimental Features</h3>
-<p>Early access features that are still subject to change.</p>
-<form name="form_experimental" method="post">
-<?php echo $n_once ?>
-<input type="hidden" name="sh_submit_hidden_experimental" value="Y" />
-<input type="checkbox" id="sh_media_cron_offload" name="sh_media_cron_offload" value="true" <?php echo esc_attr($sh_media_cron_offload ? 'checked' : '') ?> />
-<label for="sh_media_cron_offload">Import media assets via cron</label>
-<p>Assets will be fetched after story save to prevent potential execution timeouts. Media won't be immediately available on save but progress will be updated based on the `media_status` field.</p>
-<p>It is advised that Shorthand Story Posts are saved as a draft first to trigger the cron job prior to public publishing.</p>
-<br/>
-<input type="checkbox" id="sh_disable_acf" name="sh_disable_acf" value="true" <?php echo esc_attr($sh_disable_acf ? 'checked' : '') ?> />
-<label for="sh_disable_acf">Disable Advanced Custom Fields</label>
-<p>Used to prevent any potential issues that could cause the Shorthand Custom Fields to become hidden by Advanced Custom Fields.</p>
-</br>
-<p class="submit">
-<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
-</p>
-</form>
+
 <?php
 }
 

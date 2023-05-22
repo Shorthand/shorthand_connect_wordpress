@@ -498,10 +498,11 @@ add_action('wp_head', 'hook_css');
 /* Get Posts Hook */
 function shand_shorthand_get_posts($query)
 {
-	if (is_admin()) {
+    if (is_admin()) {
         return $query;
     }
 
+    // Check if the query is the main query and it's for the front-end
     if ($query->is_main_query() && !is_admin()) {
         $queried_object = get_queried_object();
         $shorthand_templates = array('single-shorthand_story.php', 'templates/single-shorthand_story.php', 'template-parts/single-shorthand_story.php');
@@ -550,8 +551,8 @@ add_filter('request', 'shand_post_type_tags_fix');
 /* Activation Hook */
 function shand_shorthand_activate()
 {
+	flush_rewrite_rules();
 	shand_create_post_type();
-	shand_rewrite_flush();
 }
 register_activation_hook(__FILE__, 'shand_shorthand_activate');
 
