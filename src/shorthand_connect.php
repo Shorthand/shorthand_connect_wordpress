@@ -357,7 +357,7 @@ function shand_save_shorthand_story($post_id, $post)
 		}
 	}
 	
-	$do_update_story = isset($_REQUEST['shand_update']) || get_post_meta($post_id, 'no_update')[0] !== "true";
+	$do_update_story = isset($_REQUEST['shand_update']) || get_post_meta($post_id, 'no_update', true) !== "true";
 	
 	if (isset($_REQUEST['story_id']) && $_REQUEST['story_id'] !== "" && $do_update_story) {
 		update_post_meta($post_id, 'no_update', "true");

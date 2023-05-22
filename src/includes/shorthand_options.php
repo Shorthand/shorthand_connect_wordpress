@@ -74,6 +74,7 @@ function shand_shorthand_options()
 		//Check if there's custom permalink, if there is, use sanitize_text_field() to sanitize potential HTML and then set an empty string
 		$sh_permalink = isset($_POST['sh_permalink']) ? sanitize_text_field($_POST['sh_permalink']) : '';
 		update_option('sh_permalink', $sh_permalink);
+		shand_rewrite_flush();
 	}
 	$permalink_structure = esc_html(get_option('sh_permalink'));
 
@@ -160,22 +161,8 @@ function shand_shorthand_options()
 			</p>
 			<p class="submit">
 				<input type="submit" name="Submit" class="button-primary" value="<?php esc_attr_e('Save Changes') ?>" />
-				<input type="submit" name="Flush" class="button-secondary" value="Flush Rewrite Rules" />
 			</p>
 		</form>
-
-		<?php 
-		//Flush the Rewrite rules via admin rather than on post
-			if (isset($_POST['Flush'])) {
-				// Check if the user has the appropriate capability
-				if (current_user_can('manage_options')) {
-					shand_rewrite_flush();
-				} else {
-					// Show an error message or handle the lack of capability in some other way
-					echo 'You do not have permission to perform this action.';
-				}
-			}
-		?>
 	</div>
 
 	<div class="py-1">
