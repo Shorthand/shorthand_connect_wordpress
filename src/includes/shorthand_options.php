@@ -149,7 +149,7 @@ function shand_shorthand_options()
     "body":[]
   }
 </code></pre>
-		<form name="form2" method="post" onsubmit="padJson()">
+		<form name="form2" method="post">
 			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_four" value="Y" />
 			<textarea rows="10" cols="80" id="sh_regex_list" name="sh_regex_list"><?php echo stripslashes($sh_regex_list); ?></textarea>
@@ -159,13 +159,7 @@ function shand_shorthand_options()
 		</form>
 		<script>
 			let textarea = document.querySelector("textarea#sh_regex_list");
-  
-			function padJson() {
-				console.log('updated JSON');
-				textarea.value = textarea.value.replace(/\\/g, '\\\\');
-			}
-			
-			
+		
 			textarea.addEventListener("keyup", function(event) {
 				try{
 					JSON.parse(textarea.value);
