@@ -92,11 +92,11 @@ function shand_shorthand_options()
 		$sh_css = $default_sh_site_css;
 	}
 
-
-
 	if (isset($_POST['sh_submit_hidden_four']) && $_POST['sh_submit_hidden_four'] == 'Y' && check_admin_referer('sh-update-configuration')) {
-		$sh_regex_list = isset($_POST['sh_regex_list']) ? validate_json(wp_unslash($_POST['sh_regex_list'])) : '';
-	
+		$sh_regex_list = isset($_POST['sh_regex_list']) ? sanitize_text_field(wp_unslash($_POST['sh_regex_list'])) : '';
+		
+		$sh_regex_list = validate_json($sh_regex_list);
+		
 		if ($sh_regex_list !== false) {
 			update_option('sh_regex_list', base64_encode($sh_regex_list));
 		} else {

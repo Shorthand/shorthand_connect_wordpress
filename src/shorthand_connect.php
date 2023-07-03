@@ -341,7 +341,7 @@ function shand_save_shorthand_story($post_id, $post)
 	}
 
 	//Check if these fields are nonce_verified
-	if (isset($_POST['eventmeta_noncename']) && wp_verify_nonce($_POST['eventmeta_noncename'], plugin_basename(__FILE__))) {
+	if (isset($_POST['eventmeta_noncename']) && wp_verify_nonce(sanitize_text_field($_POST['eventmeta_noncename']), plugin_basename(__FILE__))) {
 		if (!$noabstract && isset($_REQUEST['abstract'])) {
 			update_post_meta($post_id, 'abstract', wp_kses_post($_REQUEST['abstract']));
 		} else if ($noabstract && get_post_meta($post_id, 'abstract')) {
