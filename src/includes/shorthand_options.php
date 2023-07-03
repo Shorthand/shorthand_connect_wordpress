@@ -185,19 +185,19 @@ function shand_shorthand_options()
 	<h2>Post-processing</h2>
 		<p>Use this to create a JSON object of regex queries and replacements.</p>
 		<p><em>This Example removes title tags from within the head tag by replacing it with nothing.</em></p>
-		<pre><code>
-		{
-			"head":
-			[
-			{
-				&quot;query&quot;:&quot;/&lt;title.(.*?)&lt;\/title&gt;/&quot;,
-				&quot;replace&quot;:&quot;&quot;
-			}
-			],
-			"body":[]
-		}
-		</code></pre>
-		<form name="form2" method="post" onsubmit="padJson()">
+<pre><code>
+  {
+    "head":
+	[
+	  {
+	    &quot;query&quot;:&quot;/&lt;title.(.*?)&lt;\/title&gt;/&quot;,
+	    &quot;replace&quot;:&quot;&quot;
+	  }
+	],
+    "body":[]
+  }
+</code></pre>
+		<form name="form2" method="post">
 			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_four" value="Y" />
 			<textarea rows="10" cols="80" id="sh_regex_list" name="sh_regex_list"><?php echo stripslashes($sh_regex_list); ?></textarea>
@@ -207,13 +207,7 @@ function shand_shorthand_options()
 		</form>
 		<script>
 			let textarea = document.querySelector("textarea#sh_regex_list");
-  
-			function padJson() {
-				console.log('updated JSON');
-				textarea.value = textarea.value.replace(/\\/g, '\\\\');
-			}
-			
-			
+		
 			textarea.addEventListener("keyup", function(event) {
 				try{
 					JSON.parse(textarea.value);
