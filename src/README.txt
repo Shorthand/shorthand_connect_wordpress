@@ -35,7 +35,7 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
   "head":
   [
     { 
-      "query":  "/<title.(.*?)<\/title>/",
+      "query": "/<title>(.*?)<\\/title>/",
       "replace":""
     },
     {
