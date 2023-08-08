@@ -195,16 +195,16 @@ if (isset($_POST['sh_submit_hidden_four']) && $_POST['sh_submit_hidden_four'] ==
 		<p>Use this to create a JSON object of regex queries and replacements.</p>
 		<p><em>This Example removes title tags from within the head tag by replacing it with nothing.</em></p>
 <pre><code>
-  {
-    "head":
-	[
-	  {
-	    &quot;query&quot;:&quot;/&lt;title.(.*?)&lt;\/title&gt;/&quot;,
-	    &quot;replace&quot;:&quot;&quot;
-	  }
-	],
-    "body":[]
-  }
+{
+  "head": [
+    {
+      &quot;query&quot;: &quot;/&lt;title&gt;(.*?)&lt;\\/title&gt;/&quot;,
+      &quot;replace&quot;: &quot;&quot;
+    }
+  ],
+  "body": []
+}
+
 </code></pre>
 		<form name="postprocessing" method="post">
 			<?php echo $n_once ?>
