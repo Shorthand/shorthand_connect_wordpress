@@ -35,8 +35,8 @@ function validate_json($json_string) {
         return false;
     }
 
-    // If the data is valid JSON, re-encode it to ensure it's correctly formatted.
-    return json_encode($json_data);
+    // Return the original JSON string if it's valid.
+    return $json_string;
 }
 
 function shand_shorthand_options()
@@ -92,17 +92,26 @@ function shand_shorthand_options()
 		$sh_css = $default_sh_site_css;
 	}
 
-	if (isset($_POST['sh_submit_hidden_four']) && $_POST['sh_submit_hidden_four'] == 'Y' && check_admin_referer('sh-update-configuration')) {
-		$sh_regex_list = isset($_POST['sh_regex_list']) ? sanitize_text_field(wp_unslash($_POST['sh_regex_list'])) : '';
-		
-		$sh_regex_list = validate_json($sh_regex_list);
-		
-		if ($sh_regex_list !== false) {
-			update_option('sh_regex_list', base64_encode($sh_regex_list));
-		} else {
-			// Handle invalid JSON error here.
-		}
-	}
+if (isset($_POST['sh_submit_hidden_four']) && $_POST['sh_submit_hidden_four'] == 'Y' && check_admin_referer('sh-update-configuration')) {
+    $sh_regex_list = isset($_POST['sh_regex_list']) ? wp_unslash($_POST['sh_regex_list']) : '';
+
+    if (empty($sh_regex_list)) {
+        // Update the option with an empty value if the input is empty
+        update_option('sh_regex_list', '');
+    } else {
+        // Validate if it's a valid JSON without sanitizing
+        $sh_regex_list = validate_json($sh_regex_list);
+
+        if ($sh_regex_list !== false) {
+            // Since we are storing it as base64, no need to sanitize the JSON, as base64_encode will handle that
+            update_option('sh_regex_list', base64_encode($sh_regex_list));
+        } else {
+            // Handle invalid JSON error here.
+        }
+    }
+}
+
+
 
 	$sh_regex_list = base64_decode(get_option('sh_regex_list'));
 
@@ -153,7 +162,7 @@ function shand_shorthand_options()
 	<div class="py-1">
 	<h2>Shorthand Permalink Structure</h2>
 		<p>Use this to set the permalink structure of Shorthand story URLs</p>
-		<form name="form2" method="post">
+		<form name="permalinks" method="post">
 			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_three" value="Y" />
 			<p>
@@ -171,7 +180,7 @@ function shand_shorthand_options()
 		<?php if ($no_css) { ?>
 			<p class="status warn">No custom CSS found, using default theme CSS</p>
 		<?php }?>
-		<form name="form2" method="post">
+		<form name="themecss" method="post">
 			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_two" value="Y" />
 			<textarea rows="10" cols="80" name="sh_css"><?php echo esc_textarea($sh_css); ?></textarea>
@@ -197,7 +206,7 @@ function shand_shorthand_options()
     "body":[]
   }
 </code></pre>
-		<form name="form2" method="post">
+		<form name="postprocessing" method="post">
 			<?php echo $n_once ?>
 			<input type="hidden" name="sh_submit_hidden_four" value="Y" />
 			<textarea rows="10" cols="80" id="sh_regex_list" name="sh_regex_list"><?php echo stripslashes($sh_regex_list); ?></textarea>
