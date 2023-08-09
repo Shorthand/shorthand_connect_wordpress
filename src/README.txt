@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.1
-Stable tag: 1.3.28
+Stable tag: 1.3.29
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ This plugin will allow premium Shorthand users to connect their Wordpress instal
   "head":
   [
     { 
-      "query":  "/<title.(.*?)<\/title>/",
+      "query": "/<title>(.*?)<\\/title>/",
       "replace":""
     },
     {
@@ -62,6 +62,10 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.29 =
+* Security Fixes & Updates
+* JSON Post-Processing Fixes
 
 = 1.3.28 =
 * Code clean up & bug fixes

@@ -139,8 +139,7 @@ function sh_copy_story($post_id, $story_id, $without_assets=false, $assets_only=
 	}
 	
 	do_action('sh_copy_story', $post_id, $story_id, $story);
-	unlink($zip_file);
-	
+	wp_delete_file($zip_file);
 	return $story;
 }
 
