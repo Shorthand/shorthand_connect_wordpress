@@ -1,29 +1,25 @@
 <?php
+
+// VERSION 2 API
+
 function sh_v2_api_get( $url, $options ) {
+	global $serverv2URL;
 	$token = get_option( 'sh_v2_token' );
 	if ( ! $token ) {
 		return false;
 	}
-	global $serverURL;
-	$url            = $serverURL . $url;
-	$plugin_path    = plugin_dir_path( __DIR__ ) . '/shorthand_connect.php';
-	$plugin_data    = get_file_data( $plugin_path, array( 'Version' => 'Version' ) );
-	$plugin_version = $plugin_data['Version'];
 
-	$wp_version = $GLOBALS['wp_version'];
-	$user_agent = 'WordPress/' . $wp_version . ' Shorthand/' . $plugin_version;
-
+	$url             = $serverv2URL . $url;
 	$request_options = array_merge(
 		array(
 			'headers'       => array(
 				'Authorization' => 'Token ' . $token,
-				'user-agent'    => $user_agent,
+				'user-agent'    => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/535.6.2 (KHTML, like Gecko) Version/5.2 Safari/535.6.2',
 			),
 			'http_api_args' => $options,
 		),
 		$options
 	);
-
 	if ( function_exists( 'vip_safe_wp_remote_get' ) && ! isset( $options['timeout'] ) ) {
 		return vip_safe_wp_remote_get( $url, false, 1, 3, 10, $request_options );
 	} else {
@@ -78,6 +74,7 @@ function sh_get_stories() {
 }
 
 function sh_get_story_path( $post_id, $story_id ) {
+
 	init_WP_Filesystem();
 	$destination      = wp_upload_dir();
 	$destination_path = $destination['path'] . '/shorthand/' . $post_id . '/' . $story_id;
@@ -92,9 +89,12 @@ function sh_get_story_path( $post_id, $story_id ) {
 }
 
 function shorthand_get_story_url( $post_id, $story_id ) {
+
 	init_WP_Filesystem();
+
 	$destination     = wp_upload_dir();
 	$destination_url = $destination['url'] . '/shorthand/' . $post_id . '/' . $story_id;
+
 	$destination_url = apply_filters( 'shorthand_get_story_url', $destination_url );
 
 	return $destination_url;
@@ -104,6 +104,7 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 
 	wp_raise_memory_limit( 'admin' );
 	init_WP_Filesystem();
+
 	$destination      = wp_upload_dir();
 	$tmpdir           = get_temp_dir();
 	$destination_path = $destination['path'] . '/shorthand/' . $post_id;
@@ -134,7 +135,8 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 	}
 
 	do_action( 'sh_copy_story', $post_id, $story_id, $story );
-	wp_delete_file( $zip_file );
+	unlink( $zip_file );
+
 	return $story;
 }
 
