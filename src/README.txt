@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.1
-Stable tag: 1.3.29
+Stable tag: 1.3.30
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -62,6 +62,11 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.30 =
+* Security Fixes & Updates
+* JSON Post-Processing Fixes
+* Further updates to meet WPVIP Standards
 
 = 1.3.29 =
 * Security Fixes & Updates
