@@ -405,8 +405,10 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 			$post_processing_queries = json_decode( base64_decode( get_option( 'sh_regex_list' ) ) );
 
-			$body = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $article_file ) : $wp_filesystem->get_contents( $article_file ) );
-			$head = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $head_file ) : $wp_filesystem->get_contents( $head_file ) );
+			$is_vip_app = defined( 'WPCOM_IS_VIP_ENV' ) && WPCOM_IS_VIP_ENV || defined( 'VIP_GO_APP_ENVIRONMENT' ) && VIP_GO_APP_ENVIRONMENT ;
+
+			$body = shand_fix_content_paths( $assets_path, $is_vip_app ? wpcom_vip_file_get_contents( $article_file ) : $wp_filesystem->get_contents( $article_file ) );
+			$head = shand_fix_content_paths( $assets_path, $is_vip_app ? wpcom_vip_file_get_contents( $head_file ) : $wp_filesystem->get_contents( $head_file ) );
 
 			$body = apply_filters( 'sh_pre_process_body', $body, $assets_path, $article_file );
 			$head = apply_filters( 'sh_pre_process_head', $head, $assets_path, $head_file );
@@ -453,7 +455,7 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 			wp_die(
 				esc_html( __( $err['error'] ) ),
-				esc_html( __( $err['pretty'] ) )
+				isset( $err->pretty ) ? esc_html( __( $err['pretty'] ) ) : ''
 			);
 		}
 	}

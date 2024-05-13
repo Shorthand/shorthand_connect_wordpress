@@ -25,7 +25,7 @@ function sh_v2_api_get( $url, $options ) {
 	);
 
 	if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-		return vip_safe_wp_remote_get( $url, false, 1, 3, 10, $request_options );
+		return vip_safe_wp_remote_get( $url, false, 1, 5, 10, $request_options );
 	} else {
 		return wp_remote_get( $url, $request_options ); // @codingStandardsIgnoreLine
 	}
@@ -164,11 +164,12 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 	if ( is_wp_error( $response ) ) {
 		$story['error'] = array(
 			'pretty' => ' Request to Shorthand failed',
-			'error'  => $response->get_error_message( $response ),
+			'error'  => $response->get_error_message(),
 		);
 	} elseif ( ! $response || $response['response']['code'] != 200 ) {
 		$story['error'] = array(
 			'pretty'   => 'Request to Shorthand failed; check the token is configured correctly',
+			'error'    => 'unexpected response',
 			'response' => $response,
 		);
 	} else {
