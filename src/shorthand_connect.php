@@ -1,7 +1,7 @@
 <?php
 /**
  * @package Shorthand Connect
- * @version 1.3.30d
+ * @version 1.3.30e
  */
 
 /*
@@ -9,7 +9,7 @@ Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your WordPress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.30d
+Version: 1.3.30e
 Author URI: http://shorthand.com
 */
 
@@ -378,11 +378,6 @@ function shand_save_shorthand_story( $post_id, $post ) {
 		if ( ! isset( $story_path ) ) {
 			$err        = sh_copy_story( $post_id, $safe_story_id, $sh_media_cron_offload );
 			$story_path = sh_get_story_path( $post_id, $safe_story_id );
-
-		}
-		if ( $sh_media_cron_offload ) {
-			update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
-			wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
 		}
 
 		if ( isset( $story_path ) ) {
@@ -395,7 +390,12 @@ function shand_save_shorthand_story( $post_id, $post ) {
 			} else {
 				delete_post_meta( $post_id, 'ERROR' );
 			}
-
+	
+			if ( $sh_media_cron_offload ) {
+				update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
+				wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
+			}
+	
 			// Get path to the assets.
 			$assets_path = shorthand_get_story_url( $post_id, $safe_story_id );
 
@@ -405,10 +405,8 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 			$post_processing_queries = json_decode( base64_decode( get_option( 'sh_regex_list' ) ) );
 
-			$is_vip_app = defined( 'WPCOM_IS_VIP_ENV' ) && WPCOM_IS_VIP_ENV || defined( 'VIP_GO_APP_ENVIRONMENT' ) && VIP_GO_APP_ENVIRONMENT ;
-
-			$body = shand_fix_content_paths( $assets_path, $is_vip_app ? wpcom_vip_file_get_contents( $article_file ) : $wp_filesystem->get_contents( $article_file ) );
-			$head = shand_fix_content_paths( $assets_path, $is_vip_app ? wpcom_vip_file_get_contents( $head_file ) : $wp_filesystem->get_contents( $head_file ) );
+			$body = shand_fix_content_paths( $assets_path, $err['article'] );
+			$head = shand_fix_content_paths( $assets_path, $err['head'] );
 
 			$body = apply_filters( 'sh_pre_process_body', $body, $assets_path, $article_file );
 			$head = apply_filters( 'sh_pre_process_head', $head, $assets_path, $head_file );
@@ -450,12 +448,13 @@ function shand_save_shorthand_story( $post_id, $post ) {
 			delete_post_meta( $post_id, 'story_diagnostic' );
 
 		} else {
-
+			// Log any story-specific errors to the metadata.
+			update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
 			update_post_meta( $post_id, 'story_diagnostic', $err );
 
 			wp_die(
-				esc_html( __( $err['error'] ) ),
-				isset( $err->pretty ) ? esc_html( __( $err['pretty'] ) ) : ''
+				isset( $err['error'] ) ? esc_html( __( $err['error'] ) ) : '',
+				isset( $err['pretty'] ) ? esc_html( __( $err['pretty'] ) ) : ''
 			);
 		}
 	}

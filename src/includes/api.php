@@ -118,6 +118,7 @@ function sh_get_story_path( $post_id, $story_id ) {
 	$destination      = wp_upload_dir();
 	$destination_path = $destination['path'] . '/shorthand/' . $post_id . '/' . $story_id;
 
+	// on WP VIP, folders in the uploads dir always exist
 	if ( ! file_exists( $destination_path ) ) {
 		$destination_path = null;
 	}
@@ -196,6 +197,8 @@ function extractStoryContent( $zip_file, $destination_path, $story_id ) {
 	$zip = new ZipArchive();
 	if ( $zip->open( $zip_file ) ) {
 		wp_mkdir_p( $destination_path . '/' . $story_id );
+		$head = $zip->getFromName( 'head.html' );
+		$article = $zip->getFromName( 'article.html' );
 		$zip->extractTo( $destination_path . '/' . $story_id );
 		$zip->close();
 		if ( is_wp_error( $zip ) ) {
@@ -208,11 +211,16 @@ function extractStoryContent( $zip_file, $destination_path, $story_id ) {
 				$story['error']['downloaded zip size'] = wp_filesize( $zip_file );
 			}
 		} else {
-			$story['path'] = $destination_path . '/' . $story_id;
+			$story = array(
+				'head' => $head === false ? '' : $head,
+				'article' => $article === false ? '' : $article,
+				'path' => $destination_path . '/' . $story_id,
+			);
 		}
 	} else {
 		$story['error'] = array(
 			'pretty' => 'Could not unzip file',
+			'error' => 'extraction failed',
 		);
 	}
 
