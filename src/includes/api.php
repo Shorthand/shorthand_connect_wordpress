@@ -24,7 +24,7 @@ function sh_v2_api_get( $url, $options ) {
 		$options
 	);
 
-	if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
+	if ( function_exists( 'vip_safe_wp_remote_get' ) && !isset( $options['timeout'] ) ) {
 		return vip_safe_wp_remote_get( $url, false, 1, 5, 10, $request_options );
 	} else {
 		return wp_remote_get( $url, $request_options ); // @codingStandardsIgnoreLine
