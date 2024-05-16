@@ -1,7 +1,17 @@
 <?php
-function sh_v2_api_get( $url, $options ) {
-	$token = get_option( 'sh_v2_token' );
-	if ( ! $token ) {
+
+/*
+ * Makes a HTTP request of the Shorthand API.
+ * 
+ * In a WP VIP environment, this should fall back to using wp_remote_request
+ * when streaming file downloads, as the files may be too large for the timeouts
+ * imposed.
+ * 
+ * @param string $url The URI to request, relative to the base API URL
+ * @param array $options An array of extra options args to pass to wp_remote_request
+ */
+function sh_v2_api_request( $url, $options ) {
+	$token = get_option( 'sh_v2_token'  ( ! $token ) {
 		return false;
 	}
 	global $serverURL;
@@ -24,59 +34,24 @@ function sh_v2_api_get( $url, $options ) {
 		$options
 	);
 
-	if ( function_exists( 'vip_safe_wp_remote_get' ) && !isset( $options['timeout'] ) ) {
-		return vip_safe_wp_remote_get( $url, false, 1, 5, 10, $request_options );
+	if ( function_exists( 'vip_safe_wp_remote_request' ) && ! isset( $request_options["stream"] ) ) {
+		$timeout = ( 0 === strcasecmp( 'POST', $request_options['method'] ) ) ? 15: 5;
+		return vip_safe_wp_remote_request( $url, false, 1, $timeout, 10, $request_options );
 	} else {
-		return wp_remote_get( $url, $request_options ); // @codingStandardsIgnoreLine
+		return wp_remote_request( $url, $request_options ); // @codingStandardsIgnoreLine
 	}
 }
 
-function sh_v2_api_get_json( $url, $options ) {
-	$response = sh_v2_api_get( $url, $options );
+function sh_v2_api_request_json( $url, $options ) {
+	$response = sh_v2_api_request( $url, $options );
 	$body     = wp_remote_retrieve_body( $response );
 	return json_decode( $body );
 }
 
-function sh_v2_api_post($url, $options) {
-	$token = get_option('sh_v2_token');
-	if (!$token) {
-		return false;
-	}
-	global $serverURL;
-	$url = $serverURL . $url;
-	$plugin_path    = plugin_dir_path( __DIR__ ) . '/shorthand_connect.php';
-	$plugin_data = get_file_data( $plugin_path, array( 'Version' => 'Version' ) );
-	$plugin_version = $plugin_data['Version'];
-	
-	$wp_version = $GLOBALS['wp_version'];
-	$user_agent = 'WordPress/' . $wp_version . ' Shorthand/' . $plugin_version;
-	
-	$request_options = array_merge(
-		array(
-			'headers' => array(
-				'Authorization' => 'Token ' . $token,
-				'user-agent'  => $user_agent,
-			),
-			'http_api_args' => $options
-		),
-		$options
-	);
-	
-	return wp_remote_post($url, $request_options);
-}
-
-function sh_v2_api_post_json($url, $options)
-{
-	$response = sh_v2_api_post($url, $options);
-	$body = wp_remote_retrieve_body($response);
-	return json_decode($body);
-}
-
-function sh_get_profile()
-{
+function sh_get_profile() {
 	$tokeninfo = array();
 
-	$data = sh_v2_api_get_json( '/v2/token-info', array() );
+	$data = sh_v2_api_request_json( '/v2/token-info', array() );
 	if ( $data && isset( $data->organisation_id ) ) {
 		$tokeninfo['username'] = $data->name . ' (' . $data->token_type . ' Token)';
 		$tokeninfo['gravatar'] = $data->logo;
@@ -89,7 +64,7 @@ function sh_get_profile()
 function sh_get_stories() {
 	$stories = null;
 
-	$data = sh_v2_api_get_json( '/v2/stories', array( 'timeout' => '240' ) );
+	$data = sh_v2_api_request_json( '/v2/stories', array( 'timeout' => '240' ) );
 	if ( $data ) {
 		$stories = array();
 		// Something went wrong
@@ -148,13 +123,14 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 	
 	// Attempt to connect to the server
 	$zip_file = wp_tempnam( 'sh_zip', $tmpdir );
-	$generate_response = sh_v2_api_post_json(
+	$generate_response = sh_v2_api_request_json(
 		'/v2/stories/' . $story_id . '/generate-download' . ( $without_assets ? '?without_assets=true' : '' ) . ( $assets_only ? '?assets_only=true' : '' ),
 		array(
 			'timeout' => '600',
+			'method' => 'POST',
 		)
 	);
-	$response = sh_v2_api_get(
+	$response = sh_v2_api_request(
 		'/v2/stories/' . $story_id . ( $without_assets ? '?without_assets=true' : '' ) . ( $assets_only ? '?assets_only=true' : '' ),
 		array(
 			'timeout'  => '600',
