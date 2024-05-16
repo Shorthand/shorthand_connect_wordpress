@@ -11,7 +11,8 @@
  * @param array $options An array of extra options args to pass to wp_remote_request
  */
 function sh_v2_api_request( $url, $options ) {
-	$token = get_option( 'sh_v2_token'  ( ! $token ) {
+	$token = get_option( 'sh_v2_token' );
+	if ( ! $token ) {
 		return false;
 	}
 	global $serverURL;
