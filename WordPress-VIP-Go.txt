@@ -1,0 +1,41 @@
+
+FILE: /Users/brad/github/shorthand_connect_wordpress/src/shorthand_connect.php
+-----------------------------------------------------------------------------------
+FOUND 2 ERRORS AFFECTING 2 LINES
+-----------------------------------------------------------------------------------
+ 501 | ERROR | All output should be run through an escaping function (see the
+     |       | Security sections in the WordPress Developer Handbooks), found
+     |       | 'get_shorthandinfo'.
+ 571 | ERROR | `flush_rewrite_rules` should not be used in any normal
+     |       | circumstances in the theme code.
+-----------------------------------------------------------------------------------
+
+
+FILE: ...rs/brad/github/shorthand_connect_wordpress/src/includes/shorthand_options.php
+-----------------------------------------------------------------------------------
+FOUND 1 ERROR AND 1 WARNING AFFECTING 2 LINES
+-----------------------------------------------------------------------------------
+ 53 | ERROR   | `flush_rewrite_rules` should not be used in any normal
+    |         | circumstances in the theme code.
+ 98 | WARNING | Detected usage of a non-sanitized input variable:
+    |         | $_POST['sh_regex_list']
+-----------------------------------------------------------------------------------
+
+
+FILE: ...d/github/shorthand_connect_wordpress/src/templates/single-shorthand_story.php
+-----------------------------------------------------------------------------------
+FOUND 3 ERRORS AFFECTING 3 LINES
+-----------------------------------------------------------------------------------
+ 11 | ERROR | All output should be run through an escaping function (see the
+    |       | Security sections in the WordPress Developer Handbooks), found
+    |       | 'get_shorthandinfo'.
+ 13 | ERROR | All output should be run through an escaping function (see the
+    |       | Security sections in the WordPress Developer Handbooks), found
+    |       | 'get_shorthandinfo'.
+ 16 | ERROR | All output should be run through an escaping function (see the
+    |       | Security sections in the WordPress Developer Handbooks), found
+    |       | 'get_shorthandoption'.
+-----------------------------------------------------------------------------------
+
+Time: 442ms; Memory: 12MB
+

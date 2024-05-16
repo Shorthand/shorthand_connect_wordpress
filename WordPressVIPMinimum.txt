@@ -1,0 +1,96 @@
+
+FILE: /Users/brad/github/shorthand_connect_wordpress/src/shorthand_connect.php
+-----------------------------------------------------------------------------------
+FOUND 2 ERRORS AND 5 WARNINGS AFFECTING 7 LINES
+-----------------------------------------------------------------------------------
+  37 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+  79 | WARNING | [ ] Unused global variable $serverURL.
+ 211 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+ 216 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+ 342 | WARNING | [x] Loose comparisons are not allowed. Expected: "!=="; Found:
+     |         |     "!="
+ 501 | ERROR   | [ ] All output should be run through an escaping function (see
+     |         |     the Security sections in the WordPress Developer Handbooks),
+     |         |     found 'get_shorthandinfo'.
+ 571 | ERROR   | [ ] `flush_rewrite_rules` should not be used in any normal
+     |         |     circumstances in the theme code.
+-----------------------------------------------------------------------------------
+PHPCBF CAN FIX THE 4 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+-----------------------------------------------------------------------------------
+
+
+FILE: ...rs/brad/github/shorthand_connect_wordpress/src/includes/shorthand_options.php
+-----------------------------------------------------------------------------------
+FOUND 3 ERRORS AND 11 WARNINGS AFFECTING 14 LINES
+-----------------------------------------------------------------------------------
+   7 | WARNING | [ ] Unused variable $default_sh_site_css.
+  33 | WARNING | [ ] Unused variable $json_data.
+  47 | WARNING | [ ] Unused global variable $serverURL.
+  53 | ERROR   | [ ] `flush_rewrite_rules` should not be used in any normal
+     |         |     circumstances in the theme code.
+  61 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+  69 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+  75 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+  83 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+  89 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+  92 | WARNING | [ ] Variable $default_site_css is undefined.
+  97 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+  98 | ERROR   | [ ] Detected usage of a non-sanitized input variable:
+     |         |     $_POST['sh_regex_list']
+ 119 | WARNING | [x] Loose comparisons are not allowed. Expected: "==="; Found:
+     |         |     "=="
+ 164 | ERROR   | [ ] All output should be run through an escaping function (like
+     |         |     esc_html_e() or esc_attr_e()), found '_e'.
+-----------------------------------------------------------------------------------
+PHPCBF CAN FIX THE 7 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+-----------------------------------------------------------------------------------
+
+
+FILE: /Users/brad/github/shorthand_connect_wordpress/src/includes/api.php
+-----------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 4 WARNINGS AFFECTING 4 LINES
+-----------------------------------------------------------------------------------
+ 134 | WARNING | [ ] Unused variable $generate_response.
+ 154 | WARNING | [x] Loose comparisons are not allowed. Expected: "!=="; Found:
+     |         |     "!="
+ 191 | WARNING | [ ] Variable $story is undefined.
+ 197 | WARNING | [ ] Variable $story is undefined.
+-----------------------------------------------------------------------------------
+PHPCBF CAN FIX THE 1 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+-----------------------------------------------------------------------------------
+
+
+FILE: /Users/brad/github/shorthand_connect_wordpress/src/includes/mass_pull.php
+-------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+-------------------------------------------------------------------------------
+ 10 | WARNING | Unused global variable $wp_filesystem.
+-------------------------------------------------------------------------------
+
+
+FILE: ...d/github/shorthand_connect_wordpress/src/templates/single-shorthand_story.php
+-----------------------------------------------------------------------------------
+FOUND 3 ERRORS AFFECTING 3 LINES
+-----------------------------------------------------------------------------------
+ 11 | ERROR | All output should be run through an escaping function (see the
+    |       | Security sections in the WordPress Developer Handbooks), found
+    |       | 'get_shorthandinfo'.
+ 13 | ERROR | All output should be run through an escaping function (see the
+    |       | Security sections in the WordPress Developer Handbooks), found
+    |       | 'get_shorthandinfo'.
+ 16 | ERROR | All output should be run through an escaping function (see the
+    |       | Security sections in the WordPress Developer Handbooks), found
+    |       | 'get_shorthandoption'.
+-----------------------------------------------------------------------------------
+
+Time: 440ms; Memory: 12MB
+
