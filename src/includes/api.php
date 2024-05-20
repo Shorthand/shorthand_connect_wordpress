@@ -124,13 +124,6 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 
 	// Attempt to connect to the server
 	$zip_file          = wp_tempnam( 'sh_zip', $tmpdir );
-	$generate_response = sh_v2_api_request_json(
-		'/v2/stories/' . $story_id . '/generate-download' . ( $without_assets ? '?without_assets=true' : '' ) . ( $assets_only ? '?assets_only=true' : '' ),
-		array(
-			'timeout' => '600',
-			'method'  => 'POST',
-		)
-	);
 	$response          = sh_v2_api_request(
 		'/v2/stories/' . $story_id . ( $without_assets ? '?without_assets=true' : '' ) . ( $assets_only ? '?assets_only=true' : '' ),
 		array(
