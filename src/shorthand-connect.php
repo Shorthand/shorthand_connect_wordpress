@@ -74,8 +74,8 @@ add_action( 'init', 'shand_create_post_type' );
 
 function shand_wpt_shorthand_story() {
 	global $post;
-	global $serverURL;
-	global $showArchivedStories;
+	global $server_url;
+	global $show_archived_stories;
 	$baseurl = '';
 
 	?>
@@ -212,7 +212,7 @@ function shand_wpt_shorthand_story() {
 			}
 			$archived = '';
 			if ( isset( $story->story_version ) && '1' === $story->story_version ) {
-				if ( $showArchivedStories ) {
+				if ( $show_archived_stories ) {
 					$archived = ' (archived)';
 				} else {
 					continue;

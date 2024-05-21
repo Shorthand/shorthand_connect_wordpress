@@ -15,8 +15,8 @@ function sh_v2_api_request( $url, $options ) {
 	if ( ! $token ) {
 		return false;
 	}
-	global $serverURL;
-	$url            = $serverURL . $url;
+	global $server_url;
+	$url            = $server_url . $url;
 	$plugin_path    = plugin_dir_path( __DIR__ ) . '/shorthand-connect.php';
 	$plugin_data    = get_file_data( $plugin_path, array( 'Version' => 'Version' ) );
 	$plugin_version = $plugin_data['Version'];
@@ -90,7 +90,7 @@ function sh_get_stories() {
 }
 
 function sh_get_story_path( $post_id, $story_id ) {
-	init_WP_Filesystem();
+	init_wp_filesystem();
 	$destination      = wp_upload_dir();
 	$destination_path = $destination['path'] . '/shorthand/' . $post_id . '/' . $story_id;
 
@@ -105,7 +105,7 @@ function sh_get_story_path( $post_id, $story_id ) {
 }
 
 function shorthand_get_story_url( $post_id, $story_id ) {
-	init_WP_Filesystem();
+	init_wp_filesystem();
 	$destination     = wp_upload_dir();
 	$destination_url = $destination['url'] . '/shorthand/' . $post_id . '/' . $story_id;
 	$destination_url = apply_filters( 'shorthand_get_story_url', $destination_url );
@@ -116,7 +116,7 @@ function shorthand_get_story_url( $post_id, $story_id ) {
 function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_only = false ) {
 
 	wp_raise_memory_limit( 'admin' );
-	init_WP_Filesystem();
+	init_wp_filesystem();
 	$destination      = wp_upload_dir();
 	$tmpdir           = get_temp_dir();
 	$destination_path = $destination['path'] . '/shorthand/' . $post_id;
@@ -153,7 +153,7 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 }
 
 
-function init_WP_Filesystem() {
+function init_wp_filesystem() {
 	WP_Filesystem();
 	global $wp_filesystem;
 	if ( ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {

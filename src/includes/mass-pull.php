@@ -5,7 +5,7 @@
  * Note: Unzipping a fresh story copy won't update the fields.
  */
 function shand_update_story( $post_id, $story_id ) {
-	init_WP_Filesystem();
+	init_wp_filesystem();
 	global $wp_filesystem;
 
 	$sh_media_cron_offload = filter_var( get_option( 'sh_media_cron_offload' ), FILTER_VALIDATE_BOOLEAN );

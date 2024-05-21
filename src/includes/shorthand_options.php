@@ -41,7 +41,7 @@ function validate_json( $json_string ) {
 
 function shand_shorthand_options() {
 	global $default_sh_site_css;
-	global $serverURL;
+	global $server_url;
 
 	// Rather than running a rewrite flush everytime a post is submitted, run it on plugin activate/deactivate
 	function shand_rewrite_flush() {
