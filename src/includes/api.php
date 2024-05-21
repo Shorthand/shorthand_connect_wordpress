@@ -137,7 +137,7 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 			'pretty' => ' Request to Shorthand failed',
 			'error'  => $response->get_error_message(),
 		);
-	} elseif ( ! $response || $response['response']['code'] != 200 ) {
+	} elseif ( ! $response || 200 !== $response['response']['code'] ) {
 		$story['error'] = array(
 			'pretty'   => 'Request to Shorthand failed; check the token is configured correctly',
 			'error'    => 'unexpected response',
@@ -182,8 +182,8 @@ function extractStoryContent( $zip_file, $destination_path, $story_id ) {
 			}
 		} else {
 			$story = array(
-				'head'    => $head === false ? '' : $head,
-				'article' => $article === false ? '' : $article,
+				'head'    => false === $head ? '' : $head,
+				'article' => false === $article ? '' : $article,
 				'path'    => $destination_path . '/' . $story_id,
 			);
 		}

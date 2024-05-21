@@ -33,7 +33,7 @@ if ( ! function_exists( 'WP_Filesystem' ) ) {
  */
 function shand_create_post_type() {
 	$permalink = get_option( 'sh_permalink' );
-	if ( $permalink == '' ) {
+	if ( '' === $permalink ) {
 		$permalink = 'shorthand_story';
 	}
 
@@ -206,12 +206,12 @@ function shand_wpt_shorthand_story() {
 		foreach ( $stories as $story ) {
 			$selected       = '';
 			$story_selected = '';
-			if ( $selected_story == $story->id ) {
+			if ( $selected_story === $story->id ) {
 				$selected       = 'checked';
 				$story_selected = 'selected';
 			}
 			$archived = '';
-			if ( isset( $story->story_version ) && $story->story_version == '1' ) {
+			if ( isset( $story->story_version ) && '1' === $story->story_version ) {
 				if ( $showArchivedStories ) {
 					$archived = ' (archived)';
 				} else {
@@ -333,7 +333,7 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 	global $noabstract;
 	$slug = 'shorthand_story';
-	if ( $slug != $post->post_type ) {
+	if ( $slug !== $post->post_type ) {
 		return;
 	}
 
