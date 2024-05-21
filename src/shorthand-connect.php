@@ -19,9 +19,9 @@ if ( file_exists( plugin_dir_path( __FILE__ ) . 'config.php' ) ) {
 	include_once plugin_dir_path( __FILE__ ) . 'config.default.php';
 }
 require_once plugin_dir_path( __FILE__ ) . 'includes/api.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/mass_pull.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/mass-pull.php';
 
-require_once plugin_dir_path( __FILE__ ) . 'includes/shorthand_options.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/shorthand-options.php';
 require_once plugin_dir_path( __FILE__ ) . 'templates/abstract.php';
 
 if ( ! function_exists( 'WP_Filesystem' ) ) {

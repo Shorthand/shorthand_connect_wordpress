@@ -17,7 +17,7 @@ function sh_v2_api_request( $url, $options ) {
 	}
 	global $serverURL;
 	$url            = $serverURL . $url;
-	$plugin_path    = plugin_dir_path( __DIR__ ) . '/shorthand_connect.php';
+	$plugin_path    = plugin_dir_path( __DIR__ ) . '/shorthand-connect.php';
 	$plugin_data    = get_file_data( $plugin_path, array( 'Version' => 'Version' ) );
 	$plugin_version = $plugin_data['Version'];
 
