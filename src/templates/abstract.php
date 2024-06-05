@@ -1,10 +1,10 @@
 <?php
 
-function shand_abstract_template( $post_id, $abstract, $data ) {
-	$abstract = '<p>' . $abstract . '</p>';
+function shand_abstract_template( $post_id, $abstract_html, $data ) {
+	$abstract_html = '<p>' . $abstract_html . '</p>';
 
-	$abstract .= '<a href="' . get_permalink( $post_id ) . '">View the story</a>';
+	$abstract_html .= '<a href="' . get_permalink( $post_id ) . '">View the story</a>';
 
-	$abstract .= '<div style="display:none;">' . $data . '</div>';
-	return $abstract;
+	$abstract_html .= '<div style="display:none;">' . $data . '</div>';
+	return $abstract_html;
 }

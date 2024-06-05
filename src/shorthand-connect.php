@@ -1,7 +1,7 @@
 <?php
 /**
  * @package Shorthand Connect
- * @version 1.3.30
+ * @version 1.3.31
  */
 
 /*
@@ -9,23 +9,23 @@ Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your WordPress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.30
+Version: 1.3.31
 Author URI: http://shorthand.com
 */
 
 if ( file_exists( plugin_dir_path( __FILE__ ) . 'config.php' ) ) {
 	include_once plugin_dir_path( __FILE__ ) . 'config.php';
 } else {
-	require_once plugin_dir_path( __FILE__ ) . 'config.default.php';
+	include_once plugin_dir_path( __FILE__ ) . 'config.default.php';
 }
 require_once plugin_dir_path( __FILE__ ) . 'includes/api.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/mass_pull.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/mass-pull.php';
 
-require_once plugin_dir_path( __FILE__ ) . 'includes/shorthand_options.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/shorthand-options.php';
 require_once plugin_dir_path( __FILE__ ) . 'templates/abstract.php';
 
 if ( ! function_exists( 'WP_Filesystem' ) ) {
-	require_once ABSPATH . 'wp-admin/includes/file.php';
+	include_once ABSPATH . 'wp-admin/includes/file.php';
 }
 
 /**
@@ -33,7 +33,7 @@ if ( ! function_exists( 'WP_Filesystem' ) ) {
  */
 function shand_create_post_type() {
 	$permalink = get_option( 'sh_permalink' );
-	if ( $permalink == '' ) {
+	if ( '' === $permalink ) {
 		$permalink = 'shorthand_story';
 	}
 
@@ -74,8 +74,8 @@ add_action( 'init', 'shand_create_post_type' );
 
 function shand_wpt_shorthand_story() {
 	global $post;
-	global $serverURL;
-	global $showArchivedStories;
+	global $server_url;
+	global $show_archived_stories;
 	$baseurl = '';
 
 	?>
@@ -206,13 +206,13 @@ function shand_wpt_shorthand_story() {
 		foreach ( $stories as $story ) {
 			$selected       = '';
 			$story_selected = '';
-			if ( $selected_story == $story->id ) {
+			if ( $selected_story === $story->id ) {
 				$selected       = 'checked';
 				$story_selected = 'selected';
 			}
 			$archived = '';
-			if ( isset( $story->story_version ) && $story->story_version == '1' ) {
-				if ( $showArchivedStories ) {
+			if ( isset( $story->story_version ) && '1' === $story->story_version ) {
+				if ( $show_archived_stories ) {
 					$archived = ' (archived)';
 				} else {
 					continue;
@@ -225,7 +225,7 @@ function shand_wpt_shorthand_story() {
 
 	// Noncename needed to verify where the data originated
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
+	esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
 
 	?>
 	<script>
@@ -333,7 +333,7 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 	global $noabstract;
 	$slug = 'shorthand_story';
-	if ( $slug != $post->post_type ) {
+	if ( $slug !== $post->post_type ) {
 		return;
 	}
 
@@ -378,11 +378,6 @@ function shand_save_shorthand_story( $post_id, $post ) {
 		if ( ! isset( $story_path ) ) {
 			$err        = sh_copy_story( $post_id, $safe_story_id, $sh_media_cron_offload );
 			$story_path = sh_get_story_path( $post_id, $safe_story_id );
-
-		}
-		if ( $sh_media_cron_offload ) {
-			update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
-			wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
 		}
 
 		if ( isset( $story_path ) ) {
@@ -396,6 +391,11 @@ function shand_save_shorthand_story( $post_id, $post ) {
 				delete_post_meta( $post_id, 'ERROR' );
 			}
 
+			if ( $sh_media_cron_offload ) {
+				update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
+				wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
+			}
+
 			// Get path to the assets.
 			$assets_path = shorthand_get_story_url( $post_id, $safe_story_id );
 
@@ -405,8 +405,8 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 			$post_processing_queries = json_decode( base64_decode( get_option( 'sh_regex_list' ) ) );
 
-			$body = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $article_file ) : $wp_filesystem->get_contents( $article_file ) );
-			$head = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $head_file ) : $wp_filesystem->get_contents( $head_file ) );
+			$body = shand_fix_content_paths( $assets_path, $err['article'] );
+			$head = shand_fix_content_paths( $assets_path, $err['head'] );
 
 			$body = apply_filters( 'sh_pre_process_body', $body, $assets_path, $article_file );
 			$head = apply_filters( 'sh_pre_process_head', $head, $assets_path, $head_file );
@@ -448,12 +448,13 @@ function shand_save_shorthand_story( $post_id, $post ) {
 			delete_post_meta( $post_id, 'story_diagnostic' );
 
 		} else {
-
+			// Log any story-specific errors to the metadata.
+			update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
 			update_post_meta( $post_id, 'story_diagnostic', $err );
 
 			wp_die(
-				esc_html( __( $err['error'] ) ),
-				esc_html( __( $err['pretty'] ) )
+				isset( $err['error'] ) ? esc_html( __( $err['error'] ) ) : '',
+				isset( $err['pretty'] ) ? esc_html( __( $err['pretty'] ) ) : ''
 			);
 		}
 	}
@@ -471,8 +472,7 @@ function shand_load_single_shorthand_template( $template ) {
 		}
 		$plugin_path   = plugin_dir_path( __FILE__ );
 		$template_name = 'templates/single-shorthand_story.php';
-		if (
-			( get_stylesheet_directory() . '/' . $template_name === $template )
+		if ( ( get_stylesheet_directory() . '/' . $template_name === $template )
 			|| ! file_exists( $plugin_path . $template_name )
 		) {
 			return $template;
@@ -510,7 +510,8 @@ function shand_shorthand_get_posts( $query ) {
 		// Check if the queried object uses a Shorthand Post template from the array.
 		if ( $queried_object
 			&& isset( $queried_object->ID )
-			&& in_array( get_page_template_slug( $queried_object->ID ), $shorthand_templates, true ) ) {
+			&& in_array( get_page_template_slug( $queried_object->ID ), $shorthand_templates, true )
+		) {
 
 			// Get the current post type(s).
 			$post_type = $query->get( 'post_type' );
@@ -565,7 +566,7 @@ register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
  * Update links in content.
  *
  * @param string $assets_path Path string to use.
- * @param string $content HTML content to be modified.
+ * @param string $content     HTML content to be modified.
  */
 function shand_fix_content_paths( $assets_path, $content ) {
 	$content = str_replace( './assets/', $assets_path . '/assets/', $content );
@@ -582,7 +583,7 @@ function shand_fix_content_paths( $assets_path, $content ) {
  * @param array  $queries Queries.
  */
 function shand_post_processing( $content, $queries ) {
-	if ( !$queries ) {
+	if ( ! $queries ) {
 		return $content;
 	}
 	foreach ( $queries as $query ) {
@@ -600,7 +601,7 @@ function shand_wpt_shorthand_abstract() {
 	global $post;
 	$abstract = get_post_meta( $post->ID, 'abstract', true );
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
+	esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
 	echo '<textarea id="abstract" name="abstract">' . esc_textarea( $abstract ) . '</textarea>';
 }
 
@@ -611,7 +612,7 @@ function shand_wpt_shorthand_extra_html() {
 	global $post;
 	$extra_html = get_post_meta( $post->ID, 'extra_html', true );
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
+	esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
 	echo '<textarea id="codearea" name="extra_html">' . esc_textarea( $extra_html ) . '</textarea>';
 }
 
@@ -672,11 +673,12 @@ add_action(
 	'admin_notices',
 	function () {
 		if ( isset( $_REQUEST['bulk-pulled-stories-nonce'] )
-		&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['bulk-pulled-stories-nonce'] ) ), 'bulk-pulled-stories' )
-		&& isset( $_REQUEST['bulk-pulled-stories'] ) ) {
-		   $num_changed = intval( $_REQUEST['bulk-pulled-stories'] );
+			&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['bulk-pulled-stories-nonce'] ) ), 'bulk-pulled-stories' )
+			&& isset( $_REQUEST['bulk-pulled-stories'] )
+		) {
+			$num_changed = intval( $_REQUEST['bulk-pulled-stories'] );
 			echo '<div id="message" class="updated notice is-dismissable"><p>',
-				/* translators: Pulled %d stories. */
+			/* translators: Pulled %d stories. */
 			sprintf( esc_html( _n( 'Pulled %d story.', 'Pulled %d stories.', $num_changed ) ), esc_html( $num_changed ) ),
 			'</p></div>';
 		}
@@ -686,8 +688,8 @@ add_action(
 /**
  * Retrieves information about the current story.
  *
- * @param string $meta   Meta value.
- * @param string $show   Optional. Site info to retrieve. Default empty (site name).
+ * @param  string $meta Meta value.
+ * @param  string $show Optional. Site info to retrieve. Default empty (site name).
  * @return string HTML or text.
  */
 function get_shorthandinfo( $meta, $show = '' ) {
@@ -701,7 +703,7 @@ function get_shorthandinfo( $meta, $show = '' ) {
 /**
  * Retrieves information about the current story.
  *
- * @param string $show   Optional. Shorthand option to retrieve. Default empty (site name).
+ * @param  string $show Optional. Shorthand option to retrieve. Default empty (site name).
  * @return string HTML or text.
  */
 function get_shorthandoption( $show = '' ) {

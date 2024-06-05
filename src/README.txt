@@ -3,8 +3,8 @@ Contributors: shorthandconnect
 Donate link: 
 Tags: shorthand, api
 Requires at least: 4.0
-Tested up to: 6.1
-Stable tag: 1.3.30
+Tested up to: 6.5.3
+Stable tag: 1.3.31
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -62,6 +62,14 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.31 =
+* API Fixes
+* Fixes to sanitisation handlers
+* Method for story file uploads for WPVIP updated
+
+= 1.3.30b =
+* Swapped connect server to use sh_v2_api_post_json & sh_v2_api_post
 
 = 1.3.30 =
 * Security Fixes & Updates

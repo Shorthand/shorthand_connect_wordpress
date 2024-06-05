@@ -41,7 +41,7 @@ function validate_json( $json_string ) {
 
 function shand_shorthand_options() {
 	global $default_sh_site_css;
-	global $serverURL;
+	global $server_url;
 
 	// Rather than running a rewrite flush everytime a post is submitted, run it on plugin activate/deactivate
 	function shand_rewrite_flush() {
@@ -54,7 +54,7 @@ function shand_shorthand_options() {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html( __( 'You do not have sufficient permissions to access this page.' ) ) );
 	}
-	if ( isset( $_POST['sh_submit_hidden'] ) && $_POST['sh_submit_hidden'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+	if ( isset( $_POST['sh_submit_hidden'] ) && 'Y' === $_POST['sh_submit_hidden'] && check_admin_referer( 'sh-update-configuration' ) ) {
 		// If there's a token set, use it, if not set it to an empty string
 		$sh_v2_token = isset( $_POST['sh_v2_token'] ) ? sanitize_text_field( $_POST['sh_v2_token'] ) : '';
 		update_option( 'sh_v2_token', $sh_v2_token );
@@ -62,13 +62,13 @@ function shand_shorthand_options() {
 
 	$v2_token = esc_html( get_option( 'sh_v2_token' ) );
 
-	if ( isset( $_POST['sh_submit_hidden_two'] ) && $_POST['sh_submit_hidden_two'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+	if ( isset( $_POST['sh_submit_hidden_two'] ) && 'Y' === $_POST['sh_submit_hidden_two'] && check_admin_referer( 'sh-update-configuration' ) ) {
 		// Check if there's custom CSS, if there is, use wp_kses_post() to sanitize otherwise set an empty string
 		$sh_css = isset( $_POST['sh_css'] ) ? wp_kses_post( $_POST['sh_css'] ) : '';
 		update_option( 'sh_css', $sh_css );
 	}
 
-	if ( isset( $_POST['sh_submit_hidden_three'] ) && $_POST['sh_submit_hidden_three'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+	if ( isset( $_POST['sh_submit_hidden_three'] ) && 'Y' === $_POST['sh_submit_hidden_three'] && check_admin_referer( 'sh-update-configuration' ) ) {
 		// Check if there's custom permalink, if there is, use sanitize_text_field() to sanitize potential HTML and then set an empty string
 		$sh_permalink = isset( $_POST['sh_permalink'] ) ? sanitize_text_field( $_POST['sh_permalink'] ) : '';
 		update_option( 'sh_permalink', $sh_permalink );
@@ -76,13 +76,13 @@ function shand_shorthand_options() {
 	}
 	$permalink_structure = esc_html( get_option( 'sh_permalink' ) );
 
-	if ( $permalink_structure == '' ) {
+	if ( '' === $permalink_structure ) {
 		update_option( 'sh_permalink', 'shorthand_story' );
 		$permalink_structure = esc_html( get_option( 'sh_permalink' ) );
 	}
 	$sh_css = get_option( 'sh_css' );
 	$no_css = false;
-	if ( $sh_css == '' ) {
+	if ( '' === $sh_css ) {
 		$no_css = true;
 		if ( isset( $default_site_css ) ) {
 			update_option( 'sh_css', $default_site_css );
@@ -90,7 +90,7 @@ function shand_shorthand_options() {
 		$sh_css = $default_sh_site_css;
 	}
 
-	if ( isset( $_POST['sh_submit_hidden_four'] ) && $_POST['sh_submit_hidden_four'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+	if ( isset( $_POST['sh_submit_hidden_four'] ) && 'Y' === $_POST['sh_submit_hidden_four'] && check_admin_referer( 'sh-update-configuration' ) ) {
 		$sh_regex_list = isset( $_POST['sh_regex_list'] ) ? wp_unslash( $_POST['sh_regex_list'] ) : '';
 
 		if ( empty( $sh_regex_list ) ) {
@@ -100,7 +100,7 @@ function shand_shorthand_options() {
 			// Validate if it's a valid JSON without sanitizing
 			$sh_regex_list = validate_json( $sh_regex_list );
 
-			if ( $sh_regex_list !== false ) {
+			if ( false !== $sh_regex_list ) {
 				// Since $sh_regex_list stored as base64, no need to sanitize the JSON, as base64_encode will handle that
 				update_option( 'sh_regex_list', base64_encode( $sh_regex_list ) );
 			} else {
@@ -112,7 +112,7 @@ function shand_shorthand_options() {
 	$sh_regex_list = base64_decode( get_option( 'sh_regex_list' ) );
 
 	// Experimental Settings
-	if ( isset( $_POST['sh_submit_hidden_experimental'] ) && $_POST['sh_submit_hidden_experimental'] == 'Y' && check_admin_referer( 'sh-update-configuration' ) ) {
+	if ( isset( $_POST['sh_submit_hidden_experimental'] ) && 'Y' === $_POST['sh_submit_hidden_experimental'] && check_admin_referer( 'sh-update-configuration' ) ) {
 		$sh_media_cron_offload = isset( $_POST['sh_media_cron_offload'] ) ? filter_var( $_POST['sh_media_cron_offload'], FILTER_VALIDATE_BOOLEAN ) : false;
 		$sh_disable_acf        = isset( $_POST['sh_disable_acf'] ) ? filter_var( $_POST['sh_disable_acf'], FILTER_VALIDATE_BOOLEAN ) : false;
 		update_option( 'sh_media_cron_offload', $sh_media_cron_offload );
@@ -122,13 +122,13 @@ function shand_shorthand_options() {
 	$sh_disable_acf        = filter_var( get_option( 'sh_disable_acf' ), FILTER_VALIDATE_BOOLEAN );
 
 	$profile = sh_get_profile();
-	?>	
+	?>    
 <div class="container">
 	<div class="py-1">
 	<h1>Shorthand API Configuration</h1>
 	<h2>Shorthand Connect Status</h2>
 	<form name="formtoken" method="post">
-		<?php wp_nonce_field( 'sh-update-configuration' ); ?>
+	<?php wp_nonce_field( 'sh-update-configuration' ); ?>
 		<input type="hidden" name="sh_submit_hidden" value="Y" />
 		<table class="form-table"><tbody>
 		<tr class="v2row">
@@ -136,7 +136,7 @@ function shand_shorthand_options() {
 		<td><input type="text" id="sh_v2_token" name="sh_v2_token" value="<?php echo esc_attr( $v2_token ); ?>" size="28"></td>
 		</tr>
 		</tbody></table>
-		<?php if ( $profile ) { ?>
+	<?php if ( $profile ) { ?>
 		<p class="status">Successfully connected</p>
 		<p><strong>Username</strong>: <?php echo esc_html( $profile->username ); ?></p>
 	<?php } else { ?>
@@ -154,7 +154,7 @@ function shand_shorthand_options() {
 	<h2>Shorthand Permalink Structure</h2>
 		<p>Use this to set the permalink structure of Shorthand story URLs</p>
 		<form name="permalinks" method="post">
-			<?php wp_nonce_field( 'sh-update-configuration' ); ?>
+	<?php wp_nonce_field( 'sh-update-configuration' ); ?>
 			<input type="hidden" name="sh_submit_hidden_three" value="Y" />
 			<p>
 				<?php _e( 'Permalink structure:', 'sh-permalink-value' ); ?><br /><?php echo esc_url( get_site_url() ); ?>/<input type="text" name="sh_permalink" value="<?php echo esc_attr( $permalink_structure ); ?>" size="20">/{STORY_NAME}
@@ -168,11 +168,11 @@ function shand_shorthand_options() {
 	<div class="py-1">
 	<h2>Shorthand Story Page CSS (theme wide CSS)</h2>
 		<p>Use this CSS to customise Shorthand Story pages to better suit your theme</p>
-		<?php if ( $no_css ) { ?>
+	<?php if ( $no_css ) { ?>
 			<p class="status warn">No custom CSS found, using default theme CSS</p>
-		<?php } ?>
+	<?php } ?>
 		<form name="themecss" method="post">
-			<?php wp_nonce_field( 'sh-update-configuration' ); ?>
+	<?php wp_nonce_field( 'sh-update-configuration' ); ?>
 			<input type="hidden" name="sh_submit_hidden_two" value="Y" />
 			<textarea rows="10" cols="80" name="sh_css"><?php echo esc_textarea( $sh_css ); ?></textarea>
 			<p class="submit">
@@ -181,7 +181,7 @@ function shand_shorthand_options() {
 		</form>
 		</div>
 
-	<div class="py-1">	
+	<div class="py-1">    
 	<h2>Post-processing</h2>
 		<p>Use this to create a JSON object of regex queries and replacements.</p>
 		<p><em>This Example removes title tags from within the head tag by replacing it with nothing.</em></p>
@@ -198,7 +198,7 @@ function shand_shorthand_options() {
 
 </code></pre>
 		<form name="postprocessing" method="post">
-			<?php wp_nonce_field( 'sh-update-configuration' ); ?>
+	<?php wp_nonce_field( 'sh-update-configuration' ); ?>
 			<input type="hidden" name="sh_submit_hidden_four" value="Y" />
 			<textarea rows="10" cols="80" id="sh_regex_list" name="sh_regex_list"><?php echo esc_textarea( $sh_regex_list ); ?></textarea>
 			<p class="submit">
@@ -230,7 +230,7 @@ function shand_shorthand_options() {
 	<h2>Experimental Features</h2>
 	<p>Early access features that are still subject to change.</p>
 	<form name="form_experimental" method="post">
-			<?php wp_nonce_field( 'sh-update-configuration' ); ?>
+	<?php wp_nonce_field( 'sh-update-configuration' ); ?>
 		<input type="hidden" name="sh_submit_hidden_experimental" value="Y"/>
 		<input type="checkbox" id="sh_media_cron_offload" name="sh_media_cron_offload"
 			value="true" <?php echo esc_attr( $sh_media_cron_offload ? 'checked' : '' ); ?> />

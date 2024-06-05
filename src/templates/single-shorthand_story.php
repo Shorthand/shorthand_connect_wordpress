@@ -16,6 +16,6 @@ if ( post_password_required( $post->ID ) ) {
 		<?php echo get_shorthandoption( 'sh_css' ); ?>
 		</style>
 		<?php
-		endwhile;
+	endwhile;
 }
 get_footer();
