@@ -4,7 +4,7 @@ global $server_url;
 global $show_archived_stories;
 global $noabstract;
 
-$server_url           = 'https://api.shorthand.com';
+$server_url           = 'https://host.docker.internal:9443/api';
 $show_archived_stories = false;
 
 if ( defined( 'SHORTHAND_NOABSTRACT' ) ) {

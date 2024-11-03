@@ -20,6 +20,7 @@ if ( file_exists( plugin_dir_path( __FILE__ ) . 'config.php' ) ) {
 }
 require_once plugin_dir_path( __FILE__ ) . 'includes/api.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/mass-pull.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/rest.php';
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/shorthand-options.php';
 require_once plugin_dir_path( __FILE__ ) . 'templates/abstract.php';
@@ -43,14 +44,17 @@ function shand_create_post_type() {
 			'labels'               => array(
 				'name'               => __( 'Shorthand' ),
 				'singular_name'      => __( 'Shorthand Story' ),
-				'add_new'            => __( 'Add Shorthand Story' ),
-				'add_new_item'       => __( 'Add Shorthand Story' ),
-				'new_item'           => __( 'Add Shorthand Story' ),
+				'add_new'            => __( 'Add Shorthand Story (add new)' ),
+				'add_new_item'       => __( 'Add Shorthand Story (add new item)' ),
+				'new_item'           => __( 'Add Shorthand Story (new item)' ),
 				'edit_item'          => __( 'Update Shorthand Story' ),
 				'view_item'          => __( 'View Shorthand Story' ),
 				'not_found'          => __( 'No stories found' ),
 				'not_found_in_trash' => __( 'No stories found in trash' ),
 			),
+			'show_in_rest'		   => true,
+			'rest_base'            => 'shorthand_stories',
+			'rest_namespace'       => 'shorthand_connect/v1',
 			'publicly_queryable'   => true,
 			'public'               => true,
 			'has_archive'          => true,
@@ -70,7 +74,28 @@ function shand_create_post_type() {
 	register_taxonomy_for_object_type( 'post_tag', 'shorthand_story' );
 }
 
+function shand_query_stories_by_story_id_meta($args, $request) {
+	if (isset($request['story_id'])) {
+		$meta_query = array(
+			'key' => 'story_id',
+			'value' => $request['story_id'],
+		);
+
+		if (isset($args['meta_query']) && count($args['meta_query'] > 0)) {
+			$args['meta_query'] = array(
+				$args['meta_query'],
+			);
+		} else {
+			$args['meta_query'] = array();
+		}
+		$args['meta_query'][] = $meta_query;
+	}
+
+	return $args;
+}
+
 add_action( 'init', 'shand_create_post_type' );
+add_filter( 'rest_shorthand_story_query', 'shand_query_stories_by_story_id_meta', 10, 2);
 
 function shand_wpt_shorthand_story() {
 	global $post;
@@ -337,8 +362,12 @@ function shand_save_shorthand_story( $post_id, $post ) {
 		return;
 	}
 
+	// Avoid validating the nonce from the REST API
+	global $wp_rest_server;
+	$is_rest_api_request = ! empty( $wp_rest_server );
+
 	// Check if these fields are nonce_verified.
-	if ( isset( $_POST['eventmeta_noncename'] ) && wp_verify_nonce( sanitize_text_field( $_POST['eventmeta_noncename'] ), plugin_basename( __FILE__ ) ) ) {
+	if ( $is_rest_api_request || ( isset( $_POST['eventmeta_noncename'] ) && wp_verify_nonce( sanitize_text_field( $_POST['eventmeta_noncename'] ), plugin_basename( __FILE__ ) ) ) ) {
 		if ( ! $noabstract && isset( $_REQUEST['abstract'] ) ) {
 			update_post_meta( $post_id, 'abstract', wp_kses_post( $_REQUEST['abstract'] ) );
 		} elseif ( $noabstract && get_post_meta( $post_id, 'abstract' ) ) {
@@ -362,10 +391,10 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 		// Sanitize but also check if the query is GET or POST.
 		if ( isset( $_REQUEST['story_id'] ) ) {
-			$story_id = filter_input( INPUT_GET, 'story_id', FILTER_SANITIZE_STRING );
-			// If the variable is not present in the $_GET array.
-			if ( null === $story_id ) {
-				$story_id = filter_input( INPUT_POST, 'story_id', FILTER_SANITIZE_STRING );
+			if ( isset( $_GET['story_id'] ) ) {
+				$story_id = htmlspecialchars( $_GET['story_id'] );
+			} else {
+				$story_id = htmlspecialchars( $_POST['story_id'] );
 			}
 			$safe_story_id = preg_replace( '/\W|_/', '', $story_id );
 		}
@@ -427,11 +456,17 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 			// Save the abstract.
 			if ( ! $noabstract ) {
+				if ( isSet( $_REQUEST['abstract'] ) ) {
+					$abstractHtml = wp_kses_post( $_REQUEST['abstract'] );
+				} else {
+					$abstractHtml = '';
+				}
+
 				$abstract = $body;
 				remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3 );
 				$post = array(
 					'ID'           => $post_id,
-					'post_content' => shand_abstract_template( $post_id, wp_kses_post( $_REQUEST['abstract'] ), $abstract ),
+					'post_content' => shand_abstract_template( $post_id, $abstractHtml, $abstract ),
 				);
 				wp_update_post( $post );
 				add_action( 'save_post', 'shand_save_shorthand_story', 10, 3 );

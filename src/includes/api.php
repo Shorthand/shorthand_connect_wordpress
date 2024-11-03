@@ -31,6 +31,7 @@ function sh_v2_api_request( $url, $options ) {
 				'user-agent'    => $user_agent,
 			),
 			'http_api_args' => $options,
+			'sslverify' => false,
 		),
 		$options
 	);
@@ -51,7 +52,7 @@ function sh_v2_api_request_json( $url, $options ) {
 
 function sh_get_profile() {
 	$tokeninfo = array();
-
+	
 	$data = sh_v2_api_request_json( '/v2/token-info', array() );
 	if ( $data && isset( $data->organisation_id ) ) {
 		$tokeninfo['username'] = $data->name . ' (' . $data->token_type . ' Token)';

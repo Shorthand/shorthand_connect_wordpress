@@ -19,7 +19,7 @@ services:
   wordpress:
     depends_on:
       - db
-    image: wordpress:5.9.1-apache
+    image: wordpress:6.6.2-apache
     container_name: sh_connect_wp
     ports:
       - "8000:80"
@@ -32,6 +32,10 @@ services:
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DEBUG: 1
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'local');
+        define('WP_DEVELOPMENT_MODE', 'plugins');
+        define('WP_DEBUG_LOG', true);
       APACHE_RUN_USER: #1000
       APACHE_RUN_GROUP: #1000
     sysctls:
