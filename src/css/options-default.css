@@ -1,0 +1,27 @@
+/* START CSS FOR DEFAULT WP THEMES */
+.site {
+	margin: 0;
+	max-width: none;
+}
+
+.site-content {
+	padding: 0 !important;
+}
+
+.site-inner {
+	max-width: none;
+}
+
+.site-header {
+	max-width: none;
+	z-index: 100;
+}
+
+.site:before {
+	width: 0;
+}
+
+/* END CSS FOR DEFAULT WP THEMES */
+code {
+	width: 100%;
+}

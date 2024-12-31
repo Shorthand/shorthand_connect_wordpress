@@ -1,7 +1,8 @@
 <?php
 /**
+ * Main plugin file.
+ *
  * @package Shorthand Connect
- * @version 1.3.30
  */
 
 /*
@@ -9,23 +10,55 @@ Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your WordPress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.30
+Version: 1.3.32
 Author URI: http://shorthand.com
 */
 
-if ( file_exists( plugin_dir_path( __FILE__ ) . 'config.php' ) ) {
-	include_once plugin_dir_path( __FILE__ ) . 'config.php';
-} else {
-	require_once plugin_dir_path( __FILE__ ) . 'config.default.php';
+// Make sure we don't expose any info if called directly.
+if ( ! function_exists( 'add_action' ) ) {
+	echo 'Hi there!  I\'m just a plugin, not much I can do when called directly.';
+	exit;
 }
-require_once plugin_dir_path( __FILE__ ) . 'includes/api.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/mass_pull.php';
 
-require_once plugin_dir_path( __FILE__ ) . 'includes/shorthand_options.php';
-require_once plugin_dir_path( __FILE__ ) . 'templates/abstract.php';
+define( 'SHORTHAND_VERSION', '1.3.32' );
+define( 'SHORTHAND__MINIMUM_WP_VERSION', '5.8' );
+define( 'SHORTHAND__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+
+require_once SHORTHAND__PLUGIN_DIR . 'class-shorthand.php';
+
+// Add config.
+if ( file_exists( SHORTHAND__PLUGIN_DIR . 'config.php' ) ) {
+	include_once SHORTHAND__PLUGIN_DIR . 'config.php';
+} else {
+	include_once SHORTHAND__PLUGIN_DIR . 'config-default.php';
+}
+
+require_once SHORTHAND__PLUGIN_DIR . 'includes/api.php';
+require_once SHORTHAND__PLUGIN_DIR . 'includes/mass-pull.php';
+
+if ( is_admin() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+	require_once SHORTHAND__PLUGIN_DIR . 'class-shorthand-admin.php';
+	add_action( 'init', array( 'Shorthand_Admin', 'init' ) );
+}
+
+// Loading initial setup or general configuration.
+require_once SHORTHAND__PLUGIN_DIR . 'includes/shorthand-options-variables.php';
+if ( isset( $_GET['view'] ) && ( $_GET['view'] === 'start' ) ) {
+	require_once SHORTHAND__PLUGIN_DIR . 'includes/shorthand-options-init.php';
+} else {
+	require_once SHORTHAND__PLUGIN_DIR . 'includes/shorthand-options.php';
+}
+
+// Added admin menu.
+function shorthand_shorthand_menu() {
+	add_options_page( 'Shorthand Options', 'Shorthand', 'manage_options', 'shorthand-options', 'shorthand_shorthand_options' );
+}
+add_action( 'admin_menu', 'shorthand_shorthand_menu' );
+
+require_once SHORTHAND__PLUGIN_DIR . 'templates/abstract.php';
 
 if ( ! function_exists( 'WP_Filesystem' ) ) {
-	require_once ABSPATH . 'wp-admin/includes/file.php';
+	include_once ABSPATH . 'wp-admin/includes/file.php';
 }
 
 /**
@@ -33,7 +66,7 @@ if ( ! function_exists( 'WP_Filesystem' ) ) {
  */
 function shand_create_post_type() {
 	$permalink = get_option( 'sh_permalink' );
-	if ( $permalink == '' ) {
+	if ( '' === $permalink ) {
 		$permalink = 'shorthand_story';
 	}
 
@@ -72,172 +105,129 @@ function shand_create_post_type() {
 
 add_action( 'init', 'shand_create_post_type' );
 
-function shand_wpt_shorthand_story() {
+function shorthand_wpt_shorthand_story() {
 	global $post;
-	global $serverURL;
-	global $showArchivedStories;
+	global $show_archived_stories;
 	$baseurl = '';
 
-	?>
-	<style>
-	li.story {
-		float: left;
-		width: 160px;
-		margin: 5px;
-	}
-
-	li.story.selected label {
-		background: #5b9dd9;
-		color: #eee;
-	}
-
-	li.story input {
-		display: none !important;
-	}
-
-	li.story label {
-		display: block;
-		background: #fafafa;
-		text-align: center;
-		height: 160px;
-		padding-top: 5px;
-		border: 1px solid #eeeeee;
-	}
-
-	li.story label:hover {
-		border: 1px solid #5b9dd9;
-	}
-
-	li.story label span {
-		display: block;
-		font-weight: bold;
-	}
-
-	li.story label span.desc {
-		display: none;
-	}
-
-	div.clear {
-		clear: left;
-	}
-
-	div.publishing-actions {
-		padding: 10px;
-		clear: both;
-		border-top: 1px solid #dcdcde;
-		background: #f6f7f7;
-		margin: -12px;
-		margin-top: -12px;
-		margin-top: 10px;
-		display: flex;
-		justify-content: center;
-	}
-
-	.button-shorthand {
-		background-color: #000;
-		border: 1px solid #000;
-		transition: background-color .15s ease, color .15s ease;
-		color: #fff;
-		font-family: poppins, sans-serif;
-		font-size: 13px;
-		font-weight: 600;
-		letter-spacing: 0;
-		line-height: 1;
-		padding: 1em 2em;
-		text-decoration: none;
-		cursor: pointer;
-		border-radius: .9em;
-	}
-
-	.button-shorthand:hover {
-		background-color: #fff;
-		border-color: #000;
-		color: #000;
-	}
-
-	.button-shorthand:disabled {
-		pointer-events: none;
-	}
-
-	#codearea {
-		border: 1px solid #999999;
-		font-family: Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-		width: 100%;
-		height: 300px;
-	}
-
-	#abstract {
-		border: 1px solid #999999;
-		width: 100%;
-		height: 200px;
-	}
-
-	ul.stories {
-		max-height: 400px;
-		overflow-y: scroll;
-	}
-
-	ul.stories img {
-		object-fit: cover;
-		height: 110px;
-	}
-
-	p.warning {
-		color: red;
-		font-weight: bold;
-	}
-	</style>
-	<?php
+	// Adding styles.
+	$css_path = 'css/connect.css';
+	wp_register_style( 'connect_style', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
+	wp_enqueue_style( 'connect_style' );
 
 	$selected_story = get_post_meta( $post->ID, 'story_id', true );
 	if ( $selected_story ) {
 		shand_wpt_update_story( $selected_story );
 		return;
 	}
-	$stories = sh_get_stories();
-	$profile = sh_get_profile();
+
+	$stories = shorthand_api_get_stories();
+	$profile = shorthand_api_get_profile();
 
 	if ( ! ( $profile ) ) {
-		echo 'Could not connect to Shorthand, please check your API token in <a href="options-general.php?page=shorthand-options">Shorthand settings</a>.';
+		$uri = Shorthand_Admin::get_page_url();
+		printf( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.' ), esc_url( $uri ) );
 	} elseif ( $stories === null ) {
-		echo 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.';
+		echo __( 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.' );
 	} else {
+		?>
+	<div id="stories-list">
+	<div class="filter-container wp-core-ui">
+		<input class="search" placeholder="Search for a story" />
+		<span class="sort button-secondary desc" data-sort="updated_value">
+		Edited<span class="sort-icon"></span>
+		</span>
+	</div>
+	<!-- List to populate the stories. -->
+	<ul class="list stories">
+		<!--<li class="story">
+			<label>
+				<input class="storyid" name="story_id" type="radio" value=""/>
+				<img class="image imagealt" width="190" src="" alt=""/>
+				<span class="version">Story version: <span class="version_value"></span></span>
+				<span class="title"></span>
+				<div class="updated_container">Updated: <span class="updated_timestamp updated_value"></span> ago</div>
+				<div class="published_container">Last published: <span class="published_timestamp published_value"></span> ago</div>
+			</label>
+			</li>-->
+	</ul>
+	</div>
+		<?php
+		wp_register_script(
+			'list-js',
+			plugin_dir_url( __FILE__ ) . 'js/list.js/v2.3.4/list.min.js',
+			array(),
+			'2.3.4',
+			array()
+		);
+		wp_enqueue_script( 'list-js' );
+
+		wp_register_script(
+			'list-js-stories',
+			plugin_dir_url( __FILE__ ) . 'js/connect-stories-list.js',
+			array(),
+			'1.0.0',
+			array(
+				'strategy' => 'defer',
+			)
+		);
+		wp_add_inline_script( 'list-js-stories', 'storiesList.add(' . json_encode( $stories ) . ');' );
+		wp_add_inline_script( 'list-js-stories', 'const selectedStory = "' . $selected_story . '";' );
+		wp_enqueue_script( 'list-js-stories' );
+
+		wp_register_script(
+			'list-js-stories-selected',
+			plugin_dir_url( __FILE__ ) . 'js/connect-stories-list-selected.js',
+			array(),
+			'1.0.0',
+			array(
+				'strategy' => 'defer',
+			)
+		);
+		wp_enqueue_script( 'list-js-stories-selected' );
+
+		/*
 		echo '<ul class="stories">';
 		foreach ( $stories as $story ) {
 			$selected       = '';
 			$story_selected = '';
-			if ( $selected_story == $story->id ) {
+			if ( $selected_story === $story->id ) {
 				$selected       = 'checked';
 				$story_selected = 'selected';
 			}
 			$archived = '';
-			if ( isset( $story->story_version ) && $story->story_version == '1' ) {
-				if ( $showArchivedStories ) {
+			if ( isset( $story->version_value ) && '1' === $story->version_value ) {
+				if ( $show_archived_stories ) {
 					$archived = ' (archived)';
 				} else {
 					continue;
 				}
 			}
-			echo '<li class="story ' . esc_attr( $story_selected ) . '"><label><input name="story_id" type="radio" value="' . esc_attr( $story->id ) . '" ' . esc_html( $selected ) . ' /><img width="150" src="' . esc_url( $baseurl . $story->image ) . '" /><span class="title">' . esc_html( $story->title . $archived ) . '</span><span class="desc">' . esc_html( $story->metadata->description ) . '</span></a></label></li>';
+			$class = trim('story ' . esc_attr( $story_selected ));
+		$title = esc_html( $story->title );
+
+		$description = esc_html( $story->metadata->description );
+		echo '<li class="' . $class . '"><label><input name="story_id" type="radio" value="' . esc_attr( $story->id ) . '" ' . esc_html( $selected ) . ' /><img width="190" src="' . esc_url( $baseurl . $story->image ) . '" alt="' . $title . '" /><span class="grey version">Story version: ' . esc_html( $story->version_value ) . '</span><span class="title">' . $title . esc_html(  $archived ) . '</span><span class="desc">Updated: ' . $updated . ' ago<br/>Last published: ' . $published . ' ago</span></label></li>';
 		}
-		echo '</ul><div class="clear"></div>';
+		echo '</ul>';
+		*/
+		echo '<div class="clear"></div>';
 	}
 
 	// Noncename needed to verify where the data originated
-	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
+	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
+}
 
+function shorthand_wpt_shorthand_story_advanced() {
 	?>
+	<div class="form-check form-switch text-light">
+	<input class="form-check-input" type="checkbox" id="show-advanced">
+	<label class="form-check-label" for="show-advanced">Show advanced options</label>
+	</div>
 	<script>
-	jQuery('li.story input:radio').click(function () {
-		jQuery('li.story').removeClass('selected');
-		jQuery(this).parent().parent().addClass('selected');
-		jQuery('label#title-prompt-text').text('');
-		jQuery('input#title').val(jQuery(this).parent().find('span.title').text());
-		if (jQuery('textarea#abstract').val() === '') {
-		jQuery('textarea#abstract').val(jQuery(this).parent().find('span.desc').text());
-		}
-	});
+	//var elements = document.querySelectorAll( 'body *' );
+	//document.getElementById("postcustom").style.visibility = 0;
+	console.log(document.getElementById("postcustom"));
 	</script>
 	<?php
 }
@@ -258,52 +248,64 @@ function shand_wpt_update_story( $story_id ) {
 		value="Update Shorthand Story"
 		formaction="?shand_update"
 	/>
-
-	<script>
-		jQuery('#post').submit(function () {
-		jQuery('#shorthand_update').prop('disabled', true);
-		});
-	</script>
-
 	</div>
 
 	<?php
+
+	wp_register_script(
+		'connect-form',
+		plugin_dir_url( __FILE__ ) . 'js/connect-form.js',
+		array(),
+		'1.0.0',
+		array(
+			'strategy' => 'defer',
+		)
+	);
+	wp_enqueue_script( 'connect-form' );
 }
 
 function shand_add_shorthand_metaboxes() {
 	global $post;
 	global $noabstract;
 	$selected_story = get_post_meta( $post->ID, 'story_id', true );
+
 	if ( $selected_story ) {
 		add_meta_box(
-			'shand_wpt_shorthand_story_update',
+			'shorthand_wpt_shorthand_story_update',
 			'Update Shorthand Story',
-			'shand_wpt_shorthand_story',
+			'shorthand_wpt_shorthand_story',
 			'shorthand_story',
 			'side',
 			'high'
 		);
 	} else {
 		add_meta_box(
-			'shand_wpt_shorthand_story',
+			'shorthand_wpt_shorthand_story',
 			'Select Shorthand Story',
-			'shand_wpt_shorthand_story',
+			'shorthand_wpt_shorthand_story',
 			'shorthand_story',
 			'normal',
-			'default'
+			'high'
 		);
 	}
+
 	if ( ! $noabstract ) {
 		add_meta_box(
 			'shand_wpt_shorthand_abstract',
 			'Add story abstract',
 			'shand_wpt_shorthand_abstract',
 			'shorthand_story',
-			'normal',
-			'default'
+			'advanced'
 		);
 	}
-	add_meta_box( 'shand_wpt_shorthand_extra_html', 'Add additional HTML', 'shand_wpt_shorthand_extra_html', 'shorthand_story', 'normal', 'default' );
+
+	add_meta_box(
+		'shand_wpt_shorthand_extra_html',
+		'Add additional HTML',
+		'shand_wpt_shorthand_extra_html',
+		'shorthand_story',
+		'advanced'
+	);
 }
 
 add_action( 'add_meta_boxes', 'shand_add_shorthand_metaboxes' );
@@ -322,7 +324,13 @@ function shand_save_media_fetch( $post_id, $story_id ) {
 add_action( 'sh_media_fetch', 'shand_save_media_fetch', 10, 2 );
 
 /* Save the shorthand story */
-function shand_save_shorthand_story( $post_id, $post ) {
+function shorthand_save_shorthand_story( $post_id, $post ) {
+	$profile = shorthand_api_get_profile();
+	if ( ( get_post_type( $post ) === 'shorthand_story' ) && ! ( $profile ) ) {
+		$uri = Shorthand_Admin::get_page_url();
+		wp_die( message: sprintf( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ), esc_url( $uri ) ), title: __( 'Shorthand is not connected' ) );
+	}
+
 	WP_Filesystem();
 	global $wp_filesystem;
 
@@ -333,7 +341,7 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 	global $noabstract;
 	$slug = 'shorthand_story';
-	if ( $slug != $post->post_type ) {
+	if ( $slug !== $post->post_type ) {
 		return;
 	}
 
@@ -362,11 +370,7 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 		// Sanitize but also check if the query is GET or POST.
 		if ( isset( $_REQUEST['story_id'] ) ) {
-			$story_id = filter_input( INPUT_GET, 'story_id', FILTER_SANITIZE_STRING );
-			// If the variable is not present in the $_GET array.
-			if ( null === $story_id ) {
-				$story_id = filter_input( INPUT_POST, 'story_id', FILTER_SANITIZE_STRING );
-			}
+			$story_id      = htmlspecialchars( $_REQUEST['story_id'] );
 			$safe_story_id = preg_replace( '/\W|_/', '', $story_id );
 		}
 
@@ -378,11 +382,6 @@ function shand_save_shorthand_story( $post_id, $post ) {
 		if ( ! isset( $story_path ) ) {
 			$err        = sh_copy_story( $post_id, $safe_story_id, $sh_media_cron_offload );
 			$story_path = sh_get_story_path( $post_id, $safe_story_id );
-
-		}
-		if ( $sh_media_cron_offload ) {
-			update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
-			wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
 		}
 
 		if ( isset( $story_path ) ) {
@@ -396,6 +395,11 @@ function shand_save_shorthand_story( $post_id, $post ) {
 				delete_post_meta( $post_id, 'ERROR' );
 			}
 
+			if ( $sh_media_cron_offload ) {
+				update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
+				wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
+			}
+
 			// Get path to the assets.
 			$assets_path = shorthand_get_story_url( $post_id, $safe_story_id );
 
@@ -405,8 +409,8 @@ function shand_save_shorthand_story( $post_id, $post ) {
 
 			$post_processing_queries = json_decode( base64_decode( get_option( 'sh_regex_list' ) ) );
 
-			$body = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $article_file ) : $wp_filesystem->get_contents( $article_file ) );
-			$head = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $head_file ) : $wp_filesystem->get_contents( $head_file ) );
+			$body = shand_fix_content_paths( $assets_path, $err['article'] );
+			$head = shand_fix_content_paths( $assets_path, $err['head'] );
 
 			$body = apply_filters( 'sh_pre_process_body', $body, $assets_path, $article_file );
 			$head = apply_filters( 'sh_pre_process_head', $head, $assets_path, $head_file );
@@ -428,51 +432,60 @@ function shand_save_shorthand_story( $post_id, $post ) {
 			// Save the abstract.
 			if ( ! $noabstract ) {
 				$abstract = $body;
-				remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3 );
+				remove_action( 'save_post', 'shorthand_save_shorthand_story', 10, 3 );
 				$post = array(
 					'ID'           => $post_id,
-					'post_content' => shand_abstract_template( $post_id, wp_kses_post( $_REQUEST['abstract'] ), $abstract ),
+					'post_content' => shorthand_abstract_template( $post_id, wp_kses_post( $_REQUEST['abstract'] ), $abstract ),
 				);
 				wp_update_post( $post );
-				add_action( 'save_post', 'shand_save_shorthand_story', 10, 3 );
+				add_action( 'save_post', 'shorthand_save_shorthand_story', 10, 3 );
 			} else {
-				remove_action( 'save_post', 'shand_save_shorthand_story', 10, 3 );
+				remove_action( 'save_post', 'shorthand_save_shorthand_story', 10, 3 );
 				$post = array(
 					'ID'           => $post_id,
 					'post_content' => '',
 				);
 				wp_update_post( $post );
-				add_action( 'save_post', 'shand_save_shorthand_story', 10, 3 );
+				add_action( 'save_post', 'shorthand_save_shorthand_story', 10, 3 );
 			}
 
 			delete_post_meta( $post_id, 'story_diagnostic' );
 
 		} else {
-
+			// Log any story-specific errors to the metadata.
+			update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
 			update_post_meta( $post_id, 'story_diagnostic', $err );
 
 			wp_die(
-				esc_html( __( $err['error'] ) ),
-				esc_html( __( $err['pretty'] ) )
+				isset( $err['error'] ) ? esc_html( __( $err['error'] ) ) : '',
+				isset( $err['pretty'] ) ? esc_html( __( $err['pretty'] ) ) : ''
 			);
 		}
 	}
 }
 
-add_action( 'save_post', 'shand_save_shorthand_story', 10, 3 );
+add_action( 'save_post', 'shorthand_save_shorthand_story', 10, 3 );
 
 /* Load Shorthand Template Hook */
 function shand_load_single_shorthand_template( $template ) {
 	global $post;
 	if ( 'shorthand_story' === $post->post_type ) {
-		$path = locate_template( array( 'single-shorthand_story.php', 'templates/single-shorthand_story.php', 'template-parts/single-shorthand_story.php' ) );
+		$path = locate_template(
+			array(
+				'single-shorthand_story.php',
+				'templates/single-shorthand_story.php',
+				'template-parts/single-shorthand_story.php',
+				'single-shorthand-story.php',
+				'templates/single-shorthand-story.php',
+				'template-parts/single-shorthand-story.php',
+			)
+		);
 		if ( $path ) {
 			return $path;
 		}
 		$plugin_path   = plugin_dir_path( __FILE__ );
-		$template_name = 'templates/single-shorthand_story.php';
-		if (
-			( get_stylesheet_directory() . '/' . $template_name === $template )
+		$template_name = 'templates/single-shorthand-story.php';
+		if ( ( get_stylesheet_directory() . '/' . $template_name === $template )
 			|| ! file_exists( $plugin_path . $template_name )
 		) {
 			return $template;
@@ -505,12 +518,20 @@ function shand_shorthand_get_posts( $query ) {
 	// Check if the query is the main query and it's for the front-end.
 	if ( $query->is_main_query() && ! is_admin() ) {
 		$queried_object      = get_queried_object();
-		$shorthand_templates = array( 'single-shorthand_story.php', 'templates/single-shorthand_story.php', 'template-parts/single-shorthand_story.php' );
+		$shorthand_templates = array(
+			'single-shorthand_story.php',
+			'templates/single-shorthand_story.php',
+			'template-parts/single-shorthand_story.php',
+			'single-shorthand-story.php',
+			'templates/single-shorthand-story.php',
+			'template-parts/single-shorthand-story.php',
+		);
 
 		// Check if the queried object uses a Shorthand Post template from the array.
 		if ( $queried_object
 			&& isset( $queried_object->ID )
-			&& in_array( get_page_template_slug( $queried_object->ID ), $shorthand_templates, true ) ) {
+			&& in_array( get_page_template_slug( $queried_object->ID ), $shorthand_templates, true )
+		) {
 
 			// Get the current post type(s).
 			$post_type = $query->get( 'post_type' );
@@ -553,19 +574,29 @@ add_filter( 'request', 'shand_post_type_tags_fix' );
 /**
  * Activates plugin by creating post type.
  */
-function shand_shorthand_activate() {
+function shorthand_shorthand_activate() {
 	shand_create_post_type();
 	flush_rewrite_rules();
+
+	// Set config values.
+	update_option( 'sh_v2_token', '' );
+	update_option( 'sh_permalink', 'shorthand_story' );
+	$css_path = 'css/options-default.css';
+	$sh_css   = file_get_contents( plugin_dir_url( __FILE__ ) . $css_path );
+	update_option( 'sh_css', $sh_css );
+	update_option( 'sh_regex_list', '' );
+	update_option( 'sh_media_cron_offload', true );
+	update_option( 'sh_disable_acf', false );
 }
 
-register_activation_hook( __FILE__, 'shand_shorthand_activate' );
+register_activation_hook( __FILE__, 'shorthand_shorthand_activate' );
 register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
 
 /**
  * Update links in content.
  *
  * @param string $assets_path Path string to use.
- * @param string $content HTML content to be modified.
+ * @param string $content     HTML content to be modified.
  */
 function shand_fix_content_paths( $assets_path, $content ) {
 	$content = str_replace( './assets/', $assets_path . '/assets/', $content );
@@ -582,7 +613,7 @@ function shand_fix_content_paths( $assets_path, $content ) {
  * @param array  $queries Queries.
  */
 function shand_post_processing( $content, $queries ) {
-	if ( !$queries ) {
+	if ( ! $queries ) {
 		return $content;
 	}
 	foreach ( $queries as $query ) {
@@ -600,7 +631,7 @@ function shand_wpt_shorthand_abstract() {
 	global $post;
 	$abstract = get_post_meta( $post->ID, 'abstract', true );
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
+	esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
 	echo '<textarea id="abstract" name="abstract">' . esc_textarea( $abstract ) . '</textarea>';
 }
 
@@ -611,7 +642,7 @@ function shand_wpt_shorthand_extra_html() {
 	global $post;
 	$extra_html = get_post_meta( $post->ID, 'extra_html', true );
 	echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
-		esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
+	esc_attr( wp_create_nonce( plugin_basename( __FILE__ ) ) ) . '" />';
 	echo '<textarea id="codearea" name="extra_html">' . esc_textarea( $extra_html ) . '</textarea>';
 }
 
@@ -672,11 +703,12 @@ add_action(
 	'admin_notices',
 	function () {
 		if ( isset( $_REQUEST['bulk-pulled-stories-nonce'] )
-		&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['bulk-pulled-stories-nonce'] ) ), 'bulk-pulled-stories' )
-		&& isset( $_REQUEST['bulk-pulled-stories'] ) ) {
-		   $num_changed = intval( $_REQUEST['bulk-pulled-stories'] );
+			&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['bulk-pulled-stories-nonce'] ) ), 'bulk-pulled-stories' )
+			&& isset( $_REQUEST['bulk-pulled-stories'] )
+		) {
+			$num_changed = intval( $_REQUEST['bulk-pulled-stories'] );
 			echo '<div id="message" class="updated notice is-dismissable"><p>',
-				/* translators: Pulled %d stories. */
+			/* translators: Pulled %d stories. */
 			sprintf( esc_html( _n( 'Pulled %d story.', 'Pulled %d stories.', $num_changed ) ), esc_html( $num_changed ) ),
 			'</p></div>';
 		}
@@ -686,8 +718,8 @@ add_action(
 /**
  * Retrieves information about the current story.
  *
- * @param string $meta   Meta value.
- * @param string $show   Optional. Site info to retrieve. Default empty (site name).
+ * @param  string $meta Meta value.
+ * @param  string $show Optional. Site info to retrieve. Default empty (site name).
  * @return string HTML or text.
  */
 function get_shorthandinfo( $meta, $show = '' ) {
@@ -701,7 +733,7 @@ function get_shorthandinfo( $meta, $show = '' ) {
 /**
  * Retrieves information about the current story.
  *
- * @param string $show   Optional. Shorthand option to retrieve. Default empty (site name).
+ * @param  string $show Optional. Shorthand option to retrieve. Default empty (site name).
  * @return string HTML or text.
  */
 function get_shorthandoption( $show = '' ) {

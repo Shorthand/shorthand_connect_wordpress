@@ -1,0 +1,191 @@
+/* Publish button. */
+#major-publishing-actions {
+	display: grid;
+}
+
+/* Story. */
+li.story {
+	float: left;
+	margin: 5px;
+	width: 228px;
+}
+
+li.story.selected label {
+	background: #5b9dd9;
+	color: #eee;
+}
+
+li.story input {
+	display: none !important;
+}
+
+li.story label {
+	background: #fafafa;
+	border: 1px solid #eee;
+	display: flex;
+	flex-direction: column;
+	height: 257px;
+	padding: 8px 8px 16px 8px;
+	text-align: left;
+	overflow: hidden;
+	border-radius: 8px;
+}
+
+li.story label:hover {
+	border: 1px solid #5b9dd9;
+}
+
+li.story label span.title {
+	display: block;
+	font-weight: bold;
+	padding: 5px 0;
+	font-size: 110%;
+	flex-grow: 1;
+}
+
+li.story label span.grey {
+	color: #999;
+}
+
+li.story label span.version {
+	font-size: 85%;
+	text-transform: uppercase;
+	font-weight: bold;
+	line-height: 25px;
+}
+
+/* SVG. */
+li.story label span.version::before {
+	content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'%3E%3Cpath fill='%23999' d='M320 464c8.8 0 16-7.2 16-16l0-288-80 0c-17.7 0-32-14.3-32-32l0-80L64 48c-8.8 0-16 7.2-16 16l0 384c0 8.8 7.2 16 16 16l256 0zM0 64C0 28.7 28.7 0 64 0L229.5 0c17 0 33.3 6.7 45.3 18.7l90.5 90.5c12 12 18.7 28.3 18.7 45.3L384 448c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 64z'/%3E%3C/svg%3E");
+	display: inline-block;
+	width: 10px;
+	padding-right: 5px;
+	height: 22px;
+	vertical-align: middle;
+}
+
+div.clear {
+	clear: left;
+}
+
+div.publishing-actions {
+	background: #f6f7f7;
+	border-top: 1px solid #dcdcde;
+	clear: both;
+	display: flex;
+	justify-content: center;
+	margin: -12px;
+	margin-top: 10px;
+	padding: 10px;
+}
+
+.button-shorthand {
+	background-color: #000;
+	border: 1px solid #000;
+	border-radius: .9em;
+	color: #fff;
+	cursor: pointer;
+	font-family: poppins, sans-serif;
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0;
+	line-height: 1;
+	padding: 1em 2em;
+	text-decoration: none;
+	transition: background-color .15s ease, color .15s ease;
+}
+
+.button-shorthand:hover {
+	background-color: #fff;
+	border-color: #000;
+	color: #000;
+}
+
+.button-shorthand:disabled {
+	pointer-events: none;
+}
+
+#codearea {
+	border: 1px solid #999;
+	font-family: Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
+	height: 300px;
+	width: 100%;
+}
+
+#abstract {
+	border: 1px solid #999;
+	height: 200px;
+	width: 100%;
+}
+
+ul.stories {
+	max-height: 400px;
+	overflow-y: scroll;
+}
+
+ul.stories img {
+	height: 110px;
+	border-radius: 10px;
+	object-fit: cover;
+	width: 100%;
+	margin-bottom: 5px;
+}
+
+p.warning {
+	color: red;
+	font-weight: bold;
+}
+
+.filter-container {
+	display: flex;
+	justify-content: space-between;
+}
+
+.sort.button-secondary {
+	background: transparent;
+	color: #666;
+	border-color: #aaa;
+}
+
+.sort .sort-icon::before {
+	content: "(new to old)";
+	padding-left: 3px;
+}
+
+.sort .sort-icon::after {
+	content: "\f347";
+	font: normal 11px/1 dashicons;
+	padding-left: 3px;
+}
+
+.sort.asc .sort-icon::before {
+	content: "(old to new)";
+	padding-left: 3px;
+}
+
+.sort.asc .sort-icon::after {
+	content: "\f343";
+	font: normal 11px/1 dashicons;
+	padding-left: 3px;
+}
+
+.sort.desc .sort-icon::before {
+	content: "(new to old)";
+	padding-left: 3px;
+}
+
+.sort.desc .sort-icon::after {
+	content: "\f347";
+	font: normal 11px/1 dashicons;
+	padding-left: 3px;
+}
+
+#shorthand_wpt_shorthand_story .search {
+	border-radius: 8px;
+	border-color: transparent;
+	padding-left: 30px;
+	background: #eee url("../images/search.svg") no-repeat 10px;
+	background-size: 12px;
+	line-height: 23px;
+	padding-bottom: 3px;
+}

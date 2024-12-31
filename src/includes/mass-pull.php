@@ -1,11 +1,22 @@
 <?php
-/*
- * Sets each custom meta field, should be paired with sh_copy_story().
+/**
+ * Bulk story pull functions.
  *
+ * @package Shorthand Connect
+ */
+
+/**
+ * Updates a story for a given post.
+ *
+ * Fetches story data from the shorthand API, copies story files, updates post
+ * metadata, and performs post-processing on the story content.
  * Note: Unzipping a fresh story copy won't update the fields.
+ *
+ * @param int    $post_id The ID of the post.
+ * @param string $story_id The ID of the story.
  */
 function shand_update_story( $post_id, $story_id ) {
-	init_WP_Filesystem();
+	init_wp_filesystem();
 	global $wp_filesystem;
 
 	$sh_media_cron_offload = filter_var( get_option( 'sh_media_cron_offload' ), FILTER_VALIDATE_BOOLEAN );
@@ -13,7 +24,7 @@ function shand_update_story( $post_id, $story_id ) {
 	update_post_meta( $post_id, $story_id, sanitize_text_field( $safe_story_id ) );
 
 	// Grab JSON for Story & Set into object $obj.
-	$obj = sh_v2_api_get_json( '/v2/stories/' . $story_id . '/settings', array( 'timeout' => '240' ) );
+	$obj = shorthand_api_request_json( '/v2/stories/' . $story_id . '/settings', array( 'timeout' => '240' ) );
 
 	$err = sh_copy_story( $post_id, $safe_story_id, $sh_media_cron_offload );
 
@@ -22,35 +33,35 @@ function shand_update_story( $post_id, $story_id ) {
 	if ( ! isset( $story_path ) ) {
 		$err        = sh_copy_story( $post_id, $safe_story_id, $sh_media_cron_offload );
 		$story_path = sh_get_story_path( $post_id, $safe_story_id );
-
-	}
-	if ( $sh_media_cron_offload ) {
-		update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
-		wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
 	}
 
 	if ( isset( $story_path ) ) {
-		// The story has been uploaded
+		// The story has been uploaded.
 		update_post_meta( $post_id, 'story_path', $story_path );
 
-		// Log any story-specific errors to the metadata
+		// Log any story-specific errors to the metadata.
 		if ( isset( $err['error'] ) ) {
 			update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
 		} else {
 			delete_post_meta( $post_id, 'ERROR' );
 		}
 
-		// Get path to the assets
+		if ( $sh_media_cron_offload ) {
+			update_post_meta( $post_id, 'media_status', '[Awaiting media fetch...]' );
+			wp_schedule_single_event( time() + 30, 'sh_media_fetch', array( $post_id, $safe_story_id ) );
+		}
+
+		// Get path to the assets.
 		$assets_path = shorthand_get_story_url( $post_id, $safe_story_id );
 
-		// Save the head and body
+		// Save the head and body.
 		$head_file    = $story_path . '/head.html';
 		$article_file = $story_path . '/article.html';
 
 		$post_processing_queries = json_decode( base64_decode( get_option( 'sh_regex_list' ) ) );
 
-		$body = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $article_file ) : $wp_filesystem->get_contents( $article_file ) );
-		$head = shand_fix_content_paths( $assets_path, defined( 'WPCOM_IS_VIP_ENV' ) ? wpcom_vip_file_get_contents( $head_file ) : $wp_filesystem->get_contents( $head_file ) );
+		$body = shand_fix_content_paths( $assets_path, $err['article'] );
+		$head = shand_fix_content_paths( $assets_path, $err['head'] );
 
 		$body = apply_filters( 'sh_pre_process_body', $body, $assets_path, $article_file );
 		$head = apply_filters( 'sh_pre_process_head', $head, $assets_path, $head_file );
@@ -78,6 +89,7 @@ function shand_update_story( $post_id, $story_id ) {
 		delete_post_meta( $post_id, 'story_diagnostic' );
 
 	} else {
+		update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
 		update_post_meta( $post_id, 'story_diagnostic', $err );
 		wp_die( sprintf( '<h2>%s</h2><p>%s</p>', wp_kses( 'Something went wrong, please try again.' ), wp_kses( $err ) ) );
 	}

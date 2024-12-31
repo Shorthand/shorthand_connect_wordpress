@@ -1,6 +1,13 @@
-<?php get_header(); ?>
 <?php
-// Check to see if there is a password set against the post
+/**
+ * Single shorthand story template.
+ *
+ * @package Shorthand Connect
+ */
+
+get_header();
+
+// Check to see if there is a password set against the post.
 if ( post_password_required( $post->ID ) ) {
 	get_shorthand_password_form();
 } else {
@@ -16,6 +23,6 @@ if ( post_password_required( $post->ID ) ) {
 		<?php echo get_shorthandoption( 'sh_css' ); ?>
 		</style>
 		<?php
-		endwhile;
+	endwhile;
 }
 get_footer();

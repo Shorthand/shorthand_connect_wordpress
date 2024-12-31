@@ -1,0 +1,164 @@
+.py-1 {
+	padding: 1em;
+}
+
+.bg-white {
+	background: white;
+}
+
+.container {
+	max-width: 980px;
+}
+
+.badge {
+	display: inline-block;
+	background-color: #f0f9ff;
+	border: 1px solid #5b9fc5;
+	color: #5b9fc5;
+	padding: 2px 5px;
+	font-size: 9pt;
+	border-radius: 15px;
+	line-height: 20px;
+	font-weight: 500;
+}
+
+img.grav {
+	float: left;
+	margin-right: 10px;
+	width: 80px;
+}
+
+.status {
+	background: #dfd;
+	clear: left;
+	color: green;
+	font-weight: bold;
+	padding: 5px;
+	width: 350px;
+}
+
+.status.warn {
+	background: #ffd;
+	color: orange;
+}
+
+.row-hidden {
+	display: none;
+}
+
+#wpfooter {
+	position: unset;
+}
+
+.shorthand-form-wrapper pre {
+	display: flex;
+}
+
+.shorthand-form-wrapper code {
+	font-family: monospace;
+	width: 50%;
+}
+.shorthand-form-wrapper textarea {
+	width: 50%;
+}
+
+.shorthand-menu ol,
+.shorthand-menu li:first-child {
+	margin-left: 0;
+	padding-left: 0;
+}
+
+.shorthand-menu .button {
+	background: transparent;
+	border-color: transparent;
+}
+
+.shorthand-options-wrapper .button-primary {
+	background: #0b967d;
+	border-color: #0b967d;
+	color: #fff;
+}
+
+.shorthand-options-wrapper .submit .button {
+	min-height: 44px;
+	border-radius: 8px;
+	vertical-align: top;
+	line-height: 42px;
+	padding-left: 1rem;
+	padding-right: 1rem;
+	margin-right: 1rem;
+}
+
+.shorthand-options-wrapper .button-primary.focus,
+.shorthand-options-wrapper .button-primary.hover,
+.shorthand-options-wrapper .button-primary:focus,
+.shorthand-options-wrapper .button-primary:hover {
+	background: #097b67;
+	border-color: #097b67;
+	color: #fff;
+}
+
+.shorthand-menu .button-primary {
+	background-color: #effdf9;
+	border-color: #effdf9;
+	color: #097b67;
+	border-radius: 6px;
+}
+
+.shorthand-menu .button-primary.focus,
+.shorthand-menu .button-primary.hover,
+.shorthand-menu .button-primary:focus,
+.shorthand-menu .button-primary:hover {
+	background: #e1fbf4;
+	border-color: #e1fbf4;
+	color: #097b67;
+}
+
+.shorthand-menu ol {
+	display: flex;
+	flex-wrap: wrap;
+	list-style-type: none;
+}
+
+.shorthand-form-wrapper {
+	background-color: #fff;
+	border-radius: 10px;
+}
+
+.checkbox-container {
+	display: flex;
+	margin-left: -20px;
+	position: relative;
+}
+
+.checkbox-container input[type="checkbox"] {
+	margin-top: 15px;
+	position: relative;
+	left: 30px;
+}
+
+input[type="checkbox"] ~ .bordered {
+	border: 3px solid #f0f0f1;
+	padding: 10px;
+	padding-left: 30px;
+	border-radius: 10px;
+	max-width: 750px;
+}
+
+input[type="checkbox"]:checked ~ .bordered {
+	border-color: #097b67;
+}
+
+@media screen and (max-width: 782px) {
+	input[type="checkbox"],
+	input[type="radio"] {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	input[type="checkbox"]:checked:before {
+		margin: -0.1875rem 0 0 -0.25rem;
+		height: 1.3125rem;
+		width: 1.3125rem;
+	}
+}
