@@ -37,11 +37,11 @@ function shorthand_shorthand_options() {
 	// If current = all, then display all.
 	$profile        = shorthand_api_get_profile();
 	$menu_link_keys = array_keys( $menu_links );
-	$current        = $_GET['navigation'] ? $_GET['navigation'] : $menu_link_keys[0];
+	$current        = isset( $_GET['navigation'] ) ? sanitize_text_field( $_GET['navigation'] ) : $menu_link_keys[0];
 	$current_index  = array_search( $current, $menu_link_keys );
-	$meesages       = array();
+	$messages       = array();
 	if ( ! $profile ) {
-		$meesages['notice-error'] = SHORTHAND_CONFIG_STEP1_ERROR;
+		$messages['notice-error'] = SHORTHAND_CONFIG_STEP1_ERROR;
 	}
 
 	foreach ( $menu_link_keys as $key => $value ) {
@@ -69,8 +69,8 @@ function shorthand_shorthand_options() {
 		// Reload profile after saving it.
 		$profile = shorthand_api_get_profile();
 		if ( $profile ) {
-			$meesages['updated'] = SHORTHAND_CONFIG_STEP1_SUCCESS;
-			unset( $meesages['notice-error'] );
+			$messages['updated'] = SHORTHAND_CONFIG_STEP1_SUCCESS;
+			unset( $messages['notice-error'] );
 		}
 	}
 
@@ -84,7 +84,7 @@ function shorthand_shorthand_options() {
 		// to sanitize otherwise set an empty string.
 		$sh_css = isset( $_POST['sh_css'] ) ? wp_kses_post( $_POST['sh_css'] ) : '';
 		update_option( 'sh_css', $sh_css );
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP3_SUCCESS;
+		$messages['updated'] = SHORTHAND_CONFIG_STEP3_SUCCESS;
 	}
 
 	if ( isset( $_POST['sh_submit_hidden_three'] ) &&
@@ -95,7 +95,7 @@ function shorthand_shorthand_options() {
 		// to sanitize potential HTML and then set an empty string.
 		$sh_permalink = isset( $_POST['sh_permalink'] ) ? sanitize_text_field( $_POST['sh_permalink'] ) : '';
 		update_option( 'sh_permalink', $sh_permalink );
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP2_SUCCESS;
+		$messages['updated'] = SHORTHAND_CONFIG_STEP2_SUCCESS;
 		shorthand_rewrite_flush();
 	}
 
@@ -111,8 +111,8 @@ function shorthand_shorthand_options() {
 		check_admin_referer( 'sh-update-configuration' )
 	) {
 		$next                = esc_url( Shorthand_Admin::get_page_url() );
-		$sh_regex_list       = isset( $_POST['sh_regex_list'] ) ? wp_unslash( $_POST['sh_regex_list'] ) : '';
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
+		$sh_regex_list       = isset( $_POST['sh_regex_list'] ) ? sanitize_text_field( wp_unslash( $_POST['sh_regex_list'] ) ) : '';
+		$messages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
 		if ( empty( $sh_regex_list ) ) {
 			// Update the option with an empty value if the input is empty
 			update_option( 'sh_regex_list', '' );
@@ -124,7 +124,7 @@ function shorthand_shorthand_options() {
 				// Since $sh_regex_list stored as base64, no need to sanitize the JSON,
 				// as base64_encode will handle that.
 				update_option( 'sh_regex_list', base64_encode( $sh_regex_list ) );
-				$meesages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
+				$messages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
 			} else {
 				// Handle invalid JSON error here.
 			}
@@ -142,7 +142,7 @@ function shorthand_shorthand_options() {
 		$sh_disable_acf        = isset( $_POST['sh_disable_acf'] ) ? filter_var( $_POST['sh_disable_acf'], FILTER_VALIDATE_BOOLEAN ) : false;
 		update_option( 'sh_media_cron_offload', $sh_media_cron_offload );
 		update_option( 'sh_disable_acf', $sh_disable_acf );
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP5_SUCCESS;
+		$messages['updated'] = SHORTHAND_CONFIG_STEP5_SUCCESS;
 	}
 	$sh_media_cron_offload = filter_var( get_option( 'sh_media_cron_offload' ), FILTER_VALIDATE_BOOLEAN );
 	$sh_disable_acf        = filter_var( get_option( 'sh_disable_acf' ), FILTER_VALIDATE_BOOLEAN );
@@ -157,19 +157,19 @@ function shorthand_shorthand_options() {
 					$done_class    = ( $current_index > $index ) ? ' done' : '';
 					?>
 					<?php $badge_text = $current_index > $index ? '&#10003;' : ( $index + 1 ); ?>
-			<span class="badge<?php echo $green_class . $current_class . $done_class; ?>"><?php echo $badge_text; ?></span>
-			<span class="text<?php echo $green_class . $current_class . $done_class; ?>"><?php echo esc_attr( $menu_links[ $key ] ); ?></span>
+			<span class="badge<?php echo esc_attr( $green_class . $current_class . $done_class ); ?>"><?php echo esc_html( $badge_text ); ?></span>
+			<span class="text<?php echo esc_attr( $green_class . $current_class . $done_class ); ?>"><?php echo esc_html( $menu_links[ $key ] ); ?></span>
 					<?php if ( $index < count( $menu_link_keys ) - 1 ) : ?>
-			<span class="next px-1 <?php echo $done_class; ?>">&gt;</span>
+			<span class="next px-1 <?php echo esc_attr( $done_class ); ?>">&gt;</span>
 			<?php endif; ?>
 				<?php } ?>
 		</div>
 
 		<div class="shorthand-form-wrapper">
-			<form name="form_settings" method="post" action="<?php echo $next; ?>">
-			<?php if ( ! empty( $meesages ) ) : ?>
-				<?php foreach ( $meesages as $class => $message ) : ?>
-			<div class="notice <?php echo $class; ?>"><?php echo $message; ?></div>
+			<form name="form_settings" method="post" action="<?php echo esc_url( $next ); ?>">
+			<?php if ( ! empty( $messages ) ) : ?>
+				<?php foreach ( $messages as $class => $message ) : ?>
+			<div class="notice <?php echo esc_attr( $class ); ?>"><?php echo esc_html( $message ); ?></div>
 		<?php endforeach; ?>
 			<?php endif; ?>
 
@@ -191,7 +191,7 @@ function shorthand_shorthand_options() {
 			<p>
 			<p><label for="sh_permalink"><?php esc_html_e( 'Set the permalink structure of Shorthand story URLs', 'shorthand-connect' ); ?></label></p>
 			<input type="text" name="sh_permalink" value="<?php echo esc_attr( $permalink_structure ); ?>" size="20">
-			<p><?php echo esc_url( get_site_url() ); ?>/<strong><?php echo esc_attr( $permalink_structure ); ?></strong>/{STORY_NAME}</p>
+			<p><?php echo esc_url( get_site_url() ); ?>/<strong><?php echo esc_html( $permalink_structure ); ?></strong>/{STORY_NAME}</p>
 		</div>
 		<?php endif; ?>
 
@@ -283,7 +283,7 @@ function shorthand_shorthand_options() {
 					<p class="submit">
 						<input type="submit" name="Submit" class="button button-primary" value="<?php esc_attr_e( 'Save and continue' ); ?>"/>
 						<?php if ( ! in_array( $current, array( $menu_link_keys[0], $menu_link_keys[1] ) ) ) : ?>
-						<a href="<?php echo $next; ?>" class="button button-skip button-secondary">Skip</a>
+						<a href="<?php echo esc_url( $next ); ?>" class="button button-skip button-secondary">Skip</a>
 						<?php endif; ?>
 					</p>
 				<?php else : ?>
@@ -305,11 +305,17 @@ function shorthand_shorthand_options() {
 	<?php
 }
 
+function registerStyles() {
 // Adding styles.
-$css_path = '../css/options.css';
-wp_register_style( 'options_style', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
-wp_enqueue_style( 'options_style' );
+	$css_path = '../css/options.css';
+	wp_register_style( 'options_style', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
+	wp_enqueue_style( 'options_style' );
 
-$css_path = '../css/options-start.css';
-wp_register_style( 'options_style_start', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
-wp_enqueue_style( 'options_style_start' );
+	$css_path = '../css/options-start.css';
+	wp_register_style( 'options_style_start', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
+	wp_enqueue_style( 'options_style_start' );
+}
+
+add_action( 'init', 'registerStyles' );
+
+

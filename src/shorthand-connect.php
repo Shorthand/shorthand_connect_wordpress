@@ -34,6 +34,7 @@ if ( file_exists( SHORTHAND__PLUGIN_DIR . 'config.php' ) ) {
 }
 
 require_once SHORTHAND__PLUGIN_DIR . 'includes/api.php';
+require_once SHORTHAND__PLUGIN_DIR . 'includes/wp-api.php';
 require_once SHORTHAND__PLUGIN_DIR . 'includes/mass-pull.php';
 
 if ( is_admin() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
@@ -43,7 +44,7 @@ if ( is_admin() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 
 // Loading initial setup or general configuration.
 require_once SHORTHAND__PLUGIN_DIR . 'includes/shorthand-options-variables.php';
-if ( isset( $_GET['view'] ) && ( $_GET['view'] === 'start' ) ) {
+if ( isset( $_GET['view'] ) && ( $_GET['view'] === 'start' )) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	require_once SHORTHAND__PLUGIN_DIR . 'includes/shorthand-options-init.php';
 } else {
 	require_once SHORTHAND__PLUGIN_DIR . 'includes/shorthand-options.php';
@@ -121,14 +122,11 @@ function shorthand_wpt_shorthand_story() {
 		return;
 	}
 
-	$stories = shorthand_api_get_stories();
 	$profile = shorthand_api_get_profile();
 
 	if ( ! ( $profile ) ) {
 		$uri = Shorthand_Admin::get_page_url();
-		printf( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.' ), esc_url( $uri ) );
-	} elseif ( $stories === null ) {
-		echo __( 'You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.' );
+		printf( wp_kses( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.' ) ), esc_url( $uri ) );
 	} else {
 		?>
 	<div id="stories-list">
@@ -140,16 +138,7 @@ function shorthand_wpt_shorthand_story() {
 	</div>
 	<!-- List to populate the stories. -->
 	<ul class="list stories">
-		<!--<li class="story">
-			<label>
-				<input class="storyid" name="story_id" type="radio" value=""/>
-				<img class="image imagealt" width="190" src="" alt=""/>
-				<span class="version">Story version: <span class="version_value"></span></span>
-				<span class="title"></span>
-				<div class="updated_container">Updated: <span class="updated_timestamp updated_value"></span> ago</div>
-				<div class="published_container">Last published: <span class="published_timestamp published_value"></span> ago</div>
-			</label>
-			</li>-->
+
 	</ul>
 	</div>
 		<?php
@@ -171,8 +160,6 @@ function shorthand_wpt_shorthand_story() {
 				'strategy' => 'defer',
 			)
 		);
-		wp_add_inline_script( 'list-js-stories', 'storiesList.add(' . json_encode( $stories ) . ');' );
-		wp_add_inline_script( 'list-js-stories', 'const selectedStory = "' . $selected_story . '";' );
 		wp_enqueue_script( 'list-js-stories' );
 
 		wp_register_script(
@@ -185,32 +172,21 @@ function shorthand_wpt_shorthand_story() {
 			)
 		);
 		wp_enqueue_script( 'list-js-stories-selected' );
-
-		/*
-		echo '<ul class="stories">';
-		foreach ( $stories as $story ) {
-			$selected       = '';
-			$story_selected = '';
-			if ( $selected_story === $story->id ) {
-				$selected       = 'checked';
-				$story_selected = 'selected';
-			}
-			$archived = '';
-			if ( isset( $story->version_value ) && '1' === $story->version_value ) {
-				if ( $show_archived_stories ) {
-					$archived = ' (archived)';
-				} else {
-					continue;
-				}
-			}
-			$class = trim('story ' . esc_attr( $story_selected ));
-		$title = esc_html( $story->title );
-
-		$description = esc_html( $story->metadata->description );
-		echo '<li class="' . $class . '"><label><input name="story_id" type="radio" value="' . esc_attr( $story->id ) . '" ' . esc_html( $selected ) . ' /><img width="190" src="' . esc_url( $baseurl . $story->image ) . '" alt="' . $title . '" /><span class="grey version">Story version: ' . esc_html( $story->version_value ) . '</span><span class="title">' . $title . esc_html(  $archived ) . '</span><span class="desc">Updated: ' . $updated . ' ago<br/>Last published: ' . $published . ' ago</span></label></li>';
-		}
-		echo '</ul>';
-		*/
+		wp_register_script(
+			'fetch-stories',
+			plugin_dir_url( __FILE__ ) . 'js/connect-stories-fetch.js',
+			array(),
+			'1.0.0',
+			array(
+				'strategy' => 'defer',
+			)
+		);
+		wp_localize_script('fetch-stories', 'wp_server', array(
+			'url' => ( get_option('permalink_structure') ) ? "/wp-json/shorthand_connect/v1/stories/" : "/?rest_route=/shorthand_connect/v1/stories/",
+			'nonce' => wp_create_nonce('wp_rest'),
+			'selected_story' => $selected_story
+		));
+		wp_enqueue_script( 'fetch-stories' );
 		echo '<div class="clear"></div>';
 	}
 
@@ -328,7 +304,7 @@ function shorthand_save_shorthand_story( $post_id, $post ) {
 	$profile = shorthand_api_get_profile();
 	if ( ( get_post_type( $post ) === 'shorthand_story' ) && ! ( $profile ) ) {
 		$uri = Shorthand_Admin::get_page_url();
-		wp_die( message: sprintf( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ), esc_url( $uri ) ), title: __( 'Shorthand is not connected' ) );
+		wp_die( message: sprintf( wp_kses ( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ) ), esc_url( $uri ) ), title: wp_kses( __( 'Shorthand is not connected' ) ) );
 	}
 
 	WP_Filesystem();
@@ -370,7 +346,7 @@ function shorthand_save_shorthand_story( $post_id, $post ) {
 
 		// Sanitize but also check if the query is GET or POST.
 		if ( isset( $_REQUEST['story_id'] ) ) {
-			$story_id      = htmlspecialchars( $_REQUEST['story_id'] );
+			$story_id      =  sanitize_text_field( $_REQUEST['story_id'] );
 			$safe_story_id = preg_replace( '/\W|_/', '', $story_id );
 		}
 
@@ -503,7 +479,7 @@ add_filter( 'single_template', 'shand_load_single_shorthand_template' );
 function hook_css() {
 	if ( is_single() && 'shorthand_story' === get_post_type() ) {
 		$meta = get_post_meta( get_post()->ID );
-		echo get_shorthandinfo( $meta, 'story_head' );
+		echo ( get_shorthandinfo( $meta, 'story_head' ) );  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 
@@ -575,14 +551,15 @@ add_filter( 'request', 'shand_post_type_tags_fix' );
  * Activates plugin by creating post type.
  */
 function shorthand_shorthand_activate() {
+
 	shand_create_post_type();
-	flush_rewrite_rules();
+	flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
 
 	// Set config values.
 	update_option( 'sh_v2_token', '' );
 	update_option( 'sh_permalink', 'shorthand_story' );
-	$css_path = 'css/options-default.css';
-	$sh_css   = file_get_contents( plugin_dir_url( __FILE__ ) . $css_path );
+	$css_path = '/css/options-default.css';
+	$sh_css   = file_get_contents( __DIR__. $css_path ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
 	update_option( 'sh_css', $sh_css );
 	update_option( 'sh_regex_list', '' );
 	update_option( 'sh_media_cron_offload', true );

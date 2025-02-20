@@ -1,8 +1,6 @@
-version: "3.3"
-
 services:
   db:
-    image: mysql:5.7
+    image: mysql:8.0
     platform: linux/x86_64
     container_name: sh_connect_db
     volumes:
@@ -19,7 +17,7 @@ services:
   wordpress:
     depends_on:
       - db
-    image: wordpress:5.9.1-apache
+    image: wordpress:6.7.2-apache
     container_name: sh_connect_wp
     ports:
       - "8000:80"

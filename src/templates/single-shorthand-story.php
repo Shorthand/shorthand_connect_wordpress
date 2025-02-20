@@ -15,12 +15,12 @@ if ( post_password_required( $post->ID ) ) {
 		the_post();
 		$meta = get_post_meta( $post->ID );
 		?>
-		<?php echo get_shorthandinfo( $meta, 'story_body' ); ?>
+		<?php echo get_shorthandinfo( $meta, 'story_body' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> 
 	<div id="extraHTML">
-		<?php echo get_shorthandinfo( $meta, 'extra_html' ); ?>
+		<?php echo get_shorthandinfo( $meta, 'extra_html' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 		<style type="text/css">
-		<?php echo get_shorthandoption( 'sh_css' ); ?>
+		<?php echo get_shorthandoption( 'sh_css' );  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</style>
 		<?php
 	endwhile;

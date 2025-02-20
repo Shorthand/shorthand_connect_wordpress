@@ -39,7 +39,7 @@ class Shorthand_Admin {
 			self::init_hooks();
 		}
 
-		if ( isset( $_POST['action'] ) && $_POST['action'] == 'enter-key' ) {
+		if ( isset( $_POST['action'] ) && $_POST['action'] == 'enter-key'  ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			self::enter_api_key();
 		}
 	}
@@ -54,18 +54,10 @@ class Shorthand_Admin {
 
 	public static function admin_init() {
 		// Redirect to API key page.
-		if (isset($_GET['page']) && ( 'shorthand-options' !== $_GET['page'] ) && ! Shorthand::get_api_key() ) {
+		if (isset($_GET['page']) && ( 'shorthand-options' !== $_GET['page'] ) && ! Shorthand::get_api_key()) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$admin_url = self::get_page_url( 'init' );
-			//wp_redirect( $admin_url );
+			
 		}
-
-		/*if ( get_option( 'Activated_Shorthand' ) ) {
-			delete_option( 'Activated_Shorthand' );
-			if ( ! headers_sent() ) {
-				$admin_url = self::get_page_url( 'init' );
-				wp_redirect( $admin_url );
-			}
-		}*/
 
 		load_plugin_textdomain( 'shorthand-connect' );
 
@@ -88,7 +80,6 @@ class Shorthand_Admin {
 			$args['view'] = 'start';
 		}
 
-//		return add_query_arg( $args, menu_page_url( 'shorthand-options', false ) );
 		return add_query_arg( $args, admin_url('options-general.php') );
 	}
 
@@ -100,7 +91,7 @@ class Shorthand_Admin {
 			return;
 		}
 
-		if ( ( 'plugins.php' === $hook_suffix || ( ( 'edit.php' === $hook_suffix ) && isset($_GET['post_type']) && 'shorthand_story' === $_GET['post_type'] ) ) && ! Shorthand::get_api_key() ) {
+		if ( ( 'plugins.php' === $hook_suffix || ( ( 'edit.php' === $hook_suffix ) && isset($_GET['post_type']) && 'shorthand_story' === $_GET['post_type'] ) ) && ! Shorthand::get_api_key()) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			// Show the "Set Up Shorthand" banner on the comments and plugin pages
 			// if no API key has been set.
 			self::display_api_key_warning();

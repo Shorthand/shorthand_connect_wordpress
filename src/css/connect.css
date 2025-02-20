@@ -120,6 +120,7 @@ div.publishing-actions {
 
 ul.stories {
 	max-height: 400px;
+	min-height:100px;
 	overflow-y: scroll;
 }
 
@@ -188,4 +189,41 @@ p.warning {
 	background-size: 12px;
 	line-height: 23px;
 	padding-bottom: 3px;
+}
+
+#shorthand_wpt_shorthand_story .inside {
+	overflow: hidden;
+}
+
+.loading-bar{
+	position: absolute;
+	
+	right:3em;
+	background: #fff;
+	padding: 0.5em;
+	border: 1px solid #c3c4c7;
+	bottom:-5em;
+	transition: bottom ease-out 0.2s;
+}
+
+.loading-bar.show {
+	bottom: 1em;
+}
+
+@keyframes matrix {
+	0% {background-position: 0% 100%, 50% 100%, 100% 100% }
+	100% {background-position: 0% 0%, 50% 0%, 100% 0% }
+  }
+
+.loader {
+	display:inline-block;
+	width:15px;
+	height:10px;
+	background:
+	  linear-gradient(#0000 calc(1*100%/6),#555 0 calc(3*100%/6),#0000 0),
+	  linear-gradient(#0000 calc(2*100%/6),#555 0 calc(4*100%/6),#0000 0),
+	  linear-gradient(#0000 calc(3*100%/6),#555 0 calc(5*100%/6),#0000 0);
+	background-size:3px 400%;
+	background-repeat: no-repeat;
+	animation:matrix 1s infinite linear;
 }

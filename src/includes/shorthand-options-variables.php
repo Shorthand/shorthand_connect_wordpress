@@ -11,7 +11,7 @@ define( 'SHORTHAND_CONFIG_STEP5_SUCCESS', 'Experimental Features were saved.' );
 // run it on plugin activate/deactivate.
 function shorthand_rewrite_flush() {
 	shand_create_post_type();
-	flush_rewrite_rules();
+	flush_rewrite_rules(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.flush_rewrite_rules_flush_rewrite_rules
 }
 register_activation_hook( __FILE__, 'shorthand_rewrite_flush' );
 register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );

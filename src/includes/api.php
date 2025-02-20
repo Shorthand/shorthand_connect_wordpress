@@ -87,12 +87,17 @@ function shorthand_api_get_profile() {
  * @param string $keyword Optional keyword to filter stories by.
  * @return array|null An array of story data, or null if an error occurs or no stories are found.
  */
-function shorthand_api_get_stories( string $keyword = '' ) {
+function shorthand_api_get_stories(  string $keyword = '', string $cursor = '', string $limit = '50' ) {
 	$stories = null;
 	$url     = '/v2/stories';
-	if ( $keyword ) {
-		$url .= '?keyword=' . $keyword;
+	$url     .= '?limit='.$limit;
+	if ( $cursor && $cursor != '') {
+		$url .= '&cursor=' . $cursor;
 	}
+	if ( $keyword && $keyword != '' ) {
+		$url .= '&keyword=' . $keyword;
+	}
+	
 
 	$data = shorthand_api_request_json( $url, array( 'timeout' => '240' ) );
 	if ( $data ) {
@@ -104,6 +109,7 @@ function shorthand_api_get_stories( string $keyword = '' ) {
 
 		foreach ( $data as $storydata ) {
 			$updated_timestamp   = strtotime( esc_html( $storydata->updatedAt ) );
+			$updated_at          = $storydata->updatedAt;
 			$published_timestamp = strtotime( esc_html( $storydata->lastPublishedAt ) );
 			$updated             = human_time_diff( $updated_timestamp, current_time( 'timestamp' ) );
 			$published           = human_time_diff( $published_timestamp, current_time( 'timestamp' ) );
@@ -114,6 +120,7 @@ function shorthand_api_get_stories( string $keyword = '' ) {
 				'imagealt'            => $storydata->title,
 				'image'               => $storydata->signedCover,
 				'updated_timestamp'   => $updated_timestamp,
+				'updated_at'          => $updated_at,
 				'updated_value'       => $updated,
 				'published_timestamp' => $published_timestamp,
 				'published_value'     => $published,

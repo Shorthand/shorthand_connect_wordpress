@@ -1,3 +1,4 @@
+// phpcs:ignorefile
 var List;
 /******/ (function() { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({

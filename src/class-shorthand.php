@@ -47,8 +47,7 @@ class Shorthand {
 
 			$message = '<strong>' . sprintf( esc_html__( 'Shorthand Connect %1$s requires WordPress %2$s or higher.', 'shorthand-connect' ), SHORTHAND_VERSION, SHORTHAND__MINIMUM_WP_VERSION ) . '</strong> ' . sprintf( __( 'Please <a href="%1$s">upgrade WordPress</a> to a current version, or <a href="%2$s">downgrade to version 1.3.31 of the Shorthand Connect plugin</a>.', 'shorthand-connect' ), 'https://codex.wordpress.org/Upgrading_WordPress', 'https://wordpress.org/plugins/shorthand-connect/download' );
 
-			// Shorthand::bail_on_activation( $message );
-		} elseif ( ! empty( $_SERVER['SCRIPT_NAME'] ) && false !== strpos( $_SERVER['SCRIPT_NAME'], '/wp-admin/plugins.php' ) ) {
+		} elseif ( ! empty( sanitize_url( wp_unslash( $_SERVER['SCRIPT_NAME'] ) ) ) && false !== strpos( sanitize_url( wp_unslash( $_SERVER['SCRIPT_NAME'] ) ), '/wp-admin/plugins.php' ) ) {
 			add_option( 'Activated_Shorthand', true );
 		}
 	}

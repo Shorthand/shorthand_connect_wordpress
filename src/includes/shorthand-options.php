@@ -10,7 +10,7 @@
 // Redirect to the first time setup.
 function shorthand_redirect_admin_config() {
 	$profile = shorthand_api_get_profile();
-	if ( isset( $_GET['page'] ) && ( 'shorthand-options' === $_GET['page'] ) && ( ! $profile ) ) {
+	if ( isset( $_GET['page'] ) && ( 'shorthand-options' === $_GET['page'] ) && ( ! $profile ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$admin_url = Shorthand_Admin::get_page_url( 'init' );
 		wp_redirect( $admin_url );
 		die();
@@ -29,9 +29,9 @@ function shorthand_shorthand_options() {
 	);
 
 	// If current = all, then display all.
-	$current  = $_GET['navigation'] ?? array_keys( $menu_links )[0];
+	$current  = isset( $_GET['navigation'] ) ? sanitize_key( $_GET['navigation'] ) : array_keys( $menu_links )[0];
 	$profile  = shorthand_api_get_profile();
-	$meesages = array();
+	$messages = array();
 
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html( __( 'You do not have sufficient permissions to access this page.' ) ) );
@@ -44,9 +44,9 @@ function shorthand_shorthand_options() {
 
 		$profile = shorthand_api_get_profile();
 		if ( $profile ) {
-			$meesages['updated'] = '<p>' . SHORTHAND_CONFIG_STEP1_SUCCESS . '</p><p><strong>Username</strong>: ' . esc_html( $profile->username ) . '</p>';
+			$messages['updated'] = '<p>' . SHORTHAND_CONFIG_STEP1_SUCCESS . '</p><p><strong>Username</strong>: ' . esc_html( $profile->username ) . '</p>';
 		} else {
-			$meesages['notice-error'] = SHORTHAND_CONFIG_STEP1_ERROR;
+			$messages['notice-error'] = SHORTHAND_CONFIG_STEP1_ERROR;
 		}
 	}
 
@@ -57,7 +57,7 @@ function shorthand_shorthand_options() {
 		// to sanitize otherwise set an empty string.
 		$sh_css = isset( $_POST['sh_css'] ) ? wp_kses_post( $_POST['sh_css'] ) : '';
 		update_option( 'sh_css', $sh_css );
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP3_SUCCESS;
+		$messages['updated'] = SHORTHAND_CONFIG_STEP3_SUCCESS;
 	}
 
 	if ( isset( $_POST['sh_submit_hidden_three'] ) && 'Y' === $_POST['sh_submit_hidden_three'] && check_admin_referer( 'sh-update-configuration' ) ) {
@@ -66,7 +66,7 @@ function shorthand_shorthand_options() {
 		$sh_permalink = isset( $_POST['sh_permalink'] ) ? sanitize_text_field( $_POST['sh_permalink'] ) : '';
 		update_option( 'sh_permalink', $sh_permalink );
 		shorthand_rewrite_flush();
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP2_SUCCESS;
+		$messages['updated'] = SHORTHAND_CONFIG_STEP2_SUCCESS;
 	}
 	$permalink_structure = esc_html( get_option( 'sh_permalink' ) );
 
@@ -80,9 +80,9 @@ function shorthand_shorthand_options() {
 		( 'Y' === $_POST['sh_submit_hidden_four'] ) &&
 		check_admin_referer( 'sh-update-configuration' )
 	) {
-		$sh_regex_list = isset( $_POST['sh_regex_list'] ) ? wp_unslash( $_POST['sh_regex_list'] ) : '';
+		$sh_regex_list = empty( $_POST['sh_regex_list'] ) ?  '' : sanitize_text_field( wp_unslash( $_POST['sh_regex_list'] ) );
 
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
+		$messages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
 		if ( empty( $sh_regex_list ) ) {
 			// Update the option with an empty value if the input is empty.
 			update_option( 'sh_regex_list', '' );
@@ -95,8 +95,8 @@ function shorthand_shorthand_options() {
 				update_option( 'sh_regex_list', base64_encode( $sh_regex_list ) );
 			} else {
 				// Handle invalid JSON error here.
-				unset( $meesages['updated'] );
-				$meesages['notice-error'] = SHORTHAND_CONFIG_STEP4_ERROR;
+				unset( $messages['updated'] );
+				$messages['notice-error'] = SHORTHAND_CONFIG_STEP4_ERROR;
 			}
 		}
 	}
@@ -109,7 +109,7 @@ function shorthand_shorthand_options() {
 		$sh_disable_acf        = isset( $_POST['sh_disable_acf'] ) ? filter_var( $_POST['sh_disable_acf'], FILTER_VALIDATE_BOOLEAN ) : false;
 		update_option( 'sh_media_cron_offload', $sh_media_cron_offload );
 		update_option( 'sh_disable_acf', $sh_disable_acf );
-		$meesages['updated'] = SHORTHAND_CONFIG_STEP5_SUCCESS;
+		$messages['updated'] = SHORTHAND_CONFIG_STEP5_SUCCESS;
 	}
 	$sh_media_cron_offload = filter_var( get_option( 'sh_media_cron_offload' ), FILTER_VALIDATE_BOOLEAN );
 	$sh_disable_acf        = filter_var( get_option( 'sh_disable_acf' ), FILTER_VALIDATE_BOOLEAN );
@@ -134,9 +134,12 @@ function shorthand_shorthand_options() {
 	<div class="shorthand-form-wrapper">
 	<form name="form_settings" method="post" action="<?php echo esc_url( Shorthand_Admin::get_page_url( 'config', esc_attr( $current ) ) ); ?>">
 
-		<?php if ( ! empty( $meesages ) ) : ?>
-			<?php foreach ( $meesages as $class => $message ) : ?>
-			<div class="notice <?php echo $class; ?>"><?php echo $message; ?></div>
+		<?php if ( ! empty( $messages ) ) : ?>
+			<?php foreach ( $messages as $class => $message ) : ?>
+			<div class="notice <?php echo esc_html ( $class ); ?>"><?php echo wp_kses( $message, array( 
+    'p' => array(),
+    'strong' => array(),
+) ); ?></div>
 			<?php endforeach; ?>
 		<?php endif; ?>
 
@@ -162,7 +165,7 @@ function shorthand_shorthand_options() {
 		<p>
 		<p><label for="sh_permalink"><?php esc_html_e( 'Set the permalink structure of Shorthand story URLs', 'shorthand-connect' ); ?></label></p>
 		<input type="text" name="sh_permalink" value="<?php echo esc_attr( $permalink_structure ); ?>" size="20">
-		<p><?php echo esc_url( get_site_url() ); ?>/<strong><?php echo esc_attr( $permalink_structure ); ?></strong>/{STORY_NAME}</p>
+		<p><?php echo esc_url( get_site_url() ); ?>/<strong><?php echo esc_html( $permalink_structure ); ?></strong>/{STORY_NAME}</p>
 		</div>
 		<?php endif; ?>
 
@@ -263,7 +266,12 @@ function shorthand_shorthand_options() {
 	<?php
 }
 
-// Adding styles.
-$css_path = '../css/options.css';
-wp_register_style( 'options_style', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
-wp_enqueue_style( 'options_style' );
+function registerStyles() {
+	// Adding styles.
+	$css_path = '../css/options.css';
+	wp_register_style( 'options_style', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
+	wp_enqueue_style( 'options_style' );
+}
+
+add_action( 'init', 'registerStyles' );
+
