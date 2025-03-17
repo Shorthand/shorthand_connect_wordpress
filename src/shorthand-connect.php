@@ -304,7 +304,7 @@ function shorthand_save_shorthand_story( $post_id, $post ) {
 	$profile = shorthand_api_get_profile();
 	if ( ( get_post_type( $post ) === 'shorthand_story' ) && ! ( $profile ) ) {
 		$uri = Shorthand_Admin::get_page_url();
-		wp_die( message: sprintf( wp_kses ( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ) ), esc_url( $uri ) ), title: wp_kses( __( 'Shorthand is not connected' ) ) );
+		wp_die( message: sprintf( wp_kses_post ( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ) ), esc_url( $uri ) ), title: wp_kses_post( __( 'Shorthand is not connected' ) ) );
 	}
 
 	WP_Filesystem();
