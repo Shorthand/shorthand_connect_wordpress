@@ -202,10 +202,10 @@ function shorthand_shorthand_options() {
 		name="sh_regex_list"><?php echo esc_textarea( $sh_regex_list ); ?></textarea>
 		<script>
 			let textarea = document.querySelector("textarea#sh_regex_list");
-			textarea.value = JSON.stringify(JSON.parse(textarea.value), undefined, 4);
+			
 			textarea.addEventListener("keyup", function (event) {
 			try {
-			JSON.parse(textarea.value);
+			textarea.value = JSON.stringify(JSON.parse(textarea.value), undefined, 4);
 			textarea.setCustomValidity("");
 
 			} catch (err) {

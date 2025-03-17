@@ -231,7 +231,7 @@ function shorthand_shorthand_options() {
 
 			textarea.addEventListener("keyup", function (event) {
 			try {
-				JSON.parse(textarea.value);
+				textarea.value = JSON.stringify(JSON.parse(textarea.value), undefined, 4);
 				textarea.setCustomValidity("");
 
 			} catch (err) {
