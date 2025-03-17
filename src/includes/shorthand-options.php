@@ -80,7 +80,8 @@ function shorthand_shorthand_options() {
 		( 'Y' === $_POST['sh_submit_hidden_four'] ) &&
 		check_admin_referer( 'sh-update-configuration' )
 	) {
-		$sh_regex_list = empty( $_POST['sh_regex_list'] ) ?  '' : sanitize_text_field( wp_unslash( $_POST['sh_regex_list'] ) );
+		// sh_regex_list may contain <tags> for lookup and processing on import and so may need to include <script> etc; however it is only ever displayed within a text-area value and manually processed.
+		$sh_regex_list = empty( $_POST['sh_regex_list'] ) ?  '' : wp_unslash( $_POST['sh_regex_list'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$messages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
 		if ( empty( $sh_regex_list ) ) {
@@ -200,23 +201,23 @@ function shorthand_shorthand_options() {
 		<textarea rows="10" cols="80" id="sh_regex_list"
 		name="sh_regex_list"><?php echo esc_textarea( $sh_regex_list ); ?></textarea>
 		<script>
-		let textarea = document.querySelector("textarea#sh_regex_list");
-
-		textarea.addEventListener("keyup", function (event) {
-		try {
-		JSON.parse(textarea.value);
-		textarea.setCustomValidity("");
-
-		} catch (err) {
-		if (textarea.value != "") {
-			console.log("Invalid JSON");
-			textarea.setCustomValidity("Invalid JSON in the Post-processing field");
-		} else {
+			let textarea = document.querySelector("textarea#sh_regex_list");
+			textarea.value = JSON.stringify(JSON.parse(textarea.value), undefined, 4);
+			textarea.addEventListener("keyup", function (event) {
+			try {
+			JSON.parse(textarea.value);
 			textarea.setCustomValidity("");
-		}
-		}
 
-		});
+			} catch (err) {
+				if (textarea.value != "") {
+					console.log("Invalid JSON");
+					textarea.setCustomValidity("Invalid JSON in the Post-processing field");
+				} else {
+					textarea.setCustomValidity("");
+				}
+			}
+
+			});
 		</script>
 		</div>
 		<?php endif; ?>

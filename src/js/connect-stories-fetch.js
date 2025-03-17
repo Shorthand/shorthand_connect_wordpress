@@ -37,9 +37,25 @@ const fetchMoreStories = async () => {
         },
         credentials: "include"
     });
-
-    const json = await response.json();
-    storiesList.add(json);
+    try {
+        const json = await response.json();
+        storiesList.add(json);
+    } catch (error){
+        if(response.status == 200){
+            //API returned successfully but there are no stories available.
+            const emptyMsg = document.createElement("div");
+            emptyMsg.innerHTML = "You currently have no stories ready for publishing on Shorthand. Please check that your story is set to be ready for publishing.";
+            emptyMsg.className = "errorMsg";
+            document.getElementById("stories-list").append(emptyMsg); //phpcs:ignore WordPressVIPMinimum.JS.HTMLExecutingFunctions.append
+        }else{
+            //Something else broke
+            console.error(error.message);
+            const emptyMsg = document.createElement("div");
+            emptyMsg.className = "errorMsg";
+            emptyMsg.innerHTML = 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.';
+            document.getElementById("stories-list").append(emptyMsg); //phpcs:ignore WordPressVIPMinimum.JS.HTMLExecutingFunctions.append
+        }
+    }
     isFetching = false;
     hideLoadingBar();
 }

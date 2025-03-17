@@ -111,7 +111,8 @@ function shorthand_shorthand_options() {
 		check_admin_referer( 'sh-update-configuration' )
 	) {
 		$next                = esc_url( Shorthand_Admin::get_page_url() );
-		$sh_regex_list       = isset( $_POST['sh_regex_list'] ) ? sanitize_text_field( wp_unslash( $_POST['sh_regex_list'] ) ) : '';
+		// sh_regex_list may contain <tags> for lookup and processing on import and so may need to include <script> etc; however it is only ever displayed within a text-area value and manually processed.
+		$sh_regex_list       = isset( $_POST['sh_regex_list'] ) ?  wp_unslash( $_POST['sh_regex_list'] ) : '';  //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$messages['updated'] = SHORTHAND_CONFIG_STEP4_SUCCESS;
 		if ( empty( $sh_regex_list ) ) {
 			// Update the option with an empty value if the input is empty
