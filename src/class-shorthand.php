@@ -33,7 +33,7 @@ class Shorthand {
 
 		$file = SHORTHAND__PLUGIN_DIR . 'views/' . $name . '.php';
 
-		include $file;
+		include_once $file;
 	}
 
 	/**
