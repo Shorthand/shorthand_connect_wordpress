@@ -66,6 +66,14 @@ https://wordpress.org/plugins/about/svn/
 - [Examples](https://listjs.com/)
 
 ## Changelog
+### 1.3.34
+
+- Fixed issue with API token validation
+- General bug fixes and stability improvements
+
+### 1.3.33
+
+- Updated latest version to WordPress 6.7.2
 
 ### 1.3.32
 
