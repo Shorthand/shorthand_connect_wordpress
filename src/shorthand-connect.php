@@ -10,7 +10,7 @@ Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your WordPress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.32
+Version: 1.3.34
 Author URI: http://shorthand.com
 */
 
@@ -20,8 +20,8 @@ if ( ! function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'SHORTHAND_VERSION', '1.3.32' );
-define( 'SHORTHAND__MINIMUM_WP_VERSION', '5.8' );
+define( 'SHORTHAND_VERSION', '1.3.34' );
+define( 'SHORTHAND__MINIMUM_WP_VERSION', '6.7.2' );
 define( 'SHORTHAND__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once SHORTHAND__PLUGIN_DIR . 'class-shorthand.php';
@@ -126,7 +126,7 @@ function shorthand_wpt_shorthand_story() {
 
 	if ( ! ( $profile ) ) {
 		$uri = Shorthand_Admin::get_page_url();
-		printf( wp_kses( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.' ) ), esc_url( $uri ) );
+		printf( wp_kses( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="options-general.php?page=shorthand-options&navigation=token">Shorthand settings</a>.' ) ), esc_url( $uri ) );
 	} else {
 		?>
 	<div id="stories-list">
@@ -182,7 +182,7 @@ function shorthand_wpt_shorthand_story() {
 			)
 		);
 		wp_localize_script('fetch-stories', 'wp_server', array(
-			'url' => ( get_option('permalink_structure') ) ? "/wp-json/shorthand_connect/v1/stories/" : "/?rest_route=/shorthand_connect/v1/stories/",
+			'url' => rest_url('shorthand_connect/v1/stories/'),
 			'nonce' => wp_create_nonce('wp_rest'),
 			'selected_story' => $selected_story
 		));
@@ -304,7 +304,7 @@ function shorthand_save_shorthand_story( $post_id, $post ) {
 	$profile = shorthand_api_get_profile();
 	if ( ( get_post_type( $post ) === 'shorthand_story' ) && ! ( $profile ) ) {
 		$uri = Shorthand_Admin::get_page_url();
-		wp_die( message: sprintf( wp_kses_post ( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ) ), esc_url( $uri ) ), title: wp_kses_post( __( 'Shorthand is not connected' ) ) );
+		wp_die( message: sprintf( wp_kses_post ( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="options-general.php?page=shorthand-options&navigation=token">Shorthand settings</a>.', 'shorthand-connect' ) ), esc_url( $uri ) ), title: wp_kses_post( __( 'Shorthand is not connected' ) ) );
 	}
 
 	WP_Filesystem();
