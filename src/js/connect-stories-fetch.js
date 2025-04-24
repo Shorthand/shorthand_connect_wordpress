@@ -52,7 +52,7 @@ const fetchMoreStories = async () => {
             console.error(error.message);
             const emptyMsg = document.createElement("div");
             emptyMsg.className = "errorMsg";
-            emptyMsg.innerHTML = 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.';
+            emptyMsg.innerHTML = 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="options-general.php?page=shorthand-options&navigation=token">Shorthand settings</a>.';
             document.getElementById("stories-list").append(emptyMsg); //phpcs:ignore WordPressVIPMinimum.JS.HTMLExecutingFunctions.append
         }
     }
