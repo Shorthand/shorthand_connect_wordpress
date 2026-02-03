@@ -1,0 +1,90 @@
+#adminmenuwrap,
+#adminmenuback {
+	display: none;
+}
+
+#wpwrap {
+	background-color: #fff;
+}
+
+#wpcontent,
+#wpfooter {
+	margin-left: 0;
+}
+
+.shorthand-menu {
+}
+
+.shorthand-menu ol {
+	display: flex;
+	align-content: center;
+	justify-content: center;
+	counter-reset: item;
+}
+
+.shorthand-menu ol li {
+	counter-increment: item;
+	margin-bottom: 5px;
+	display: flex;
+}
+
+.shorthand-menu ol li:before {
+	margin-right: 10px;
+	content: counter(item);
+	background-color: #effdf9;
+	border-color: #effdf9;
+	color: #097b67;
+	border-radius: 20px;
+	width: 1.2em;
+	text-align: center;
+	display: inline-block;
+}
+
+.shorthand-options-wrapper {
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.shorthand-form-wrapper,
+.shorthand-form-wrapper .submit {
+	
+}
+
+.shorthand-nav .badge {
+	border-color: #d0d5dd;
+	background-color: #fff;
+	color: #98a2b3;
+	border-radius: 50%;
+	line-height: 14px;
+	margin-right: 0.5rem;
+}
+.shorthand-nav .text.current,
+.shorthand-nav .next.done,
+.shorthand-nav .text.done {
+	color: #0d7865;
+}
+
+.shorthand-nav .badge.done,
+.shorthand-nav .badge.current {
+	border-color: #0d7865;
+	background-color: #0d7865;
+	color: #fff;
+}
+
+.py-1 {
+	padding-top: 1em;
+	padding-bottom: 1em;
+}
+
+.px-1 {
+	padding-left: 1em;
+	padding-right: 1em;
+}
+
+.ps-1 {
+	padding-left: 1em;
+}
+
+.pe-1 {
+	padding-right: 1em;
+}

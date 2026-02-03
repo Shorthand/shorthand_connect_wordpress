@@ -67,10 +67,6 @@ https://wordpress.org/plugins/about/svn/
 
 ## Changelog
 
-### 1.3.33
-
-- Updated latest version to WordPress 6.7.2
-
 ### 1.3.32
 
 - Implemented first time setup wizard
