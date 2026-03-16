@@ -38,6 +38,15 @@ const fetchMoreStories = async () => {
         credentials: "include"
     });
     try {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+            throw new Error(`Unexpected content-type: ${contentType || "unknown"}`);
+        }
+
         const json = await response.json();
         storiesList.add(json);
     } catch (error){
@@ -49,7 +58,7 @@ const fetchMoreStories = async () => {
             document.getElementById("stories-list").append(emptyMsg); //phpcs:ignore WordPressVIPMinimum.JS.HTMLExecutingFunctions.append
         }else{
             //Something else broke
-            console.error(error.message);
+            console.error("Failed to fetch stories:", error.message, url);
             const emptyMsg = document.createElement("div");
             emptyMsg.className = "errorMsg";
             emptyMsg.innerHTML = 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.';
