@@ -67,6 +67,12 @@ https://wordpress.org/plugins/about/svn/
 
 ## Changelog
 
+### 1.3.34
+
+- Scope Shorthand options CSS to admin settings pages only to prevent front-end style bleed.
+- Rename the admin styles function to comply with php:S100 naming convention.
+- Added a default cover image if one is unavailable on signedCover and removed 'Story Version: 2' from the story list.
+
 ### 1.3.33
 
 - Updated latest version to WordPress 6.7.2
