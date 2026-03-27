@@ -10,7 +10,7 @@ Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your WordPress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.33
+Version: 1.3.34
 Author URI: http://shorthand.com
 */
 
@@ -20,7 +20,7 @@ if ( ! function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'SHORTHAND_VERSION', '1.3.33' );
+define( 'SHORTHAND_VERSION', '1.3.34' );
 define( 'SHORTHAND__MINIMUM_WP_VERSION', '6.7.2' );
 define( 'SHORTHAND__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -176,13 +176,13 @@ function shorthand_wpt_shorthand_story() {
 			'fetch-stories',
 			plugin_dir_url( __FILE__ ) . 'js/connect-stories-fetch.js',
 			array(),
-			'1.0.0',
+			SHORTHAND_VERSION,
 			array(
 				'strategy' => 'defer',
 			)
 		);
 		wp_localize_script('fetch-stories', 'wp_server', array(
-			'url' => ( get_option('permalink_structure') ) ? "/wp-json/shorthand_connect/v1/stories/" : "/?rest_route=/shorthand_connect/v1/stories/",
+			'url' => esc_url_raw( rest_url( 'shorthand_connect/v1/stories' ) ),
 			'nonce' => wp_create_nonce('wp_rest'),
 			'selected_story' => $selected_story
 		));
@@ -529,6 +529,21 @@ function shand_add_shorthand_story_columns( $columns ) {
 }
 
 add_filter( 'manage_shorthand_story_posts_columns', 'shand_add_shorthand_story_columns' );
+
+/**
+ * Renders custom column values for shorthand stories in the posts list table.
+ *
+ * @param string $column  The current column name.
+ * @param int    $post_id The current post ID.
+ */
+function shand_render_shorthand_story_column( $column, $post_id ) {
+	if ( 'story_id' === $column ) {
+		echo esc_html( get_post_meta( $post_id, 'story_id', true ) );
+		return;
+	}
+}
+
+add_action( 'manage_shorthand_story_posts_custom_column', 'shand_render_shorthand_story_column', 10, 2 );
 
 /**
  * Fix post type tags.

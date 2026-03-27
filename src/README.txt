@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.7
-Stable tag: 1.3.33
+Stable tag: 1.3.34
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -62,6 +62,12 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.34 =
+
+- Scope Shorthand options CSS to admin settings pages only to prevent front-end style bleed.
+- Rename the admin styles function to comply with php:S100 naming convention.
+- Added a default cover image if one is unavailable on signedCover and removed 'Story Version: 2' from the story list.
 
 = 1.3.33 = 
 

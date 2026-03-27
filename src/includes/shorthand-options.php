@@ -267,12 +267,14 @@ function shorthand_shorthand_options() {
 	<?php
 }
 
-function registerStyles() {
-	// Adding styles.
+function shorthand_register_admin_styles( $hook_suffix ) {
+	if ( ! in_array( $hook_suffix, [ 'jetpack_page_shorthand-options', 'settings_page_shorthand-options' ], true ) ) {
+		return;
+	}
+	// Admin-only options styles.
 	$css_path = '../css/options.css';
 	wp_register_style( 'options_style', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
 	wp_enqueue_style( 'options_style' );
 }
 
-add_action( 'init', 'registerStyles' );
-
+add_action( 'admin_enqueue_scripts', 'shorthand_register_admin_styles' );

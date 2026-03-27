@@ -90,6 +90,7 @@ function shorthand_api_get_profile() {
 function shorthand_api_get_stories(  string $keyword = '', string $cursor = '', string $limit = '50' ) {
 	$stories = null;
 	$url     = '/v2/stories';
+	$default_cover_url = plugin_dir_url( dirname( __DIR__ ) . '/shorthand-connect.php' ) . 'images/default.png';
 	$url     .= '?limit='.$limit;
 	if ( $cursor && $cursor != '') {
 		$url .= '&cursor=' . $cursor;
@@ -113,12 +114,13 @@ function shorthand_api_get_stories(  string $keyword = '', string $cursor = '', 
 			$published_timestamp = strtotime( esc_html( $storydata->lastPublishedAt ) );
 			$updated             = human_time_diff( $updated_timestamp, current_time( 'timestamp' ) );
 			$published           = human_time_diff( $published_timestamp, current_time( 'timestamp' ) );
+			$image               = empty( $storydata->signedCover ) ? $default_cover_url : $storydata->signedCover;
 			$stories[]           = array(
 				'version_value'       => '' . $storydata->version,
 				'title'               => $storydata->title,
 				'description'         => $storydata->description,
 				'imagealt'            => $storydata->title,
-				'image'               => $storydata->signedCover,
+				'image'               => $image,
 				'updated_timestamp'   => $updated_timestamp,
 				'updated_at'          => $updated_at,
 				'updated_value'       => $updated,
