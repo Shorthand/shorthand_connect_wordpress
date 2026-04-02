@@ -67,6 +67,12 @@ https://wordpress.org/plugins/about/svn/
 
 ## Changelog
 
+### 1.3.35
+
+- Fix story asset URL generation for multisite and custom upload paths by deriving public URLs from the resolved story path.
+- Pass the resolved story path through both publish flows so rewritten story asset URLs match custom storage locations.
+- Updated latest tested version to WordPress 6.9.4.
+
 ### 1.3.34
 
 - Scope Shorthand options CSS to admin settings pages only to prevent front-end style bleed.

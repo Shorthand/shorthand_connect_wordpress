@@ -10,7 +10,7 @@ Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your WordPress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.34
+Version: 1.3.35
 Author URI: http://shorthand.com
 */
 
@@ -20,7 +20,7 @@ if ( ! function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'SHORTHAND_VERSION', '1.3.34' );
+define( 'SHORTHAND_VERSION', '1.3.35' );
 define( 'SHORTHAND__MINIMUM_WP_VERSION', '6.7.2' );
 define( 'SHORTHAND__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -377,7 +377,7 @@ function shorthand_save_shorthand_story( $post_id, $post ) {
 			}
 
 			// Get path to the assets.
-			$assets_path = shorthand_get_story_url( $post_id, $safe_story_id );
+			$assets_path = shorthand_get_story_url( $post_id, $safe_story_id, $story_path );
 
 			// Save the head and body.
 			$head_file    = $story_path . '/head.html';

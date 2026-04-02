@@ -3,8 +3,8 @@ Contributors: shorthandconnect
 Donate link: 
 Tags: shorthand, api
 Requires at least: 4.0
-Tested up to: 6.7
-Stable tag: 1.3.34
+Tested up to: 6.9.4
+Stable tag: 1.3.35
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -62,6 +62,12 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.35 =
+
+- Fix story asset URL generation for multisite and custom upload paths by deriving public URLs from the resolved story path.
+- Pass the resolved story path through both publish flows so rewritten story asset URLs match custom storage locations.
+- Updated latest tested version to WordPress 6.9.4.
 
 = 1.3.34 =
 
