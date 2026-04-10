@@ -166,15 +166,29 @@ function sh_get_story_path( $post_id, $story_id ) {
  * Determines the URL of the directory where story files for a specific post
  * and story ID are located.
  *
- * @param int    $post_id The ID of the post.
- * @param string $story_id The ID of the story.
+ * @param int         $post_id The ID of the post.
+ * @param string      $story_id The ID of the story.
+ * @param string|null $story_path Optional resolved filesystem path to the story directory.
  * @return string The URL of the story directory.
  */
-function shorthand_get_story_url( $post_id, $story_id ) {
+function shorthand_get_story_url( $post_id, $story_id, $story_path = null ) {
 	init_wp_filesystem();
-	$destination     = wp_upload_dir();
-	$destination_url = $destination['url'] . '/shorthand/' . $post_id . '/' . $story_id;
-	$destination_url = apply_filters( 'shorthand_get_story_url', $destination_url );
+	$destination      = wp_upload_dir();
+	$destination_url  = $destination['url'] . '/shorthand/' . $post_id . '/' . $story_id;
+	$resolved_path    = $story_path ? $story_path : sh_get_story_path( $post_id, $story_id );
+	$normalized_path  = $resolved_path ? wp_normalize_path( untrailingslashit( $resolved_path ) ) : null;
+	$content_dir      = wp_normalize_path( untrailingslashit( WP_CONTENT_DIR ) );
+	$uploads_base_dir = ! empty( $destination['basedir'] ) ? wp_normalize_path( untrailingslashit( $destination['basedir'] ) ) : null;
+
+	if ( $normalized_path && ( $normalized_path === $content_dir || 0 === strpos( $normalized_path, $content_dir . '/' ) ) ) {
+		$relative_path   = ltrim( substr( $normalized_path, strlen( $content_dir ) ), '/' );
+		$destination_url = content_url( $relative_path );
+	} elseif ( $normalized_path && $uploads_base_dir && ( $normalized_path === $uploads_base_dir || 0 === strpos( $normalized_path, $uploads_base_dir . '/' ) ) ) {
+		$relative_path   = ltrim( substr( $normalized_path, strlen( $uploads_base_dir ) ), '/' );
+		$destination_url = trailingslashit( $destination['baseurl'] ) . $relative_path;
+	}
+
+	$destination_url = apply_filters( 'shorthand_get_story_url', $destination_url, $post_id, $story_id, $resolved_path, $destination );
 
 	return $destination_url;
 }

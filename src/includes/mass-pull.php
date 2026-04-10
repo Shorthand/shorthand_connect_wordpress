@@ -52,7 +52,7 @@ function shand_update_story( $post_id, $story_id ) {
 		}
 
 		// Get path to the assets.
-		$assets_path = shorthand_get_story_url( $post_id, $safe_story_id );
+		$assets_path = shorthand_get_story_url( $post_id, $safe_story_id, $story_path );
 
 		// Save the head and body.
 		$head_file    = $story_path . '/head.html';

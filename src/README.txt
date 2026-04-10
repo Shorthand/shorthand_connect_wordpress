@@ -3,8 +3,8 @@ Contributors: shorthandconnect
 Donate link: 
 Tags: shorthand, api
 Requires at least: 4.0
-Tested up to: 6.7
-Stable tag: 1.3.34
+Tested up to: 6.9.4
+Stable tag: 1.3.35
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -14,6 +14,14 @@ This plugin provides a simple method for publishing and updating Shorthand stori
 == Description ==
 
 This plugin will allow premium Shorthand users to connect their Wordpress installation to Shorthand (http://app.shorthand.com).  This will allow users to single click publish Shorthand stories into Wordpress.
+
+= A new version of this plugin is now available =
+
+[Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html) is our new plugin that lets you create and publish Shorthand stories directly within WordPress - no switching between tools, no separate login required.
+
+**[Download Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html)**
+
+Shorthand Connect will continue to work for existing stories. Both the Shorthand Connect and Shorthand for WordPress plugins can coexist.
 
 == Installation ==
 
@@ -62,6 +70,12 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.35 =
+
+- Fix story asset URL generation for multisite and custom upload paths by deriving public URLs from the resolved story path.
+- Pass the resolved story path through both publish flows so rewritten story asset URLs match custom storage locations.
+- Updated latest tested version to WordPress 6.9.4.
 
 = 1.3.34 =
 
