@@ -1,17 +1,18 @@
-### A new version of this plugin is now available
-
-[Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html) is our new plugin that lets you create and publish Shorthand stories directly within WordPress - no switching between tools, no ßseparate login required.
-
-**[Download Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html)**
-
-Shorthand Connect will continue to work for existing stories. Both the Shorthand Connect and Shorthand for WordPress plugins can coexist.
-
 # Shorthand Connect
 
 This plugin provides a simple method for publishing and updating Shorthand
 stories directly inside of Wordpress.
 
 ## Description
+### A new version of this plugin is now available
+
+[Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html) brings immersive, editorial-quality visual storytelling natively into WordPress. Create and publish captivating Shorthand stories directly within WordPress — no switching between tools, no separate login required.
+
+**[Download Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html)**
+
+Shorthand Connect will continue to work for existing stories and both plugins can be installed simultaneously.
+
+***
 
 This plugin will allow premium Shorthand users to connect their Wordpress
 installation to Shorthand (http://app.shorthand.com). This will allow users

@@ -1,27 +1,30 @@
 === Shorthand Connect ===
 Contributors: shorthandconnect
 Donate link: 
-Tags: shorthand, api
-Requires at least: 4.0
+Tags: shorthand, api, storytelling, editor, reports, immersive, content
+Requires at least: 6.0
 Tested up to: 6.9.4
 Stable tag: 1.3.35
-Requires PHP: 5.6
+Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 This plugin provides a simple method for publishing and updating Shorthand stories directly inside of Wordpress.
 
-== Description ==
 
-This plugin will allow premium Shorthand users to connect their Wordpress installation to Shorthand (http://app.shorthand.com).  This will allow users to single click publish Shorthand stories into Wordpress.
+== Description ==
 
 = A new version of this plugin is now available =
 
-[Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html) is our new plugin that lets you create and publish Shorthand stories directly within WordPress - no switching between tools, no separate login required.
+[Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html) brings immersive, editorial-quality visual storytelling natively into WordPress. Create and publish captivating Shorthand stories directly within WordPress — no switching between tools, no separate login required.
 
 **[Download Shorthand for WordPress](https://shorthand.com/products/shorthand-for-wordpress-install/index.html)**
 
-Shorthand Connect will continue to work for existing stories. Both the Shorthand Connect and Shorthand for WordPress plugins can coexist.
+Shorthand Connect will continue to work for existing stories and both plugins can be installed simultaneously.
+
+= About this plugin =
+
+This plugin will allow premium Shorthand users to connect their WordPress installation to Shorthand ([shorthand.com](https://shorthand.com)). This will allow users to single-click publish Shorthand stories into WordPress.
 
 == Installation ==
 

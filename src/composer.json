@@ -1,4 +1,12 @@
 {
     "name": "wpackagist-plugin/shorthand-connect",
-    "require": {}
+    "require": {},
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
 }
