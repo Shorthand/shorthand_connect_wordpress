@@ -16,32 +16,61 @@
  * @param string $story_id The ID of the story.
  */
 function shand_update_story( $post_id, $story_id ) {
-	init_wp_filesystem();
-	global $wp_filesystem;
+	if ( get_post_meta( $post_id, '_shorthand_project_id', true ) ) {
+		return new WP_Error( 'shorthand_project_story_update_blocked', __( 'Update this Story through its Shorthand Project.', 'shorthand-connect' ) );
+	}
 
 	$sh_media_cron_offload = filter_var( get_option( 'sh_media_cron_offload' ), FILTER_VALIDATE_BOOLEAN );
-	$safe_story_id         = preg_replace( '/\W|_/', '', $story_id );
-	update_post_meta( $post_id, $story_id, sanitize_text_field( $safe_story_id ) );
+	update_post_meta( $post_id, 'story_id', sanitize_text_field( $story_id ) );
 
 	// Grab JSON for Story & Set into object $obj.
-	$obj = shorthand_api_request_json( '/v2/stories/' . $story_id . '/settings', array( 'timeout' => '240' ) );
+	$obj = shorthand_api_request_json( '/v2/stories/' . rawurlencode( $story_id ) . '/settings', array( 'timeout' => '240' ) );
 
-	$err = sh_copy_story( $post_id, $safe_story_id, $sh_media_cron_offload );
+	$err = sh_copy_story( $post_id, $story_id, $sh_media_cron_offload );
+	if ( isset( $err['error'] ) ) {
+		update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
+		update_post_meta( $post_id, 'story_diagnostic', $err );
+		return new WP_Error( 'shorthand_story_import_failed', __( 'Something went wrong while importing the Story.', 'shorthand-connect' ) );
+	}
 
-	$story_path = sh_get_story_path( $post_id, $safe_story_id );
+	$safe_story_id = preg_replace( '/\W|_/', '', $story_id );
+	$story_path    = sh_get_story_path( $post_id, $safe_story_id );
 	// Sometimes the story needs to be gotten twice.
 	if ( ! isset( $story_path ) ) {
-		$err        = sh_copy_story( $post_id, $safe_story_id, $sh_media_cron_offload );
+		$err        = sh_copy_story( $post_id, $story_id, $sh_media_cron_offload );
 		$story_path = sh_get_story_path( $post_id, $safe_story_id );
+		if ( isset( $err['error'] ) ) {
+			update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
+			update_post_meta( $post_id, 'story_diagnostic', $err );
+			return new WP_Error( 'shorthand_story_import_failed', __( 'Something went wrong while importing the Story.', 'shorthand-connect' ) );
+		}
 	}
+
+	return shand_apply_story_update( $post_id, $story_id, $obj, $err, $sh_media_cron_offload );
+}
+
+/**
+ * Applies an extracted Story archive to its WordPress post.
+ *
+ * @param int         $post_id WordPress post ID.
+ * @param string      $story_id Shorthand Story ID.
+ * @param object      $obj Story settings response.
+ * @param array       $story Extracted Story content.
+ * @param bool        $sh_media_cron_offload Whether media fetching is offloaded.
+ * @param string|null $story_path_override Validated Story directory to apply.
+ * @return true|WP_Error
+ */
+function shand_apply_story_update( $post_id, $story_id, $obj, $story, $sh_media_cron_offload, $story_path_override = null ) {
+	$safe_story_id = preg_replace( '/\W|_/', '', $story_id );
+	$story_path    = $story_path_override ? $story_path_override : sh_get_story_path( $post_id, $safe_story_id );
 
 	if ( isset( $story_path ) ) {
 		// The story has been uploaded.
 		update_post_meta( $post_id, 'story_path', $story_path );
 
 		// Log any story-specific errors to the metadata.
-		if ( isset( $err['error'] ) ) {
-			update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
+		if ( isset( $story['error'] ) ) {
+			update_post_meta( $post_id, 'ERROR', wp_json_encode( $story ) );
 		} else {
 			delete_post_meta( $post_id, 'ERROR' );
 		}
@@ -60,8 +89,8 @@ function shand_update_story( $post_id, $story_id ) {
 
 		$post_processing_queries = json_decode( base64_decode( get_option( 'sh_regex_list' ) ) );
 
-		$body = shand_fix_content_paths( $assets_path, $err['article'] );
-		$head = shand_fix_content_paths( $assets_path, $err['head'] );
+		$body = shand_fix_content_paths( $assets_path, $story['article'] );
+		$head = shand_fix_content_paths( $assets_path, $story['head'] );
 
 		$body = apply_filters( 'sh_pre_process_body', $body, $assets_path, $article_file );
 		$head = apply_filters( 'sh_pre_process_head', $head, $assets_path, $head_file );
@@ -89,8 +118,10 @@ function shand_update_story( $post_id, $story_id ) {
 		delete_post_meta( $post_id, 'story_diagnostic' );
 
 	} else {
-		update_post_meta( $post_id, 'ERROR', wp_json_encode( $err ) );
-		update_post_meta( $post_id, 'story_diagnostic', $err );
-		wp_die( sprintf( '<h2>%s</h2><p>%s</p>', wp_kses( 'Something went wrong, please try again.' ), wp_kses( $err ) ) );
+		update_post_meta( $post_id, 'ERROR', wp_json_encode( $story ) );
+		update_post_meta( $post_id, 'story_diagnostic', $story );
+		return new WP_Error( 'shorthand_story_import_failed', __( 'Something went wrong while importing the Story.', 'shorthand-connect' ) );
 	}
+
+	return true;
 }

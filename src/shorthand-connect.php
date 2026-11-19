@@ -10,7 +10,7 @@ Plugin Name: Shorthand Connect
 Plugin URI: http://shorthand.com/
 Description: Import your Shorthand stories into your WordPress CMS as simply as possible - magic!
 Author: Shorthand
-Version: 1.3.35
+Version: 1.3.49
 Author URI: http://shorthand.com
 */
 
@@ -20,7 +20,7 @@ if ( ! function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'SHORTHAND_VERSION', '1.3.35' );
+define( 'SHORTHAND_VERSION', '1.3.49' );
 define( 'SHORTHAND__MINIMUM_WP_VERSION', '6.7.2' );
 define( 'SHORTHAND__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -36,6 +36,7 @@ if ( file_exists( SHORTHAND__PLUGIN_DIR . 'config.php' ) ) {
 require_once SHORTHAND__PLUGIN_DIR . 'includes/api.php';
 require_once SHORTHAND__PLUGIN_DIR . 'includes/wp-api.php';
 require_once SHORTHAND__PLUGIN_DIR . 'includes/mass-pull.php';
+require_once SHORTHAND__PLUGIN_DIR . 'includes/projects.php';
 
 if ( is_admin() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 	require_once SHORTHAND__PLUGIN_DIR . 'class-shorthand-admin.php';
@@ -109,11 +110,10 @@ add_action( 'init', 'shand_create_post_type' );
 function shorthand_wpt_shorthand_story() {
 	global $post;
 	global $show_archived_stories;
-	$baseurl = '';
 
 	// Adding styles.
 	$css_path = 'css/connect.css';
-	wp_register_style( 'connect_style', plugin_dir_url( __FILE__ ) . $css_path, array(), '1.3', 'all' );
+	wp_register_style( 'connect_style', plugin_dir_url( __FILE__ ) . $css_path, array(), SHORTHAND_VERSION, 'all' );
 	wp_enqueue_style( 'connect_style' );
 
 	$selected_story = get_post_meta( $post->ID, 'story_id', true );
@@ -128,18 +128,50 @@ function shorthand_wpt_shorthand_story() {
 		$uri = Shorthand_Admin::get_page_url();
 		printf( wp_kses( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.' ) ), esc_url( $uri ) );
 	} else {
+		$can_import_projects = current_user_can( 'manage_options' );
+		$active_tab          = isset( $_GET['shorthand_tab'] ) ? sanitize_key( wp_unslash( $_GET['shorthand_tab'] ) ) : 'stories'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$active_tab          = $can_import_projects && 'projects' === $active_tab ? 'projects' : 'stories';
 		?>
-	<div id="stories-list">
-	<div class="filter-container wp-core-ui">
-		<input class="search" placeholder="Search for a story" />
-		<span class="sort button-secondary desc" data-sort="updated_value">
-		Edited<span class="sort-icon"></span>
-		</span>
-	</div>
-	<!-- List to populate the stories. -->
-	<ul class="list stories">
+	<div id="shorthand-content-picker">
+		<input id="shorthand-project-id" name="shorthand_project_id" type="hidden" value="" />
+		<div class="nav-tab-wrapper shorthand-picker-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Shorthand content type', 'shorthand-connect' ); ?>">
+			<button class="nav-tab" id="shorthand-stories-tab" type="button" role="tab" aria-controls="shorthand-stories-panel" data-shorthand-tab="stories"><?php esc_html_e( 'Stories', 'shorthand-connect' ); ?></button>
+			<?php if ( $can_import_projects ) : ?>
+				<button class="nav-tab" id="shorthand-projects-tab" type="button" role="tab" aria-controls="shorthand-projects-panel" data-shorthand-tab="projects"><?php esc_html_e( 'Projects', 'shorthand-connect' ); ?></button>
+			<?php endif; ?>
+		</div>
 
-	</ul>
+		<div id="shorthand-stories-panel" class="shorthand-picker-panel" role="tabpanel" aria-labelledby="shorthand-stories-tab">
+			<div id="stories-list">
+				<div class="filter-container wp-core-ui">
+					<label class="screen-reader-text" for="shorthand-story-search"><?php esc_html_e( 'Search Stories', 'shorthand-connect' ); ?></label>
+					<input id="shorthand-story-search" class="search" placeholder="<?php esc_attr_e( 'Search for a Story', 'shorthand-connect' ); ?>" />
+					<button class="sort button-secondary desc" type="button" data-sort="updated_timestamp"><?php esc_html_e( 'Edited', 'shorthand-connect' ); ?><span class="sort-icon"></span></button>
+				</div>
+				<ul class="list stories"></ul>
+			</div>
+		</div>
+
+		<?php if ( $can_import_projects ) : ?>
+			<div id="shorthand-projects-panel" class="shorthand-picker-panel" role="tabpanel" aria-labelledby="shorthand-projects-tab" hidden>
+				<?php if ( isset( $_GET['shorthand_project_started'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+					<div class="notice notice-success inline"><p><?php esc_html_e( 'Project import started. WordPress will continue it through WP-Cron.', 'shorthand-connect' ); ?></p></div>
+				<?php endif; ?>
+				<?php if ( isset( $_GET['shorthand_project_error'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+					<div class="notice notice-error inline"><p><?php echo esc_html( sanitize_text_field( wp_unslash( $_GET['shorthand_project_error'] ) ) ); ?></p></div>
+				<?php endif; ?>
+				<p class="description"><?php esc_html_e( 'Choose a Project to import or synchronise all of its Stories.', 'shorthand-connect' ); ?></p>
+				<div id="projects-list">
+					<div class="filter-container wp-core-ui">
+						<label class="screen-reader-text" for="shorthand-project-search"><?php esc_html_e( 'Search Projects', 'shorthand-connect' ); ?></label>
+						<input id="shorthand-project-search" class="search" placeholder="<?php esc_attr_e( 'Search for a Project', 'shorthand-connect' ); ?>" />
+						<button class="sort button-secondary desc" type="button" data-sort="updated_timestamp"><?php esc_html_e( 'Edited', 'shorthand-connect' ); ?><span class="sort-icon"></span></button>
+					</div>
+					<ul class="list projects"></ul>
+					<div class="project-import-error notice notice-error inline" hidden><p></p></div>
+				</div>
+			</div>
+		<?php endif; ?>
 	</div>
 		<?php
 		wp_register_script(
@@ -154,8 +186,8 @@ function shorthand_wpt_shorthand_story() {
 		wp_register_script(
 			'list-js-stories',
 			plugin_dir_url( __FILE__ ) . 'js/connect-stories-list.js',
-			array(),
-			'1.0.0',
+			array( 'list-js' ),
+			SHORTHAND_VERSION,
 			array(
 				'strategy' => 'defer',
 			)
@@ -165,8 +197,8 @@ function shorthand_wpt_shorthand_story() {
 		wp_register_script(
 			'list-js-stories-selected',
 			plugin_dir_url( __FILE__ ) . 'js/connect-stories-list-selected.js',
-			array(),
-			'1.0.0',
+			array( 'list-js-stories' ),
+			SHORTHAND_VERSION,
 			array(
 				'strategy' => 'defer',
 			)
@@ -175,17 +207,28 @@ function shorthand_wpt_shorthand_story() {
 		wp_register_script(
 			'fetch-stories',
 			plugin_dir_url( __FILE__ ) . 'js/connect-stories-fetch.js',
-			array(),
+			array( 'list-js-stories', 'list-js-stories-selected' ),
 			SHORTHAND_VERSION,
 			array(
 				'strategy' => 'defer',
 			)
 		);
-		wp_localize_script('fetch-stories', 'wp_server', array(
-			'url' => esc_url_raw( rest_url( 'shorthand_connect/v1/stories' ) ),
-			'nonce' => wp_create_nonce('wp_rest'),
-			'selected_story' => $selected_story
-		));
+		wp_localize_script(
+			'fetch-stories',
+			'wp_server',
+			array(
+				'stories_url'         => esc_url_raw( rest_url( 'shorthand_connect/v1/stories' ) ),
+				'projects_url'        => esc_url_raw( rest_url( 'shorthand_connect/v1/projects' ) ),
+				'project_import_url'  => esc_url_raw( rest_url( 'shorthand_connect/v1/projects/import' ) ),
+				'project_list_url'    => esc_url_raw( add_query_arg( array( 'post_type' => 'shorthand_story', 'shorthand_project_started' => 1 ), admin_url( 'edit.php' ) ) ),
+				'placeholder_post_id' => absint( $post->ID ),
+				'nonce'               => wp_create_nonce( 'wp_rest' ),
+				'active_tab'          => $active_tab,
+				'can_import_projects' => $can_import_projects,
+				'project_error'       => __( 'The Project import could not be started.', 'shorthand-connect' ),
+				'project_saving'      => __( 'Starting Project import…', 'shorthand-connect' ),
+			)
+		);
 		wp_enqueue_script( 'fetch-stories' );
 		echo '<div class="clear"></div>';
 	}
@@ -240,24 +283,58 @@ function shand_wpt_update_story( $story_id ) {
 	wp_enqueue_script( 'connect-form' );
 }
 
+/**
+ * Shows the Project-level synchronisation control for an imported Project Story.
+ *
+ * @param string $project_id Shorthand Project ID.
+ * @param int    $post_id WordPress post ID.
+ */
+function shand_wpt_update_project( $project_id, $post_id ) {
+	$update_url = wp_nonce_url(
+		add_query_arg(
+			array(
+				'action'     => 'shorthand_update_project',
+				'post_id'    => $post_id,
+				'project_id' => $project_id,
+			),
+			admin_url( 'admin-post.php' )
+		),
+		'shorthand_update_project_' . $post_id
+	);
+	?>
+	<p><?php esc_html_e( 'This will synchronise every Story in this Shorthand Project. Stories removed from the Project will remain in WordPress.', 'shorthand-connect' ); ?></p>
+	<div class="publishing-actions">
+		<a class="button button-primary button-large" href="<?php echo esc_url( $update_url ); ?>"><?php esc_html_e( 'Update Shorthand Project', 'shorthand-connect' ); ?></a>
+	</div>
+	<?php if ( current_user_can( 'manage_options' ) && current_user_can( 'delete_post', $post_id ) ) : ?>
+		<?php $removal_dialog_id = shorthand_get_project_removal_dialog_id( $project_id ); ?>
+		<p><button class="button-link button-link-delete" type="button" aria-haspopup="dialog" aria-controls="<?php echo esc_attr( $removal_dialog_id ); ?>" data-shorthand-project-dialog-open="<?php echo esc_attr( $removal_dialog_id ); ?>"><?php esc_html_e( 'Remove Project', 'shorthand-connect' ); ?></button></p>
+		<p class="description"><?php esc_html_e( 'This moves every WordPress Story in the Project to Trash. Restoring one Story restores the complete Project.', 'shorthand-connect' ); ?></p>
+	<?php endif; ?>
+	<?php
+}
+
 function shand_add_shorthand_metaboxes() {
 	global $post;
 	global $noabstract;
 	$selected_story = get_post_meta( $post->ID, 'story_id', true );
+	$project_id     = get_post_meta( $post->ID, '_shorthand_project_id', true );
 
-	if ( $selected_story ) {
+	if ( $project_id ) {
 		add_meta_box(
-			'shorthand_wpt_shorthand_story_update',
-			'Update Shorthand Story',
-			'shorthand_wpt_shorthand_story',
+			'shorthand_wpt_shorthand_project_update',
+			'Update Shorthand Project',
+			function () use ( $project_id, $post ) {
+				shand_wpt_update_project( $project_id, $post->ID );
+			},
 			'shorthand_story',
 			'side',
 			'high'
 		);
-	} else {
+	} elseif ( ! $selected_story ) {
 		add_meta_box(
 			'shorthand_wpt_shorthand_story',
-			'Select Shorthand Story',
+			'Select Shorthand Story or Project',
 			'shorthand_wpt_shorthand_story',
 			'shorthand_story',
 			'normal',
@@ -287,6 +364,12 @@ function shand_add_shorthand_metaboxes() {
 add_action( 'add_meta_boxes', 'shand_add_shorthand_metaboxes' );
 
 function shand_save_media_fetch( $post_id, $story_id ) {
+	$project_id = get_post_meta( $post_id, '_shorthand_project_id', true );
+	if ( $project_id && function_exists( 'shorthand_import_project_story' ) ) {
+		shorthand_import_project_story( $project_id );
+		return;
+	}
+
 	update_post_meta( $post_id, 'media_status', '[Fetching media...]' );
 	$media = sh_copy_story( $post_id, $story_id, false, true );
 	if ( isset( $media['error'] ) ) {
@@ -301,10 +384,20 @@ add_action( 'sh_media_fetch', 'shand_save_media_fetch', 10, 2 );
 
 /* Save the shorthand story */
 function shorthand_save_shorthand_story( $post_id, $post ) {
+	$slug = 'shorthand_story';
+	if ( $slug !== $post->post_type ) {
+		return;
+	}
+	if ( get_post_meta( $post_id, '_shorthand_project_id', true ) ) {
+		return;
+	}
+
 	$profile = shorthand_api_get_profile();
 	if ( ( get_post_type( $post ) === 'shorthand_story' ) && ! ( $profile ) ) {
 		$uri = Shorthand_Admin::get_page_url();
-		wp_die( message: sprintf( wp_kses_post ( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ) ), esc_url( $uri ) ), title: wp_kses_post( __( 'Shorthand is not connected' ) ) );
+		/* translators: %s: Shorthand Connect settings URL. */
+		$message = sprintf( wp_kses_post( __( 'Could not connect to Shorthand, please check your API token in <a alt="(opens Shorthand Connect plugin settings)" href="%s">Shorthand settings</a>.', 'shorthand-connect' ) ), esc_url( $uri ) );
+		wp_die( $message, esc_html__( 'Shorthand is not connected', 'shorthand-connect' ) );
 	}
 
 	WP_Filesystem();
@@ -316,10 +409,6 @@ function shorthand_save_shorthand_story( $post_id, $post ) {
 	}
 
 	global $noabstract;
-	$slug = 'shorthand_story';
-	if ( $slug !== $post->post_type ) {
-		return;
-	}
 
 	// Check if these fields are nonce_verified.
 	if ( isset( $_POST['eventmeta_noncename'] ) && wp_verify_nonce( sanitize_text_field( $_POST['eventmeta_noncename'] ), plugin_basename( __FILE__ ) ) ) {
@@ -478,8 +567,10 @@ add_filter( 'single_template', 'shand_load_single_shorthand_template' );
  */
 function hook_css() {
 	if ( is_single() && 'shorthand_story' === get_post_type() ) {
-		$meta = get_post_meta( get_post()->ID );
-		echo ( get_shorthandinfo( $meta, 'story_head' ) );  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$post_id = get_post()->ID;
+		$meta    = get_post_meta( $post_id );
+		$head    = get_shorthandinfo( $meta, 'story_head' );
+		echo shorthand_add_runtime_project_permalinks( $head, $post_id );  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
 
@@ -525,7 +616,12 @@ add_filter( 'pre_get_posts', 'shand_shorthand_get_posts' );
 
 /* Table Hook */
 function shand_add_shorthand_story_columns( $columns ) {
-	return array_slice( $columns, 0, 2, true ) + array( 'story_id' => __( 'Shorthand Story ID' ) ) + array_slice( $columns, 2, count( $columns ) - 2, true );
+	return array_slice( $columns, 0, 2, true )
+		+ array(
+			'story_id'         => __( 'Shorthand Story ID', 'shorthand-connect' ),
+			'shorthand_project' => __( 'Project', 'shorthand-connect' ),
+		)
+		+ array_slice( $columns, 2, count( $columns ) - 2, true );
 }
 
 add_filter( 'manage_shorthand_story_posts_columns', 'shand_add_shorthand_story_columns' );
@@ -541,9 +637,155 @@ function shand_render_shorthand_story_column( $column, $post_id ) {
 		echo esc_html( get_post_meta( $post_id, 'story_id', true ) );
 		return;
 	}
+
+	if ( 'shorthand_project' !== $column ) {
+		return;
+	}
+
+	$project_id = get_post_meta( $post_id, '_shorthand_project_id', true );
+	if ( ! $project_id ) {
+		echo '<span class="description">' . esc_html__( 'Standalone', 'shorthand-connect' ) . '</span>';
+		return;
+	}
+
+	$project_title = shorthand_get_project_admin_title( $project_id, $post_id );
+	$filter_url    = add_query_arg(
+		array(
+			'post_type'        => 'shorthand_story',
+			'shorthand_project' => $project_id,
+		),
+		admin_url( 'edit.php' )
+	);
+	printf(
+		'<strong><a href="%1$s">%2$s</a></strong><br><span class="description">%3$s</span>',
+		esc_url( $filter_url ),
+		esc_html( $project_title ),
+		esc_html__( 'Project story', 'shorthand-connect' )
+	);
 }
 
 add_action( 'manage_shorthand_story_posts_custom_column', 'shand_render_shorthand_story_column', 10, 2 );
+
+/**
+ * Resolves a Project title for the posts list without requiring an API request
+ * for Stories imported by current plugin versions.
+ *
+ * @param string $project_id Shorthand Project ID.
+ * @param int    $post_id    Optional WordPress post ID.
+ * @return string Project title, falling back to its ID.
+ */
+function shorthand_get_project_admin_title( $project_id, $post_id = 0 ) {
+	if ( $post_id ) {
+		$stored_title = get_post_meta( $post_id, '_shorthand_project_title', true );
+		if ( $stored_title ) {
+			return $stored_title;
+		}
+	}
+
+	static $project_titles = null;
+	if ( null === $project_titles ) {
+		$project_titles = array();
+		$jobs           = get_option( 'shorthand_project_import_jobs', array() );
+		if ( is_array( $jobs ) ) {
+			foreach ( $jobs as $job_project_id => $job ) {
+				if ( ! empty( $job['project']->title ) ) {
+					$project_titles[ (string) $job_project_id ] = sanitize_text_field( $job['project']->title );
+				}
+			}
+		}
+		$api_projects = shorthand_get_projects();
+		if ( is_array( $api_projects ) ) {
+			foreach ( $api_projects as $project ) {
+				if ( ! empty( $project->id ) && ! empty( $project->title ) ) {
+					$project_titles[ sanitize_text_field( $project->id ) ] = sanitize_text_field( $project->title );
+				}
+			}
+		}
+	}
+
+	return isset( $project_titles[ $project_id ] ) ? $project_titles[ $project_id ] : $project_id;
+}
+
+/**
+ * Returns Project IDs represented by local Shorthand Stories.
+ *
+ * @return array Project IDs keyed by ID with display titles as values.
+ */
+function shorthand_get_admin_project_options() {
+	$post_ids = get_posts(
+		array(
+			'post_type'              => 'shorthand_story',
+			'post_status'            => array( 'publish', 'draft', 'pending', 'private', 'future', 'trash' ),
+			'posts_per_page'         => -1,
+			'fields'                 => 'ids',
+			'meta_key'               => '_shorthand_project_id',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => true,
+			'update_post_term_cache' => false,
+		)
+	);
+	$projects = array();
+	foreach ( $post_ids as $post_id ) {
+		$project_id = get_post_meta( $post_id, '_shorthand_project_id', true );
+		if ( $project_id && ! isset( $projects[ $project_id ] ) ) {
+			$projects[ $project_id ] = shorthand_get_project_admin_title( $project_id, $post_id );
+		}
+	}
+	natcasesort( $projects );
+	return $projects;
+}
+
+/**
+ * Adds a Project membership filter to the Shorthand Story list table.
+ *
+ * @param string $post_type Current post type.
+ * @param string $which     Filter position.
+ */
+function shorthand_render_project_posts_filter( $post_type, $which ) {
+	if ( 'shorthand_story' !== $post_type || 'top' !== $which ) {
+		return;
+	}
+	$selected = isset( $_GET['shorthand_project'] ) ? sanitize_text_field( wp_unslash( $_GET['shorthand_project'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$projects = shorthand_get_admin_project_options();
+	?>
+	<label class="screen-reader-text" for="filter-by-shorthand-project"><?php esc_html_e( 'Filter by Shorthand Project', 'shorthand-connect' ); ?></label>
+	<select id="filter-by-shorthand-project" name="shorthand_project">
+		<option value=""><?php esc_html_e( 'All Projects and Stories', 'shorthand-connect' ); ?></option>
+		<option value="standalone" <?php selected( $selected, 'standalone' ); ?>><?php esc_html_e( 'Standalone Stories', 'shorthand-connect' ); ?></option>
+		<?php foreach ( $projects as $project_id => $project_title ) : ?>
+			<option value="<?php echo esc_attr( $project_id ); ?>" <?php selected( $selected, $project_id ); ?>><?php echo esc_html( $project_title ); ?></option>
+		<?php endforeach; ?>
+	</select>
+	<?php
+}
+
+add_action( 'restrict_manage_posts', 'shorthand_render_project_posts_filter', 10, 2 );
+
+/**
+ * Filters the Shorthand Story list by Project membership.
+ *
+ * @param WP_Query $query Current query.
+ */
+function shorthand_filter_posts_by_project( $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() || 'shorthand_story' !== $query->get( 'post_type' ) || empty( $_GET['shorthand_project'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
+	}
+	$project_id = sanitize_text_field( wp_unslash( $_GET['shorthand_project'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	if ( 'standalone' === $project_id ) {
+		$meta_query   = $query->get( 'meta_query' );
+		$meta_query   = is_array( $meta_query ) ? $meta_query : array();
+		$meta_query[] = array(
+			'key'     => '_shorthand_project_id',
+			'compare' => 'NOT EXISTS',
+		);
+		$query->set( 'meta_query', $meta_query );
+		return;
+	}
+	$query->set( 'meta_key', '_shorthand_project_id' );
+	$query->set( 'meta_value', $project_id );
+}
+
+add_action( 'pre_get_posts', 'shorthand_filter_posts_by_project' );
 
 /**
  * Fix post type tags.
@@ -666,22 +908,18 @@ add_filter(
 add_filter(
 	'handle_bulk_actions-edit-shorthand_story',
 	function ( $redirect_url, $action, $post_ids ) {
+		$num_changed = 0;
 		// Run on posts which have bulk-pull-stories set to true.
 		if ( 'bulk-pull-stories' === $action ) {
-			$story_ids = array();
 			foreach ( $post_ids as $post_id ) {
-				// Get story ID and push to array.
+				if ( get_post_meta( $post_id, '_shorthand_project_id', true ) ) {
+					continue;
+				}
 				$story_id = get_post_meta( $post_id, 'story_id', true );
-				array_push( $story_ids, $story_id );
-
-				// copy latest zip files.
-				sh_copy_story( $post_id, $story_id, 'true', 'false' );
-
-				// Update Meta Data.
 				shand_update_story( $post_id, $story_id );
+				$num_changed++;
 			}
-			// Change to bulk-pulled-stories for notice below.
-			$redirect_url = add_query_arg( 'bulk-pulled-stories', count( $post_ids ), $redirect_url );
+			$redirect_url = add_query_arg( 'bulk-pulled-stories', $num_changed, $redirect_url );
 		}
 		$redirect_url = add_query_arg( 'bulk-pulled-stories-nonce', wp_create_nonce( 'bulk-pulled-stories' ), $redirect_url );
 		return $redirect_url;

@@ -4,7 +4,7 @@ Donate link:
 Tags: shorthand, api
 Requires at least: 4.0
 Tested up to: 6.9.4
-Stable tag: 1.3.35
+Stable tag: 1.3.49
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -70,6 +70,26 @@ https://wordpress.org/plugins/about/svn/
 1. Coming soon
 
 == Changelog ==
+
+= 1.3.49 =
+
+- Select Projects before using the standard Save Draft or Publish actions.
+- Publish Project Stories only after the complete background import succeeds.
+- Display accessible Project import percentage progress on the Shorthand Story list.
+- Remove the temporary WordPress auto-draft after a Project import starts.
+- Remove Project last-published dates from the Project picker.
+- Mark content published in WordPress and link to the appropriate Story or filtered Project list.
+- Confirm Project removal with linked Story titles, then move the complete Project to Trash.
+- Open Project removal confirmation directly from the main Shorthand Story list.
+- Restore every Story in a Project when any one of its Stories is restored.
+- Present Project removal as a native WordPress destructive text action.
+
+= 1.3.36 =
+
+- Add separate Stories and Projects tabs to the Shorthand content picker.
+- Import and synchronise complete Projects from their Project cards.
+- Show Project covers, Story counts, edited times, and last-published times.
+- Remove the separate Import Project admin page.
 
 = 1.3.35 =
 

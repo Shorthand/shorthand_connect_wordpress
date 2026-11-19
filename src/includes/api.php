@@ -29,19 +29,32 @@ function shorthand_api_v2_request( $url, $options ) {
 	$wp_version = $GLOBALS['wp_version'];
 	$user_agent = 'WordPress/' . $wp_version . ' Shorthand/' . $plugin_version;
 
+	$extra_headers = isset( $options['headers'] ) && is_array( $options['headers'] ) ? $options['headers'] : array();
+	foreach ( array_keys( $extra_headers ) as $header_name ) {
+		if ( in_array( strtolower( $header_name ), array( 'authorization', 'user-agent' ), true ) ) {
+			unset( $extra_headers[ $header_name ] );
+		}
+	}
+	$headers         = array_merge(
+		array(
+			'Authorization' => 'Token ' . $token,
+			'user-agent'    => $user_agent,
+		),
+		$extra_headers
+	);
+
 	$request_options = array_merge(
 		array(
-			'headers'       => array(
-				'Authorization' => 'Token ' . $token,
-				'user-agent'    => $user_agent,
-			),
+			'headers'       => $headers,
 			'http_api_args' => $options,
 		),
 		$options
 	);
+	$request_options['headers'] = $headers;
 
 	if ( function_exists( 'vip_safe_wp_remote_request' ) && ! isset( $request_options['stream'] ) ) {
-		$timeout = ( 0 === strcasecmp( 'POST', $request_options['method'] ) ) ? 15 : 5;
+		$method  = isset( $request_options['method'] ) ? $request_options['method'] : 'GET';
+		$timeout = ( 0 === strcasecmp( 'POST', $method ) ) ? 15 : 5;
 		return vip_safe_wp_remote_request( $url, false, 1, $timeout, 10, $request_options );
 	} else {
      return wp_remote_request( $url, $request_options ); // @codingStandardsIgnoreLine
@@ -80,6 +93,52 @@ function shorthand_api_get_profile() {
 }
 
 /**
+ * Finds published WordPress posts for Shorthand Story IDs.
+ *
+ * @param array $story_ids Shorthand Story IDs.
+ * @return array Published WordPress post details keyed by Shorthand Story ID.
+ */
+function shorthand_get_published_wordpress_stories( $story_ids ) {
+	$story_ids = array_values( array_unique( array_filter( array_map( 'sanitize_text_field', $story_ids ) ) ) );
+	if ( empty( $story_ids ) ) {
+		return array();
+	}
+
+	$post_ids = get_posts(
+		array(
+			'post_type'              => 'shorthand_story',
+			'post_status'            => 'publish',
+			'posts_per_page'         => -1,
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => true,
+			'update_post_term_cache' => false,
+			'meta_query'             => array(
+				array(
+					'key'     => 'story_id',
+					'value'   => $story_ids,
+					'compare' => 'IN',
+				),
+			),
+		)
+	);
+
+	$published = array();
+	foreach ( $post_ids as $post_id ) {
+		$story_id = get_post_meta( $post_id, 'story_id', true );
+		if ( ! $story_id || isset( $published[ $story_id ] ) ) {
+			continue;
+		}
+		$published[ $story_id ] = array(
+			'post_id'  => (int) $post_id,
+			'edit_url' => current_user_can( 'edit_post', $post_id ) ? (string) get_edit_post_link( $post_id, 'raw' ) : '',
+		);
+	}
+
+	return $published;
+}
+
+/**
  * Retrieves stories from the shorthand API.
  *
  * Fetches a list of stories from the shorthand API, optionally filtered by keyword.
@@ -109,11 +168,14 @@ function shorthand_api_get_stories(  string $keyword = '', string $cursor = '', 
 		}
 
 		foreach ( $data as $storydata ) {
+			if ( ! empty( $storydata->projectId ) ) {
+				continue;
+			}
 			$updated_timestamp   = strtotime( esc_html( $storydata->updatedAt ) );
 			$updated_at          = $storydata->updatedAt;
-			$published_timestamp = strtotime( esc_html( $storydata->lastPublishedAt ) );
+			$published_timestamp = ! empty( $storydata->lastPublishedAt ) ? strtotime( $storydata->lastPublishedAt ) : 0;
 			$updated             = human_time_diff( $updated_timestamp, current_time( 'timestamp' ) );
-			$published           = human_time_diff( $published_timestamp, current_time( 'timestamp' ) );
+			$published           = $published_timestamp ? human_time_diff( $published_timestamp, current_time( 'timestamp' ) ) : '';
 			$image               = empty( $storydata->signedCover ) ? $default_cover_url : $storydata->signedCover;
 			$stories[]           = array(
 				'version_value'       => '' . $storydata->version,
@@ -126,13 +188,99 @@ function shorthand_api_get_stories(  string $keyword = '', string $cursor = '', 
 				'updated_value'       => $updated,
 				'published_timestamp' => $published_timestamp,
 				'published_value'     => $published,
+				'published_label'     => $published ? sprintf(
+					/* translators: %s: Human-readable elapsed time. */
+					__( '%s ago', 'shorthand-connect' ),
+					$published
+				) : __( 'Not published', 'shorthand-connect' ),
 				'story_id'            => $storydata->id,
 				'class'               => 'story',
+				'wordpress_published'    => 'false',
+				'wordpress_status_label' => '',
+				'wordpress_action_label' => '',
+				'wordpress_url'        => '',
 			);
 		}
+
+		$published_posts = shorthand_get_published_wordpress_stories( wp_list_pluck( $stories, 'story_id' ) );
+		foreach ( $stories as &$story ) {
+			if ( ! isset( $published_posts[ $story['story_id'] ] ) ) {
+				continue;
+			}
+			$story['wordpress_published']    = 'true';
+			$story['wordpress_status_label'] = __( 'In WordPress', 'shorthand-connect' );
+			$story['wordpress_action_label'] = __( 'Edit post', 'shorthand-connect' );
+			$story['wordpress_url']          = $published_posts[ $story['story_id'] ]['edit_url'];
+		}
+		unset( $story );
 	}
 
 	return $stories;
+}
+
+/**
+ * Retrieves Projects from the Shorthand API for the admin card picker.
+ *
+ * @return array|WP_Error Project card data, or an API error.
+ */
+function shorthand_api_get_projects() {
+	$projects = shorthand_get_projects();
+	if ( is_wp_error( $projects ) ) {
+		return $projects;
+	}
+
+	$cards             = array();
+	$project_story_ids = array();
+	$all_story_ids     = array();
+	$default_cover_url = plugin_dir_url( dirname( __DIR__ ) . '/shorthand-connect.php' ) . 'images/default.png';
+	foreach ( $projects as $project ) {
+		if ( ! isset( $project->id, $project->title, $project->stories, $project->createdAt ) || ! is_array( $project->stories ) ) {
+			continue;
+		}
+
+		$updated_at          = ! empty( $project->editedAt ) ? $project->editedAt : $project->createdAt;
+		$updated_timestamp   = strtotime( $updated_at );
+		$updated             = $updated_timestamp ? human_time_diff( $updated_timestamp, current_time( 'timestamp' ) ) : '';
+		$image               = ! empty( $project->signedCover ) ? $project->signedCover : ( ! empty( $project->cover ) ? $project->cover : $default_cover_url );
+		$story_ids                            = array_values( array_unique( array_filter( array_map( 'sanitize_text_field', wp_list_pluck( $project->stories, 'id' ) ) ) ) );
+		$project_story_ids[ $project->id ]    = $story_ids;
+		$all_story_ids                       = array_merge( $all_story_ids, $story_ids );
+		$cards[]                             = array(
+			'title'               => $project->title,
+			'imagealt'            => $project->title,
+			'image'               => $image,
+			'updated_timestamp'   => $updated_timestamp,
+			'updated_value'       => $updated,
+			'project_id'          => $project->id,
+			'story_count'         => count( $project->stories ),
+			'story_count_value'   => count( $project->stories ),
+			'wordpress_published'    => 'false',
+			'wordpress_status_label' => '',
+			'wordpress_action_label' => '',
+			'wordpress_url'        => '',
+		);
+	}
+
+	$published_posts = shorthand_get_published_wordpress_stories( $all_story_ids );
+	foreach ( $cards as &$card ) {
+		$story_ids = isset( $project_story_ids[ $card['project_id'] ] ) ? $project_story_ids[ $card['project_id'] ] : array();
+		if ( empty( $story_ids ) || array_diff( $story_ids, array_keys( $published_posts ) ) ) {
+			continue;
+		}
+		$card['wordpress_published']    = 'true';
+		$card['wordpress_status_label'] = __( 'In WordPress', 'shorthand-connect' );
+		$card['wordpress_action_label'] = __( 'View stories', 'shorthand-connect' );
+		$card['wordpress_url']          = add_query_arg(
+			array(
+				'post_type'         => 'shorthand_story',
+				'shorthand_project' => $card['project_id'],
+			),
+			admin_url( 'edit.php' )
+		);
+	}
+	unset( $card );
+
+	return $cards;
 }
 
 /**
@@ -201,11 +349,12 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 	$tmpdir           = get_temp_dir();
 	$destination_path = $destination['path'] . '/shorthand/' . $post_id;
 	$story            = array();
+	$safe_story_id    = preg_replace( '/\W|_/', '', $story_id );
 
 	// Attempt to connect to the server.
 	$zip_file = wp_tempnam( 'sh_zip', $tmpdir );
 	$response = shorthand_api_v2_request(
-		'/v2/stories/' . $story_id . ( $without_assets ? '?without_assets=true' : '' ) . ( $assets_only ? '?assets_only=true' : '' ),
+		'/v2/stories/' . rawurlencode( $story_id ) . ( $without_assets ? '?without_assets=true' : '' ) . ( $assets_only ? '?assets_only=true' : '' ),
 		array(
 			'timeout'  => '600',
 			'stream'   => true,
@@ -224,7 +373,7 @@ function sh_copy_story( $post_id, $story_id, $without_assets = false, $assets_on
 			'response' => $response,
 		);
 	} else {
-		$story = extract_story_content( $zip_file, $destination_path, $story_id );
+		$story = extract_story_content( $zip_file, $destination_path, $safe_story_id );
 	}
 
 	do_action( 'sh_copy_story', $post_id, $story_id, $story );
